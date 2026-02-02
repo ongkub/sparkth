@@ -1,0 +1,87 @@
+{
+  "type": "flex",
+  "altText": "ชวนเพื่อนใหม่ร่วมกิจกรรม GSB NOW",
+  "contents": {
+    "type": "bubble",
+    "direction": "ltr",
+    "header": {
+      "type": "box",
+      "layout": "vertical",
+      "contents": [
+        {
+          "type": "text",
+          "text": "GSB NOW ขอเชิญร่วมสนุกกับกิจกรรม",
+          "align": "center",
+          "weight": "bold",
+          "size": "lg",
+          "color": "#ffffff",
+          "wrap": true
+        }
+      ],
+      "backgroundColor": "#EC0B8C",
+      "paddingAll": "20px"
+    },
+    "hero": {
+      "type": "image",
+      "url": "https://sparkth.io/wp-content/uploads/2025/08/GSB_Mockup_Avtivity.png",
+      "size": "5xl",
+      "aspectRatio": "1:1",
+      "aspectMode": "cover",
+      "margin": "none"
+    },
+    "body": {
+      "type": "box",
+      "layout": "vertical",
+      "contents": [
+        {
+          "type": "text",
+          "text": "🎉 เพียงร่วมสนุกกับกิจกรรม รับฟรี 50 NOW Point",
+          "weight": "bold",
+          "size": "xl",
+          "margin": "md",
+          "wrap": true
+        },
+        {
+          "type": "text",
+          "text": "แตะปุ่มด้านล่างเพื่อเข้าร่วมกิจกรรมและรับสิทธิพิเศษมากมาย",
+          "size": "sm",
+          "color": "#666666",
+          "margin": "md",
+          "wrap": true
+        },
+        {
+          "type": "separator",
+          "margin": "xxl"
+        },
+        {
+          "type": "button",
+          "style": "primary",
+          "height": "sm",
+          "action": {
+            "type": "uri",
+            "label": "🚀 เข้าร่วมกิจกรรม",
+            "uri": "https://liff.line.me/2004737575-LdazVWKP?active={param}"
+          },
+          "margin": "xl",
+          "color": "#EC0B8C"
+        }
+      ],
+      "spacing": "md",
+      "paddingAll": "20px"
+    },
+    "footer": {
+      "type": "box",
+      "layout": "vertical",
+      "contents": [
+        {
+          "type": "text",
+          "text": "GSB NOW - ธนาคารออมสิน",
+          "size": "xs",
+          "color": "#aaaaaa",
+          "align": "center"
+        }
+      ],
+      "paddingAll": "10px"
+    }
+  }
+}
