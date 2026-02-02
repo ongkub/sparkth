@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8" />
+    <title>Sharing-Loading</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body style="background-color: #FFFFFF;">
+    <div class="centerScreen">
+        <img src="https://ongkub.github.io/sparkth/img/gsbnow.png" width="800px" />
+        <div>
+            <h1>ชวนเพื่อนใหม่ร่วมกิจกรรม GSB NOW</h1>
+        </div>
+        <div class="container">
+            <div class="progress2 progress-moved">
+                <div class="progress-bar2"></div>
+            </div>
+        </div>
+        <div>
+            <p>Now Loading…</p>
+            <p id="status-message" style="font-weight: bold;"></p>
+        </div>
+    </div>
+    <div><div class="circleTopLeft"></div></div>
+    <div class="bottomRight"><div class="circleBottomRight"></div></div>
+    <script>
+        async function main() {
+            await liff.init({ liffId: "2004737575-2Vnw1oNd" });
+            if (!liff.isLoggedIn()) {
+                liff.login({ redirectUri: window.location.href });
+                return;
+            }
+            
+            const statusMessage = document.getElementById('status-message');
+            
+            if (!liff.isApiAvailable('shareTargetPicker')) {
+                statusMessage.textContent = "ไม่สามารถแชร์คอนเทนต์ได้";
+                return;
+            }
+            
+            try {
+                // Get user profile to obtain UID and displayName
+                const profile = await liff.getProfile();
+                const userUID = profile.userId;
+                const displayName = encodeURIComponent(profile.displayName);
+                console.log('User UID:', userUID);
+                console.log('Display Name:', profile.displayName);
+                
+                // Fetch the original flex message
+                const response = await fetch('https://ongkub.github.io/sparkth/flex/share.json');
+                const flexMessage = await response.json();
+                console.log('Original Flex Message:', JSON.stringify(flexMessage, null, 2));
+                
+                // Update the URI in the flex message to include the UID and displayName parameters
+                if (flexMessage.contents && flexMessage.contents.body && flexMessage.contents.body.contents) {
+                    flexMessage.contents.body.contents.forEach(content => {
+                        if (content.type === 'button' && content.action && content.action.uri) {
+                            // Replace {param} with actual UID and add displayName
+                            const baseUrl = content.action.uri.replace('{param}', userUID);
+                            content.action.uri = `${baseUrl}&name=${displayName}`;
+                            console.log('Updated button URI:', content.action.uri);
+                        }
+                    });
+                }
+                
+                console.log('Final Flex Message to send:', JSON.stringify(flexMessage, null, 2));
+                
+                // Share the updated flex message
+                const result = await liff.shareTargetPicker([flexMessage]);
+                
+                if (result) {
+                    statusMessage.style.color = 'green';
+                    statusMessage.textContent = "เชิญเพื่อนของคุณเรียบร้อย!";
+                } else {
+                    statusMessage.style.color = 'orange';
+                    statusMessage.textContent = "คุณยกเลิกการเชิญเพื่อน";
+                }
+            } catch (error) {
+                statusMessage.style.color = 'red';
+                statusMessage.textContent = "เกิดข้อผิดพลาด: " + error.message;
+            } finally {
+                if (liff.isInClient()) {
+                    setTimeout(() => {
+                        liff.closeWindow();
+                    }, 2000); 
+                }
+            }
+        }
+        main();
+    </script>
+</body>
+</html>
