@@ -2,86 +2,145 @@
   "type": "flex",
   "altText": "ชวนเพื่อนใหม่ร่วมกิจกรรม GSB NOW",
   "contents": {
-    "type": "bubble",
-    "direction": "ltr",
-    "header": {
-      "type": "box",
-      "layout": "vertical",
-      "contents": [
-        {
-          "type": "text",
-          "text": "GSB NOW ขอเชิญร่วมสนุกกับกิจกรรม",
-          "align": "center",
-          "weight": "bold",
-          "size": "lg",
-          "color": "#ffffff",
-          "wrap": true
-        }
-      ],
-      "backgroundColor": "#EC0B8C",
-      "paddingAll": "20px"
-    },
-    "hero": {
+  "type": "bubble",
+  "size": "giga",
+  "header": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "text",
+        "text": "GSB NOW ขอเชิญร่วมสนุกกับกิจกรรม",
+        "size": "lg",
+        "align": "center",
+        "wrap": true,
+        "color": "#ffffff",
+        "weight": "bold"
+      }
+    ],
+    "backgroundColor": "#EC0B8C",
+    "paddingAll": "20px"
+  },
+  "hero": {
+    "type": "video",
+    "url": "https://videos.files.wordpress.com/7l7mzvbw/nowpointss2_activity1.mp4",
+    "previewUrl": "https://sparkth.io/wp-content/uploads/2026/01/Screenshot-2569-01-25-at-14.23.04.png",
+    "altContent": {
       "type": "image",
-      "url": "https://sparkth.io/wp-content/uploads/2025/08/GSB_Mockup_Avtivity.png",
-      "size": "5xl",
-      "aspectRatio": "1:1",
+      "size": "full",
+      "aspectRatio": "20:13",
       "aspectMode": "cover",
-      "margin": "none"
+      "url": "https://videos.files.wordpress.com/7l7mzvbw/nowpointss2_activity1.mp4"
     },
-    "body": {
-      "type": "box",
-      "layout": "vertical",
-      "contents": [
-        {
-          "type": "text",
-          "text": "🎉 เพียงร่วมสนุกกับกิจกรรม รับฟรี 50 NOW Point",
-          "weight": "bold",
-          "size": "xl",
-          "margin": "md",
-          "wrap": true
-        },
-        {
-          "type": "text",
-          "text": "แตะปุ่มด้านล่างเพื่อเข้าร่วมกิจกรรมและรับสิทธิพิเศษมากมาย",
-          "size": "sm",
-          "color": "#666666",
-          "margin": "md",
-          "wrap": true
-        },
-        {
-          "type": "separator",
-          "margin": "xxl"
-        },
-        {
-          "type": "button",
-          "style": "primary",
-          "height": "sm",
-          "action": {
-            "type": "uri",
-            "label": "🚀 เข้าร่วมกิจกรรม",
-            "uri": "https://liff.line.me/2004737575-LdazVWKP?active={param}"
-          },
-          "margin": "xl",
-          "color": "#EC0B8C"
-        }
-      ],
-      "spacing": "md",
-      "paddingAll": "20px"
-    },
-    "footer": {
-      "type": "box",
-      "layout": "vertical",
-      "contents": [
-        {
-          "type": "text",
-          "text": "GSB NOW - ธนาคารออมสิน",
-          "size": "xs",
-          "color": "#aaaaaa",
-          "align": "center"
-        }
-      ],
-      "paddingAll": "10px"
-    }
+    "aspectRatio": "4:3"
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "paddingAll": "16px",
+    "spacing": "sm",
+    "contents": [
+      {
+        "type": "text",
+        "text": "กิจกรรม \"จัดเต็มทุก Lifestyle กับออมโม่\"",
+        "weight": "bold",
+        "size": "lg",
+        "wrap": true,
+        "offsetBottom": "sm"
+      },
+      {
+        "type": "text",
+        "text": "เพียงจอยร่วมสนุกตอบคำถาม \"น้องออมโม่เปลี่ยนชุดไปแล้วกี่ชุด ?\" ก็รับฟรี 50 NOW Point และมีรางวัลพิเศษสำหรับผู้โชคดีอีกด้วย",
+        "size": "sm",
+        "color": "#555555",
+        "wrap": true,
+        "offsetBottom": "xs"
+      },
+      {
+        "type": "text",
+        "text": "ผู้โชคดี ลำดับที่ 1-50 จะได้รับ E-Voucher Shopee มูลค่า 100 บาท",
+        "wrap": true,
+        "size": "sm",
+        "offsetStart": "lg"
+      },
+      {
+        "type": "text",
+        "text": "ผู้โชคดี ลำดับที่ 51-150 จะได้รับ E-Voucher Shopee มูลค่า 50 บาท",
+        "wrap": true,
+        "size": "sm",
+        "offsetStart": "lg"
+      },
+      {
+        "type": "text",
+        "size": "md",
+        "wrap": true,
+        "text": "ร่วมสนุกได้ตั้งแต่ 22 - 28 กุมภาพันธ์ 2569",
+        "weight": "bold",
+        "align": "center"
+      },
+      {
+        "type": "text",
+        "text": "ประกาศรายชื่อผู้โชคดี 11 มีนาคม 2569",
+        "weight": "bold",
+        "align": "center",
+        "size": "md"
+      }
+    ]
+  },
+  "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "paddingAll": "16px",
+    "spacing": "md",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "text",
+            "text": "*เงื่อนไขอื่นๆ เป็นไปตามที่ธนาคารกำหนด",
+            "weight": "regular",
+            "align": "center",
+            "wrap": true,
+            "size": "xxs",
+            "color": "#555555"
+          }
+        ]
+      },
+      {
+        "type": "box",
+        "layout": "horizontal",
+        "spacing": "sm",
+        "contents": [
+          {
+            "type": "button",
+            "style": "primary",
+            "color": "#EC0B8C",
+            "height": "sm",
+            "action": {
+              "type": "uri",
+              "label": "คลิกร่วมสนุกกิจกรรม",
+              "uri": "https://liff.line.me/2000733931-ykWNa039/channels/5000175678/survey/form/01KFFJTV15J9DCXCJ2CZ2CBFTQ"
+            }
+          }
+        ]
+      },
+      {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "text",
+            "text": "GSB NOW - ธนาคารออมสิน",
+            "color": "#aaaaaa",
+            "align": "center",
+            "size": "xxs"
+          }
+        ],
+        "margin": "lg"
+      }
+    ]
   }
+}
 }
