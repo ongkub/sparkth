@@ -53,16 +53,20 @@
                 console.log('Original Flex Message:', JSON.stringify(flexMessage, null, 2));
                 
                 // Update the URI in the flex message to include the UID and displayName parameters
-                if (flexMessage.contents && flexMessage.contents.body && flexMessage.contents.body.contents) {
-                    flexMessage.contents.body.contents.forEach(content => {
-                        if (content.type === 'button' && content.action && content.action.uri) {
-                            // Replace {param} with actual UID and add displayName
-                            const baseUrl = content.action.uri.replace('{param}', userUID);
-                            content.action.uri = `${baseUrl}&name=${displayName}`;
-                            console.log('Updated button URI:', content.action.uri);
-                        }
-                    });
+                if (flexMessage.contents && flexMessage.contents.footer && flexMessage.contents.footer.contents) {  // ✅ เปลี่ยน body → footer
+    flexMessage.contents.footer.contents.forEach(content => {                                        // ✅ เปลี่ยน body → footer
+        // ตรวจสอบว่ามี contents ซ้อนกันหรือไม่ (เพราะปุ่มอยู่ใน box)
+        if (content.type === 'box' && content.contents) {                                            // ✅ เพิ่มการเช็ค box
+            content.contents.forEach(innerContent => {                                               // ✅ เพิ่มลูปซ้อน
+                if (innerContent.type === 'button' && innerContent.action && innerContent.action.uri) {
+                    const baseUrl = innerContent.action.uri.replace('{param}', userUID);
+                    innerContent.action.uri = `${baseUrl}&name=${displayName}`;
+                    console.log('✅ Updated button URI:', innerContent.action.uri);
                 }
+            });
+        }
+    });
+}
                 
                 console.log('Final Flex Message to send:', JSON.stringify(flexMessage, null, 2));
                 
