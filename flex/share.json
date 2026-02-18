@@ -4,6 +4,7 @@
   "contents": {
   "type": "bubble",
   "size": "giga",
+"altText": "คุณ {name} ชวนคุณรับพอยท์ฟรีจาก GSB NOW!", 
   "hero": {
     "type": "image",
     "url": "https://sparkth.io/wp-content/uploads/2026/02/new_member.jpg",
@@ -13,17 +14,14 @@
   "body": {
     "type": "box",
     "layout": "vertical",
-    "paddingAll": "16px",
-    "spacing": "sm",
     "contents": [
       {
-  "type": "text",
-  "text": "คุณ ${senderName} อยากให้คุณได้รับพอยท์ฟรี!",
-  "size": "xs",
-  "color": "#aaaaaa",
-  "align": "center",
-  "margin": "none"
-},
+        "type": "text",
+        "text": "คุณ {name} ส่งพอยท์ฟรีให้คุณ!", 
+        "size": "sm",
+        "color": "#aaaaaa",
+        "align": "center"
+      },
       {
         "type": "text",
         "text": "กิจกรรมสะสมพอยท์แลกของรางวัล",
