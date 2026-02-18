@@ -40,38 +40,38 @@
             }
             
             try {
-                // Get user profile to obtain UID and displayName
+                // 1. ดึง Profile (คงเดิม)
                 const profile = await liff.getProfile();
                 const userUID = profile.userId;
-                const displayName = encodeURIComponent(profile.displayName);
-                console.log('User UID:', userUID);
-                console.log('Display Name:', profile.displayName);
+                const displayName = encodeURIComponent(profile.displayName); // สำหรับ URL
+                const rawName = profile.displayName; // สำหรับแสดงใน Flex Text
                 
-                // Fetch the original flex message
+                // 2. Fetch Flex Message (คงเดิม)
                 const response = await fetch('https://ongkub.github.io/sparkth/flex/share.json');
                 const flexMessage = await response.json();
-                console.log('Original Flex Message:', JSON.stringify(flexMessage, null, 2));
                 
-                // Update the URI in the flex message to include the UID and displayName parameters
-                if (flexMessage.contents && flexMessage.contents.footer && flexMessage.contents.footer.contents) {  // ✅ เปลี่ยน body → footer
-    flexMessage.contents.footer.contents.forEach(content => {                                        // ✅ เปลี่ยน body → footer
-        // ตรวจสอบว่ามี contents ซ้อนกันหรือไม่ (เพราะปุ่มอยู่ใน box)
-        if (content.type === 'box' && content.contents) {                                            // ✅ เพิ่มการเช็ค box
-            content.contents.forEach(innerContent => {                                               // ✅ เพิ่มลูปซ้อน
-                if (innerContent.type === 'button' && innerContent.action && innerContent.action.uri) {
-                    const baseUrl = innerContent.action.uri.replace('{param}', userUID);
-                    innerContent.action.uri = `${baseUrl}&name=${displayName}`;
-                    console.log('✅ Updated button URI:', innerContent.action.uri);
+                // 3. [ส่วนที่เพิ่มใหม่] แทนที่ชื่อ {name} ใน JSON ทั้งหมด
+                let flexString = JSON.stringify(flexMessage);
+                flexString = flexString.replace(/{name}/g, rawName);
+                const updatedFlex = JSON.parse(flexString);
+                
+                // 4. [Logic เดิม] อัปเดต URI ในปุ่ม (ปรับมาใช้ updatedFlex เพื่อความสมบูรณ์)
+                if (updatedFlex.contents && updatedFlex.contents.footer && updatedFlex.contents.footer.contents) {
+                    updatedFlex.contents.footer.contents.forEach(content => {
+                        if (content.type === 'box' && content.contents) {
+                            content.contents.forEach(innerContent => {
+                                if (innerContent.type === 'button' && innerContent.action && innerContent.action.uri) {
+                                    const baseUrl = innerContent.action.uri.replace('{param}', userUID);
+                                    innerContent.action.uri = `${baseUrl}&name=${displayName}`;
+                                    console.log('✅ Updated button URI:', innerContent.action.uri);
+                                }
+                            });
+                        }
+                    });
                 }
-            });
-        }
-    });
-}
                 
-                console.log('Final Flex Message to send:', JSON.stringify(flexMessage, null, 2));
-                
-                // Share the updated flex message
-                const result = await liff.shareTargetPicker([flexMessage]);
+                // 5. ส่ง Flex Message (ส่งตัวแปรที่อัปเดตชื่อแล้ว)
+                const result = await liff.shareTargetPicker([updatedFlex]);
                 
                 if (result) {
                     statusMessage.style.color = 'green';
