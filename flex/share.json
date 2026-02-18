@@ -1,139 +1,136 @@
 {
   "type": "flex",
-  "altText": "ชวนเพื่อนใหม่ร่วมกิจกรรม GSB NOW",
+  "altText": "คุณ {name} ชวนคุณรับพอยท์ฟรีจาก GSB NOW!",
   "contents": {
-  "type": "bubble",
-  "size": "giga",
-"altText": "คุณ {name} ชวนคุณรับพอยท์ฟรีจาก GSB NOW!", 
-  "hero": {
-    "type": "image",
-    "url": "https://sparkth.io/wp-content/uploads/2026/02/new_member.jpg",
-    "size": "full",
-    "aspectRatio": "9:13.2"
-  },
-  "body": {
-    "type": "box",
-    "layout": "vertical",
-    "contents": [
-      {
-        "type": "text",
-        "text": "คุณ {name} ส่งพอยท์ฟรีให้คุณ!", 
-        "size": "sm",
-        "color": "#aaaaaa",
-        "align": "center"
-      },
-      {
-        "type": "text",
-        "text": "กิจกรรมสะสมพอยท์แลกของรางวัล",
-        "weight": "bold",
-        "size": "lg",
-        "wrap": true,
-        "align": "center"
-      },
-      {
-        "type": "text",
-        "text": "จาก GSB NOW",
-        "weight": "bold",
-        "size": "xl",
-        "wrap": true,
-        "color": "#EC0B8C",
-        "align": "center",
-        "offsetBottom": "sm"
-      },
-      {
-        "type": "text",
-        "text": "เพียงสมัครสมาชิกสำเร็จ รับฟรีทันที 100 พอยท์",
-        "size": "sm",
-        "color": "#555555",
-        "wrap": true,
-        "offsetBottom": "xs",
-        "contents": [
-          {
-            "type": "span",
-            "text": "🌟 เพียงสมัครสมาชิกสำเร็จ "
-          },
-          {
-            "type": "span",
-            "text": "รับฟรีทันที 100 พอยท์",
-            "weight": "bold",
-            "color": "#EC0B8C"
-          }
-        ]
-      },
-      {
-        "type": "text",
-        "text": "🥳 จัดกิจกรรมให้ร่วมสนุกสะสมพอยท์ทุกเดือน",
-        "size": "sm",
-        "color": "#555555",
-        "wrap": true,
-        "offsetBottom": "xs",
-        "contents": []
-      },
-      {
-        "type": "text",
-        "text": "🎁 มีของรางวัลให้แลกมากมาย",
-        "size": "sm",
-        "color": "#555555",
-        "wrap": true,
-        "offsetBottom": "xs",
-        "contents": []
-      }
-    ]
-  },
-  "footer": {
-    "type": "box",
-    "layout": "vertical",
-    "paddingAll": "16px",
-    "spacing": "md",
-    "contents": [
-      {
-        "type": "box",
-        "layout": "vertical",
-        "contents": [
-          {
-            "type": "text",
-            "text": "*เงื่อนไขอื่นๆ เป็นไปตามที่ธนาคารกำหนด",
-            "weight": "regular",
-            "align": "center",
-            "wrap": true,
-            "size": "xxs",
-            "color": "#555555"
-          }
-        ]
-      },
-      {
-        "type": "box",
-        "layout": "horizontal",
-        "spacing": "sm",
-        "contents": [
-          {
-            "type": "button",
-            "style": "primary",
-            "color": "#EC0B8C",
-            "height": "sm",
-            "action": {
-              "type": "uri",
-              "label": "สมัครสมาชิก",
-              "uri": "https://liff.line.me/2004737575-LdazVWKP?active={param}"
+    "type": "bubble",
+    "size": "giga",
+    "hero": {
+      "type": "image",
+      "url": "https://sparkth.io/wp-content/uploads/2026/02/new_member.jpg",
+      "size": "full",
+      "aspectRatio": "9:13.2"
+    },
+    "body": {
+      "type": "box",
+      "layout": "vertical",
+      "contents": [
+        {
+          "type": "text",
+          "text": "คุณ {name} ส่งพอยท์ฟรีให้คุณ!",
+          "size": "sm",
+          "color": "#aaaaaa",
+          "align": "center"
+        },
+        {
+          "type": "text",
+          "text": "กิจกรรมสะสมพอยท์แลกของรางวัล",
+          "weight": "bold",
+          "size": "lg",
+          "wrap": true,
+          "align": "center"
+        },
+        {
+          "type": "text",
+          "text": "จาก GSB NOW",
+          "weight": "bold",
+          "size": "xl",
+          "wrap": true,
+          "color": "#EC0B8C",
+          "align": "center",
+          "offsetBottom": "sm"
+        },
+        {
+          "type": "text",
+          "text": "เพียงสมัครสมาชิกสำเร็จ รับฟรีทันที 100 พอยท์",
+          "size": "sm",
+          "color": "#555555",
+          "wrap": true,
+          "offsetBottom": "xs",
+          "contents": [
+            {
+              "type": "span",
+              "text": "🌟 เพียงสมัครสมาชิกสำเร็จ "
+            },
+            {
+              "type": "span",
+              "text": "รับฟรีทันที 100 พอยท์",
+              "weight": "bold",
+              "color": "#EC0B8C"
             }
-          }
-        ]
-      },
-      {
-        "type": "box",
-        "layout": "vertical",
-        "contents": [
-          {
-            "type": "text",
-            "text": "GSB NOW - ธนาคารออมสิน",
-            "color": "#aaaaaa",
-            "align": "center",
-            "size": "xxs"
-          }
-        ],
-        "margin": "lg"
-      }
-    ]
+          ]
+        },
+        {
+          "type": "text",
+          "text": "🥳 จัดกิจกรรมให้ร่วมสนุกสะสมพอยท์ทุกเดือน",
+          "size": "sm",
+          "color": "#555555",
+          "wrap": true,
+          "offsetBottom": "xs"
+        },
+        {
+          "type": "text",
+          "text": "🎁 มีของรางวัลให้แลกมากมาย",
+          "size": "sm",
+          "color": "#555555",
+          "wrap": true,
+          "offsetBottom": "xs"
+        }
+      ]
+    },
+    "footer": {
+      "type": "box",
+      "layout": "vertical",
+      "paddingAll": "16px",
+      "spacing": "md",
+      "contents": [
+        {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "*เงื่อนไขอื่นๆ เป็นไปตามที่ธนาคารกำหนด",
+              "weight": "regular",
+              "align": "center",
+              "wrap": true,
+              "size": "xxs",
+              "color": "#555555"
+            }
+          ]
+        },
+        {
+          "type": "box",
+          "layout": "horizontal",
+          "spacing": "sm",
+          "contents": [
+            {
+              "type": "button",
+              "style": "primary",
+              "color": "#EC0B8C",
+              "height": "sm",
+              "action": {
+                "type": "uri",
+                "label": "สมัครสมาชิก",
+                "uri": "https://liff.line.me/2004737575-LdazVWKP?active={param}"
+              }
+            }
+          ]
+        },
+        {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "GSB NOW - ธนาคารออมสิน",
+              "color": "#aaaaaa",
+              "align": "center",
+              "size": "xxs"
+            }
+          ],
+          "margin": "lg"
+        }
+      ]
+    }
   }
-}
 }
