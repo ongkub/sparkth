@@ -17,6 +17,14 @@
     "spacing": "sm",
     "contents": [
       {
+  "type": "text",
+  "text": "คุณ ${senderName} อยากให้คุณได้รับพอยท์ฟรี!",
+  "size": "xs",
+  "color": "#aaaaaa",
+  "align": "center",
+  "margin": "none"
+},
+      {
         "type": "text",
         "text": "กิจกรรมสะสมพอยท์แลกของรางวัล",
         "weight": "bold",
