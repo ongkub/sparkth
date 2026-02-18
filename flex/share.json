@@ -13,14 +13,15 @@
     "body": {
       "type": "box",
       "layout": "vertical",
-      "contents": [
-        {
-          "type": "text",
-          "text": "คุณ {name} ส่งพอยท์ฟรีให้คุณ!",
-          "size": "sm",
-          "color": "#aaaaaa",
-          "align": "center"
-        },
+    "paddingAll": "16px",
+    "spacing": "sm",
+    "contents": [
+      {
+        "type": "text",
+        "text": "{name} ได้ทำการชวนคุณสมัคร",
+        "size": "md",
+        "align": "center"
+      },
         {
           "type": "text",
           "text": "กิจกรรมสะสมพอยท์แลกของรางวัล",
