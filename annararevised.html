@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Annara Residences — Only 9 Private Villas | Bangtao, Phuket</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #FAF7F4;
+  --brown: #564B39;
+  --gold:  #8E8955;
+  --olive: #676947;
+  --orange:#E07F36;
+  --sand:  #E8D8C5;
+  --white: #FFFFFF;
+  --black: #14140A;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--brown); font-size:16px; line-height:1.6; overflow-x:hidden; }
+a { text-decoration:none; color:inherit; }
+img { max-width:100%; display:block; }
+.container { max-width:1200px; margin:0 auto; padding:0 48px; }
+
+/* ── SCARCITY BANNER ── */
+.scarcity { background:var(--orange); text-align:center; padding:11px 20px; position:relative; z-index:1001; }
+.scarcity p { color:#fff; font-size:11px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; }
+.scarcity span { opacity:.65; margin:0 14px; }
+
+/* ── NAV ── */
+nav { position:fixed; top:34px; left:0; width:100%; z-index:1000; background:var(--cream); border-bottom:1px solid rgba(86,75,57,.12); transition:box-shadow .3s, top .3s; }
+nav.scrolled { box-shadow:0 2px 24px rgba(86,75,57,.14); }
+.nav-inner { display:flex; align-items:center; justify-content:space-between; height:76px; max-width:1200px; margin:0 auto; padding:0 48px; }
+.nav-hamburger { display:flex; align-items:center; gap:10px; cursor:pointer; }
+.nav-hamburger span { font-size:11px; font-weight:500; letter-spacing:.2em; text-transform:uppercase; color:var(--brown); }
+.nav-logo { display:flex; flex-direction:column; align-items:center; line-height:1; }
+.nav-logo .logo-name { font-size:22px; font-weight:300; letter-spacing:.38em; color:var(--brown); text-transform:uppercase; }
+.nav-logo .logo-sub  { font-size:8px;  font-weight:400; letter-spacing:.42em; color:var(--gold);  text-transform:uppercase; margin-top:3px; }
+.nav-links { display:flex; align-items:center; gap:28px; }
+.nav-links a { font-size:10px; font-weight:500; letter-spacing:.16em; text-transform:uppercase; color:var(--brown); transition:color .2s; }
+.nav-links a:hover { color:var(--gold); }
+.nav-cta { background:var(--olive); color:#fff !important; padding:10px 22px; transition:background .2s !important; }
+.nav-cta:hover { background:var(--brown) !important; }
+
+/* ── HERO ── */
+.hero { position:relative; height:100vh; min-height:700px; overflow:hidden; display:flex; align-items:center; }
+.hero-bg { position:absolute; inset:0; background:url('https://static.wixstatic.com/media/53cd70_9cd2795dc1994c0486d4972e6390b051~mv2.jpg') center/cover no-repeat; will-change:transform; }
+.hero-bg::after { content:''; position:absolute; inset:0; background:linear-gradient(105deg, rgba(14,12,8,.62) 0%, rgba(14,12,8,.22) 55%, rgba(14,12,8,.04) 100%); }
+.hero-content { position:relative; z-index:2; max-width:1200px; margin:0 auto; padding:0 48px; padding-top:110px; }
+.hero-eyebrow { font-size:10px; font-weight:500; letter-spacing:.38em; text-transform:uppercase; color:rgba(255,255,255,.72); margin-bottom:18px; }
+.hero-title { font-family:'Jost',sans-serif; font-size:clamp(38px,5.2vw,76px); font-weight:300; line-height:1.08; letter-spacing:.04em; text-transform:uppercase; color:#fff; margin-bottom:10px; }
+.hero-title strong { font-weight:600; display:block; }
+.hero-tagline { font-family:'Cormorant Garamond',serif; font-size:clamp(18px,2.3vw,30px); font-style:italic; color:rgba(255,255,255,.88); margin-bottom:44px; line-height:1.4; }
+.hero-pills { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:44px; }
+.hero-pill { background:rgba(255,255,255,.14); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.28); color:#fff; font-size:10px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; padding:8px 16px; }
+.hero-ctas { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.btn-primary { display:inline-block; background:var(--olive); color:#fff; padding:16px 40px; font-size:10px; font-weight:600; letter-spacing:.22em; text-transform:uppercase; transition:all .22s; border:none; cursor:pointer; }
+.btn-primary:hover { background:var(--brown); transform:translateY(-2px); }
+.btn-ghost { display:inline-block; border:1px solid rgba(255,255,255,.55); color:#fff; padding:15px 32px; font-size:10px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; transition:background .22s; }
+.btn-ghost:hover { background:rgba(255,255,255,.1); }
+.hero-scroll { position:absolute; bottom:36px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px; color:rgba(255,255,255,.5); font-size:9px; letter-spacing:.25em; text-transform:uppercase; }
+.hero-scroll::after { content:''; width:1px; height:44px; background:rgba(255,255,255,.38); animation:pulse 2s infinite; }
+@keyframes pulse { 0%{transform:scaleY(0);transform-origin:top} 50%{transform:scaleY(1);transform-origin:top} 100%{transform:scaleY(0);transform-origin:bottom} }
+
+/* ── TRUST BAR ── */
+.trust-bar { background:var(--olive); padding:20px 0; }
+.trust-bar-inner { display:flex; justify-content:center; flex-wrap:wrap; }
+.trust-item { display:flex; align-items:center; gap:10px; padding:4px 44px; border-right:1px solid rgba(255,255,255,.22); color:#fff; }
+.trust-item:last-child { border-right:none; }
+.trust-num { font-family:'Cormorant Garamond',serif; font-size:30px; font-weight:600; line-height:1; }
+.trust-lbl { font-size:9px; font-weight:500; letter-spacing:.16em; text-transform:uppercase; line-height:1.4; opacity:.82; }
+
+/* ── SHARED SECTION ATOMS ── */
+section { padding:104px 0; }
+.sec-label { font-size:10px; font-weight:500; letter-spacing:.38em; text-transform:uppercase; color:var(--gold); margin-bottom:14px; }
+.sec-title { font-family:'Jost',sans-serif; font-size:clamp(28px,3.2vw,46px); font-weight:300; letter-spacing:.06em; text-transform:uppercase; color:var(--brown); line-height:1.12; margin-bottom:20px; }
+.sec-title em { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.1em; letter-spacing:.02em; text-transform:none; font-weight:400; }
+.sec-body { font-size:14.5px; font-weight:300; line-height:1.82; color:var(--brown); opacity:.78; }
+.divider { width:44px; height:1px; background:var(--gold); margin-bottom:26px; }
+.divider-center { margin-left:auto; margin-right:auto; }
+.text-center { text-align:center; }
+.btn-text { font-size:10px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--brown); border-bottom:1px solid rgba(86,75,57,.35); padding-bottom:2px; display:inline-block; transition:color .2s, border-color .2s; }
+.btn-text:hover { color:var(--gold); border-color:var(--gold); }
+
+/* ── LOCATION ── */
+.location-grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
+.loc-bullets { margin-top:32px; display:flex; flex-direction:column; gap:11px; }
+.loc-bullet { display:flex; align-items:flex-start; gap:12px; font-size:13.5px; font-weight:400; color:var(--brown); }
+.loc-bullet::before { content:''; flex-shrink:0; width:6px; height:6px; background:var(--gold); border-radius:50%; margin-top:8px; }
+.location-img { width:100%; filter:sepia(12%) brightness(1.02); }
+
+/* ── FULL-WIDTH STRIP ── */
+.img-strip { width:100%; height:500px; overflow:hidden; }
+.img-strip img { width:100%; height:100%; object-fit:cover; object-position:center 60%; }
+
+/* ── FEATURES ── */
+.features-bg { background:var(--sand); }
+.features-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; margin-top:56px; }
+.feat-card { background:var(--cream); padding:40px 26px 36px; transition:background .2s; }
+.feat-card:hover { background:#fff; }
+.feat-num { font-family:'Cormorant Garamond',serif; font-size:54px; font-weight:600; color:var(--sand); line-height:1; margin-bottom:6px; }
+.feat-name { font-size:11px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--olive); margin-bottom:14px; }
+.feat-list { list-style:none; }
+.feat-list li { font-size:12px; font-weight:300; color:var(--brown); opacity:.76; padding:3px 0 3px 14px; position:relative; line-height:1.55; }
+.feat-list li::before { content:'–'; position:absolute; left:0; color:var(--gold); }
+
+/* ── VILLAS ── */
+.villas-bg { background:var(--cream); }
+.villas-header { text-align:center; padding:104px 0 0; }
+.villa-grid { display:grid; grid-template-columns:1fr 1fr; gap:3px; margin-top:56px; }
+.villa-card { position:relative; overflow:hidden; display:block; }
+.villa-card img { width:100%; height:500px; object-fit:cover; transition:transform .65s ease; }
+.villa-card:hover img { transform:scale(1.05); }
+.villa-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(14,12,8,.88) 0%, rgba(14,12,8,.08) 58%); }
+.villa-info { position:absolute; bottom:0; left:0; right:0; padding:36px; }
+.villa-badge { display:inline-block; background:var(--orange); color:#fff; font-size:9px; font-weight:600; letter-spacing:.22em; text-transform:uppercase; padding:5px 12px; margin-bottom:12px; }
+.villa-name { font-family:'Jost',sans-serif; font-size:30px; font-weight:300; letter-spacing:.14em; text-transform:uppercase; color:#fff; margin-bottom:6px; }
+.villa-spec { font-size:12px; letter-spacing:.08em; color:rgba(255,255,255,.78); margin-bottom:14px; }
+.villa-sizes { display:flex; gap:14px; flex-wrap:wrap; }
+.villa-sz { font-size:11px; color:rgba(255,255,255,.62); font-weight:300; }
+.villa-sz strong { font-weight:500; color:rgba(255,255,255,.9); }
+.villa-link { display:inline-block; margin-top:18px; font-size:10px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:#fff; border-bottom:1px solid rgba(255,255,255,.38); padding-bottom:2px; transition:border-color .2s; }
+.villa-link:hover { border-color:#fff; }
+
+/* ── PROJECT SPECS ── */
+.specs-bg { background:var(--brown); }
+.specs-inner { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start; }
+.specs-img img { width:100%; opacity:.82; }
+.specs-title { font-family:'Jost',sans-serif; font-size:clamp(26px,3vw,42px); font-weight:300; letter-spacing:.06em; text-transform:uppercase; color:#fff; line-height:1.14; margin-bottom:40px; }
+.specs-title em { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.1em; }
+.spec-row { display:flex; justify-content:space-between; align-items:baseline; padding:13px 0; border-bottom:1px solid rgba(255,255,255,.1); }
+.spec-lbl { font-size:9px; font-weight:500; letter-spacing:.22em; text-transform:uppercase; color:rgba(255,255,255,.45); flex-shrink:0; }
+.spec-val { font-size:13.5px; font-weight:400; color:#fff; text-align:right; max-width:58%; line-height:1.5; }
+.spec-val em { font-family:'Cormorant Garamond',serif; font-size:16px; font-style:italic; }
+.tag { display:inline-block; padding:3px 10px; font-size:9px; letter-spacing:.12em; text-transform:uppercase; margin:2px 2px 0; }
+.tag-gold { background:rgba(142,137,85,.18); border:1px solid rgba(142,137,85,.38); color:var(--gold); }
+.tag-orange { background:var(--orange); color:#fff; font-weight:600; }
+
+/* ── MASTER PLAN ── */
+.masterplan-inner { text-align:center; }
+.masterplan-inner img { max-width:880px; width:100%; margin:44px auto 0; opacity:.88; }
+
+/* ── PHILOSOPHY ── */
+.philosophy-bg { background:var(--sand); }
+.philosophy-inner { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
+.phil-quote { font-family:'Cormorant Garamond',serif; font-size:clamp(19px,2.1vw,27px); font-style:italic; line-height:1.62; color:var(--brown); border-left:2px solid var(--gold); padding-left:28px; margin:26px 0; }
+.phil-imgs { display:grid; grid-template-columns:1fr 1fr; gap:3px; }
+.phil-imgs img { width:100%; height:220px; object-fit:cover; }
+.phil-imgs img:first-child { grid-column:1/-1; height:300px; }
+
+/* ── DESIGN PILLARS ── */
+.pillars-grid { display:grid; grid-template-columns:1fr 1fr; gap:3px; margin-top:56px; }
+.pillar { position:relative; overflow:hidden; }
+.pillar img { width:100%; height:350px; object-fit:cover; transition:transform .55s; }
+.pillar:hover img { transform:scale(1.05); }
+.pillar-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(86,75,57,.9) 0%, rgba(86,75,57,.08) 60%); }
+.pillar-body { position:absolute; bottom:0; left:0; right:0; padding:30px 32px; }
+.pillar-num { font-family:'Cormorant Garamond',serif; font-size:50px; font-weight:600; color:rgba(255,255,255,.18); line-height:1; margin-bottom:2px; }
+.pillar-name { font-size:11px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:#fff; margin-bottom:8px; }
+.pillar-desc { font-size:12px; font-weight:300; line-height:1.62; color:rgba(255,255,255,.76); }
+
+/* ── LEAD FORM ── */
+.form-bg { background:var(--olive); }
+.form-inner { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start; }
+.form-left .sec-label { color:rgba(255,255,255,.58); }
+.form-left .sec-title { color:#fff; }
+.form-left .divider { background:rgba(255,255,255,.28); }
+.form-left .sec-body { color:rgba(255,255,255,.76); max-width:420px; }
+.perk-list { margin-top:32px; display:flex; flex-direction:column; gap:10px; }
+.perk { display:flex; align-items:flex-start; gap:12px; font-size:13px; font-weight:300; color:rgba(255,255,255,.84); line-height:1.5; }
+.perk::before { content:'✓'; color:var(--sand); font-weight:700; flex-shrink:0; margin-top:1px; }
+.contact-box { margin-top:36px; padding:22px 24px; background:rgba(255,255,255,.09); border-left:2px solid var(--sand); }
+.contact-box p { font-size:12px; color:rgba(255,255,255,.85); line-height:1.8; }
+.contact-box a { color:var(--sand); border-bottom:1px solid rgba(232,216,197,.36); }
+.form-card { background:var(--cream); padding:44px 40px; }
+.form-card-title { font-size:16px; font-weight:300; letter-spacing:.14em; text-transform:uppercase; color:var(--brown); margin-bottom:28px; }
+.f-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.f-group { display:flex; flex-direction:column; gap:5px; margin-bottom:16px; }
+.f-group label { font-size:9px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); }
+.f-group input,
+.f-group select,
+.f-group textarea { background:transparent; border:none; border-bottom:1px solid rgba(86,75,57,.22); padding:9px 0; font-family:'Jost',sans-serif; font-size:13.5px; font-weight:300; color:var(--brown); outline:none; width:100%; transition:border-color .2s; }
+.f-group input::placeholder,
+.f-group textarea::placeholder { color:rgba(86,75,57,.38); }
+.f-group input:focus,
+.f-group select:focus,
+.f-group textarea:focus { border-bottom-color:var(--gold); }
+.f-group select { cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238E8955'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 6px center; }
+.f-group textarea { resize:none; border:1px solid rgba(86,75,57,.18); padding:10px 12px; height:82px; }
+.f-group textarea:focus { border-color:var(--gold); }
+.f-consent { font-size:10.5px; font-weight:300; color:rgba(86,75,57,.6); line-height:1.55; margin-bottom:22px; }
+.f-consent a { color:var(--gold); }
+.btn-submit { width:100%; background:var(--olive); color:#fff; padding:16px; font-family:'Jost',sans-serif; font-size:10px; font-weight:700; letter-spacing:.22em; text-transform:uppercase; border:none; cursor:pointer; transition:background .22s; }
+.btn-submit:hover { background:var(--brown); }
+.brochure-note { text-align:center; margin-top:14px; font-size:11px; color:var(--gold); letter-spacing:.1em; text-transform:uppercase; border-bottom:1px solid rgba(142,137,85,.3); padding-bottom:2px; display:inline-block; cursor:pointer; }
+
+/* ── NEWS ── */
+.news-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:48px; }
+.news-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+.news-card { background:#fff; overflow:hidden; }
+.news-card img { width:100%; height:230px; object-fit:cover; transition:transform .5s; }
+.news-card:hover img { transform:scale(1.04); }
+.news-body { padding:28px; }
+.news-date { font-size:9px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
+.news-title { font-size:14.5px; font-weight:500; line-height:1.52; color:var(--brown); margin-bottom:14px; }
+.news-link { font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--orange); border-bottom:1px solid rgba(224,127,54,.28); padding-bottom:2px; }
+
+/* ── FOOTER ── */
+.site-footer { background:var(--sand); padding:68px 0 32px; }
+.footer-grid { display:grid; grid-template-columns:1.2fr 1.8fr 1fr; gap:56px; margin-bottom:48px; }
+.f-logo-name { font-size:24px; font-weight:300; letter-spacing:.38em; text-transform:uppercase; color:var(--brown); }
+.f-logo-sub  { font-size:8px;  font-weight:400; letter-spacing:.44em; text-transform:uppercase; color:var(--gold); margin-top:3px; }
+.f-about { font-size:13px; font-weight:300; line-height:1.82; color:var(--brown); opacity:.74; margin-top:18px; }
+.f-nav { display:grid; grid-template-columns:1fr 1fr; gap:7px 28px; }
+.f-nav-head { font-size:9px; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); margin-bottom:14px; }
+.f-nav a { font-size:10.5px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; color:var(--brown); opacity:.68; transition:opacity .2s; }
+.f-nav a:hover { opacity:1; }
+.f-contact-head { font-size:9px; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); margin-bottom:14px; }
+.f-contact p { font-size:13px; font-weight:300; color:var(--brown); opacity:.78; margin-bottom:5px; line-height:1.55; }
+.f-cta-box { margin-top:20px; background:var(--olive); padding:15px 20px; text-align:center; }
+.f-cta-box a { font-size:9px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:#fff; }
+.footer-bottom { display:flex; justify-content:space-between; align-items:center; padding-top:22px; border-top:1px solid rgba(86,75,57,.14); }
+.footer-copy { font-size:10.5px; font-weight:300; color:var(--brown); opacity:.46; letter-spacing:.06em; }
+.social-row { display:flex; gap:20px; }
+.social-row a { font-size:9.5px; font-weight:500; letter-spacing:.16em; text-transform:uppercase; color:var(--brown); opacity:.56; transition:opacity .2s; }
+.social-row a:hover { opacity:1; }
+
+/* ── STICKY CTA ── */
+.sticky-btn { position:fixed; bottom:30px; right:30px; z-index:999; background:var(--olive); color:#fff; padding:14px 26px; font-size:10px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; box-shadow:0 4px 22px rgba(86,75,57,.32); transition:all .22s; display:block; }
+.sticky-btn:hover { background:var(--brown); transform:translateY(-2px); }
+
+/* ── RESPONSIVE ── */
+@media (max-width:960px) {
+  .container { padding:0 24px; }
+  .nav-inner { padding:0 24px; }
+  .hero-content { padding:0 24px; padding-top:110px; }
+  .nav-links { display:none; }
+  nav { top:34px; }
+  section { padding:64px 0; }
+  .location-grid,
+  .features-grid,
+  .villa-grid,
+  .specs-inner,
+  .philosophy-inner,
+  .form-inner,
+  .pillars-grid,
+  .footer-grid { grid-template-columns:1fr; }
+  .trust-bar-inner { flex-direction:column; gap:0; }
+  .trust-item { border-right:none; border-bottom:1px solid rgba(255,255,255,.18); width:100%; justify-content:center; padding:12px 20px; }
+  .news-grid { grid-template-columns:1fr; }
+  .f-row { grid-template-columns:1fr; }
+  .img-strip { height:320px; }
+  .villa-card img { height:380px; }
+  .news-header { flex-direction:column; align-items:flex-start; gap:14px; }
+  .phil-imgs img:first-child { height:220px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     SCARCITY BANNER
+════════════════════════════════════════ -->
+<div class="scarcity">
+  <p>🏝 Only <strong>9 Exclusive Villas</strong> Available
+    <span>|</span> Handover Q3 2026
+    <span>|</span> Freehold &amp; Leasehold Options
+  </p>
+</div>
+
+<!-- ══════════════════════════════════════
+     NAVIGATION
+════════════════════════════════════════ -->
+<nav id="mainNav">
+  <div class="nav-inner">
+
+    <div class="nav-hamburger">
+      <svg width="26" height="14" viewBox="0 0 26 14" fill="none">
+        <rect width="26" height="1.5" fill="#564B39"/>
+        <rect y="6"  width="20" height="1.5" fill="#564B39"/>
+        <rect y="12" width="26" height="1.5" fill="#564B39"/>
+      </svg>
+      <span>Menu</span>
+    </div>
+
+    <div class="nav-logo">
+      <span class="logo-name">Annara</span>
+      <span class="logo-sub">Residences</span>
+    </div>
+
+    <div class="nav-links">
+      <a href="tel:+66893666659">+66 89 366 6659</a>
+      <a href="#villas">Villa Types</a>
+      <a href="#location">Location</a>
+      <a href="#specs">Project Info</a>
+      <a href="#register" class="nav-cta">Register Now</a>
+    </div>
+
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     HERO
+════════════════════════════════════════ -->
+<section class="hero" id="home">
+  <div class="hero-bg" id="heroBg"></div>
+
+  <div class="hero-content">
+    <p class="hero-eyebrow">Prime Location — Bangtao, Cherngtalay, Phuket</p>
+
+    <h1 class="hero-title">
+      Where Resort Living<br>
+      <strong>Becomes Your<br>Private Paradise</strong>
+    </h1>
+
+    <p class="hero-tagline">"Only 9 private villas. Designed for those who refuse to compromise."</p>
+
+    <div class="hero-pills">
+      <div class="hero-pill">4–5 Bedrooms</div>
+      <div class="hero-pill">15 m Saltwater Pool</div>
+      <div class="hero-pill">5-Star Resort Design</div>
+      <div class="hero-pill">Smart Home Technology</div>
+      <div class="hero-pill">Property Management Included</div>
+    </div>
+
+    <div class="hero-ctas">
+      <a href="#register" class="btn-primary">Register for Priority Access</a>
+      <a href="#villas"   class="btn-ghost">Explore the Villas</a>
+    </div>
+  </div>
+
+  <div class="hero-scroll"><span>Scroll</span></div>
+</section>
+
+<!-- ══════════════════════════════════════
+     TRUST BAR
+════════════════════════════════════════ -->
+<div class="trust-bar">
+  <div class="trust-bar-inner">
+    <div class="trust-item">
+      <span class="trust-num">9</span>
+      <span class="trust-lbl">Exclusive<br>Private Villas</span>
+    </div>
+    <div class="trust-item">
+      <span class="trust-num">660</span>
+      <span class="trust-lbl">Max Villa Size<br>SQ.M.</span>
+    </div>
+    <div class="trust-item">
+      <span class="trust-num">5★</span>
+      <span class="trust-lbl">Resort-Style<br>Design Standard</span>
+    </div>
+    <div class="trust-item">
+      <span class="trust-num">Q3</span>
+      <span class="trust-lbl">2026<br>Handover</span>
+    </div>
+    <div class="trust-item">
+      <span class="trust-num">100%</span>
+      <span class="trust-lbl">Freehold<br>Available</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     LOCATION
+════════════════════════════════════════ -->
+<section id="location">
+  <div class="container">
+    <div class="location-grid">
+
+      <div>
+        <p class="sec-label">Prime Location</p>
+        <div class="divider"></div>
+        <h2 class="sec-title">Prime Living in the<br><em>Heart of Bangtao</em></h2>
+        <p class="sec-body">Perfectly positioned in Bangtao, Cherngtalay — Phuket's most sought-after neighbourhood — Annara places the best of island living moments from your door.</p>
+        <div class="loc-bullets">
+          <div class="loc-bullet">Pristine Bangtao &amp; Layan Beaches — under 5 minutes</div>
+          <div class="loc-bullet">Boat Avenue &amp; Porto de Phuket — premier retail &amp; dining</div>
+          <div class="loc-bullet">Laguna Golf Club &amp; world-class leisure</div>
+          <div class="loc-bullet">Top international schools in Cherngtalay</div>
+          <div class="loc-bullet">Multiple road access points — effortless connectivity</div>
+          <div class="loc-bullet">Phuket International Airport — 25 minutes</div>
+        </div>
+      </div>
+
+      <div>
+        <img class="location-img"
+             src="https://static.wixstatic.com/media/53cd70_a229d288f93c4dec948245e77117b108~mv2.jpg"
+             alt="Annara Residences location map — Bangtao, Cherngtalay, Phuket"
+             loading="lazy">
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Full-width entrance photo -->
+<div class="img-strip">
+  <img src="https://static.wixstatic.com/media/53cd70_c1d033ee10834dfd823be1f1585925b6~mv2.jpg"
+       alt="Annara Residences grand entrance — Bangtao Phuket" loading="lazy">
+</div>
+
+<!-- ══════════════════════════════════════
+     KEY FEATURES
+════════════════════════════════════════ -->
+<section class="features-bg" id="features">
+  <div class="container">
+    <div class="text-center" style="max-width:580px;margin:0 auto">
+      <p class="sec-label">Why Annara</p>
+      <div class="divider divider-center"></div>
+      <h2 class="sec-title">Four Pillars of<br><em>Outstanding Value</em></h2>
+    </div>
+
+    <div class="features-grid">
+
+      <div class="feat-card">
+        <div class="feat-num">01</div>
+        <div class="feat-name">Prime Location</div>
+        <ul class="feat-list">
+          <li>Multiple road access points</li>
+          <li>Easy access to retail &amp; dining</li>
+          <li>Close to all lifestyle destinations</li>
+          <li>Near Laguna Golf &amp; international schools</li>
+        </ul>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-num">02</div>
+        <div class="feat-name">Strong Return on Investment</div>
+        <ul class="feat-list">
+          <li>High rental demand in Bangtao–Cherngtalay</li>
+          <li>One of Phuket's most coveted addresses</li>
+          <li>Freehold &amp; Leasehold ownership options</li>
+          <li>Professional rental management included</li>
+        </ul>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-num">03</div>
+        <div class="feat-name">Outstanding Design</div>
+        <ul class="feat-list">
+          <li>Modern tropical 5-star resort style</li>
+          <li>4–5 bedrooms + dedicated maid's room</li>
+          <li>15-meter salted lap pool</li>
+          <li>Spacious double-volume living areas</li>
+          <li>Seamless indoor–outdoor flow</li>
+          <li>Universal &amp; multi-functional pavilion</li>
+        </ul>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-num">04</div>
+        <div class="feat-name">One-Stop Service</div>
+        <ul class="feat-list">
+          <li>Property &amp; rental management</li>
+          <li>Concierge &amp; butler service</li>
+          <li>Smart home technology built-in</li>
+          <li>High-quality weather-resistant materials</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+  <!-- ══════════════════════════════════════
+     VILLA TYPES
+════════════════════════════════════════ -->
+<section class="villas-bg" id="villas" style="padding-bottom:0">
+  <div class="container">
+    <div class="text-center" style="max-width:600px;margin:0 auto">
+      <p class="sec-label">Choose Your Villa</p>
+      <div class="divider divider-center"></div>
+      <h2 class="sec-title">Two Collections.<br><em>One Private Paradise.</em></h2>
+      <p class="sec-body" style="margin:0 auto">Each villa is a distinct residence — crafted with the precision of a 5-star resort and the intimacy of a private home.</p>
+    </div>
+  </div>
+
+  <div class="villa-grid" style="margin-top:56px">
+
+    <div class="villa-card">
+      <img src="https://static.wixstatic.com/media/53cd70_022a6d230c244b42bcb4421fe02a37b5~mv2.webp"
+           alt="Villa Anna — 5 Bedroom Luxury Pool Villa, Annara Residences Phuket" loading="lazy">
+      <div class="villa-overlay"></div>
+      <div class="villa-info">
+        <div class="villa-badge">2 Units Only</div>
+        <div class="villa-name">Villa Anna</div>
+        <div class="villa-spec">5 Bedrooms + Maid's Room &nbsp;|&nbsp; 6 Bathrooms</div>
+        <div class="villa-sizes">
+          <div class="villa-sz"><strong>A1</strong> 658.1 SQ.M.</div>
+          <div class="villa-sz"><strong>A2</strong> 661.0 SQ.M.</div>
+          <div class="villa-sz">Plot: 505–523 SQ.M.</div>
+        </div>
+        <a href="#register" class="villa-link">Request Villa Anna Details →</a>
+      </div>
+    </div>
+
+    <div class="villa-card">
+      <img src="https://static.wixstatic.com/media/53cd70_6d51df4fccd3455cabd80e7a6035518f~mv2.webp"
+           alt="Villa Nara — 4 Bedroom Luxury Pool Villa, Annara Residences Phuket" loading="lazy">
+      <div class="villa-overlay"></div>
+      <div class="villa-info">
+        <div class="villa-badge">7 Units Available</div>
+        <div class="villa-name">Villa Nara</div>
+        <div class="villa-spec">4 Bedrooms + Maid's Room &nbsp;|&nbsp; 5 Bathrooms</div>
+        <div class="villa-sizes">
+          <div class="villa-sz"><strong>B1</strong> 467.6</div>
+          <div class="villa-sz"><strong>B2</strong> 488.3</div>
+          <div class="villa-sz"><strong>B3</strong> 463.2</div>
+          <div class="villa-sz"><strong>B4–B6</strong> 448.3</div>
+          <div class="villa-sz"><strong>B7</strong> 562.6 SQ.M.</div>
+        </div>
+        <a href="#register" class="villa-link">Request Villa Nara Details →</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     PROJECT SPECS
+════════════════════════════════════════ -->
+<section class="specs-bg" id="specs">
+  <div class="container">
+    <div class="specs-inner">
+
+      <div class="specs-img">
+        <img src="https://static.wixstatic.com/media/53cd70_41b6689f5ecd40b5a014e5cf79a8928e~mv2.webp"
+             alt="Annara Residences architectural sketch — Bangtao luxury pool villa" loading="lazy">
+        <img src="https://static.wixstatic.com/media/53cd70_26bc8b63da6a472c8b9d040ea3e33ebd~mv2.webp"
+             alt="Annara Residences master plan — 9 exclusive pool villas Phuket"
+             style="margin-top:3px;opacity:.75" loading="lazy">
+      </div>
+
+      <div>
+        <p class="sec-label" style="color:rgba(255,255,255,.48)">Project Information</p>
+        <div class="divider" style="background:rgba(255,255,255,.22)"></div>
+        <h2 class="specs-title">The Details That<br><em>Define the Difference</em></h2>
+
+        <div class="spec-row">
+          <span class="spec-lbl">Project</span>
+          <span class="spec-val">Annara Residences</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-lbl">Developer</span>
+          <span class="spec-val">Fivewood Estate Co., Ltd.</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-lbl">Location</span>
+          <span class="spec-val">Bangtao–Cherngtalay, Soi Pasak 8, Phuket</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-lbl">Total Project Area</span>
+          <span class="spec-val"><em>~4,399</em> SQ.M.</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-lbl">Plot Size / Villa</span>
+          <span class="spec-val"><em>365 – 523</em> SQ.M.</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-lbl">Villa Size</span>
+          <span class="spec-val"><em>450 – 661</em> SQ.M.</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-lbl">Storeys</span>
+          <span class="spec-val">2</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-lbl">Total Units</span>
+          <span class="spec-val">9 Villas &nbsp;(2 Anna + 7 Nara)</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-lbl">Ownership</span>
+          <span class="spec-val">
+            <span class="tag tag-gold">Freehold</span>
+            <span class="tag tag-gold">Leasehold</span>
+          </span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-lbl">Handover</span>
+          <span class="spec-val"><span class="tag tag-orange">Q3 2026</span></span>
+        </div>
+
+        <a href="#register" class="btn-primary" style="margin-top:40px;display:inline-block">
+          Enquire About Pricing &amp; Availability
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     PHILOSOPHY
+════════════════════════════════════════ -->
+<section class="philosophy-bg">
+  <div class="container">
+    <div class="philosophy-inner">
+
+      <div>
+        <p class="sec-label">Our Philosophy</p>
+        <div class="divider"></div>
+        <h2 class="sec-title">More Than a Home.<br><em>A Way of Living.</em></h2>
+        <p class="sec-body">Our philosophy is rooted in creating a holistic living experience that fosters well-being and fulfillment in every dimension of life. Whether for residence or investment, our homes are thoughtfully designed to meet the needs of a good life — abundant, complete, and enriched with every essential.</p>
+
+        <blockquote class="phil-quote">
+          "Every aspect of this project has been carefully curated to ensure that residents experience true luxury — not just in design, but in the way they live every day. From its seamless connection to convenience to its peaceful and private atmosphere, Annara represents the perfect balance of modern tropical resort-style living."
+        </blockquote>
+
+        <p style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)">
+          Fivewood Estate Co., Ltd. — Project Developer
+        </p>
+
+        <a href="#register" class="btn-primary" style="margin-top:32px;display:inline-block">
+          Enquire About Ownership
+        </a>
+      </div>
+
+      <div class="phil-imgs">
+        <img src="https://static.wixstatic.com/media/53cd70_a2c9c1a690b5476dab802b82d0a9e11f~mv2.webp"
+             alt="Annara Residences luxury pool villa — holistic tropical living concept" loading="lazy">
+        <img src="https://static.wixstatic.com/media/53cd70_6436961e529e45fba7cee4c68d804a9a~mv2.webp"
+             alt="Family enjoying Annara Residences private pool" loading="lazy">
+        <img src="https://static.wixstatic.com/media/53cd70_61aa05eea3804d1faef1d6c895b5bff0~mv2.webp"
+             alt="Outdoor barbecue lifestyle at Annara Residences Phuket" loading="lazy">
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     DESIGN PILLARS
+════════════════════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="text-center" style="max-width:580px;margin:0 auto">
+      <p class="sec-label">Design Concept</p>
+      <div class="divider divider-center"></div>
+      <h2 class="sec-title">Built to Endure.<br><em>Designed to Delight.</em></h2>
+    </div>
+  </div>
+
+  <div class="pillars-grid" style="margin-top:56px">
+
+    <div class="pillar">
+      <img src="https://static.wixstatic.com/media/53cd70_98169800ea7642b59fd351f22ec73d5d~mv2.jpg"
+           alt="Timeless luxury design — Annara Residences Phuket" loading="lazy">
+      <div class="pillar-overlay"></div>
+      <div class="pillar-body">
+        <div class="pillar-num">01</div>
+        <div class="pillar-name">Timeless Luxury</div>
+        <div class="pillar-desc">Refined aesthetics and a minimalist approach that stands the test of time — enduring elegance in every detail.</div>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <img src="https://static.wixstatic.com/media/53cd70_b646652123474160b389e2824d8fbd4f~mv2.jpg"
+           alt="Natural elements — Annara Residences Phuket villa design" loading="lazy">
+      <div class="pillar-overlay"></div>
+      <div class="pillar-body">
+        <div class="pillar-num">02</div>
+        <div class="pillar-name">Integration of Natural Elements</div>
+        <div class="pillar-desc">Sunlight, fresh air, water, greenery and natural materials are woven into every space for comfort and calm.</div>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <img src="https://static.wixstatic.com/media/53cd70_8a7dcb917a124acba664f52ffa715c58~mv2.jpg"
+           alt="Durability and practicality — Annara Residences Phuket" loading="lazy">
+      <div class="pillar-overlay"></div>
+      <div class="pillar-body">
+        <div class="pillar-num">03</div>
+        <div class="pillar-name">Durability &amp; Practicality</div>
+        <div class="pillar-desc">Built with high-quality, weather-resistant materials ensuring long-term durability and ease of maintenance.</div>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <img src="https://static.wixstatic.com/media/53cd70_cf83493fc5444fcbb5d2378f5133d02a~mv2.jpg"
+           alt="Smart home technology — Annara Residences Phuket" loading="lazy">
+      <div class="pillar-overlay"></div>
+      <div class="pillar-body">
+        <div class="pillar-num">04</div>
+        <div class="pillar-name">Technology-Driven Innovation</div>
+        <div class="pillar-desc">Smart home systems for energy efficiency, comfort, ventilation and security — modern living elevated.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     LEAD FORM
+════════════════════════════════════════ -->
+<section class="form-bg" id="register">
+  <div class="container">
+    <div class="form-inner">
+
+      <!-- Left: value proposition -->
+      <div class="form-left">
+        <p class="sec-label">Register for Priority Access</p>
+        <div class="divider"></div>
+        <h2 class="sec-title">Experience Refined<br><em style="color:var(--sand)">Living at Annara</em></h2>
+        <p class="sec-body">Be the first to receive exclusive pricing, floor plans, and priority unit selection for this rare collection of 9 private villas in Cherngtalay, Bangtao.</p>
+
+        <div class="perk-list">
+          <div class="perk">Priority access to unit selection before public launch</div>
+          <div class="perk">Exclusive pricing &amp; developer payment plan options</div>
+          <div class="perk">Personalised viewing appointment at the project site</div>
+          <div class="perk">Digital e-brochure with full floor plans &amp; specifications</div>
+          <div class="perk">One-stop investment consultation with our expert team</div>
+        </div>
+
+        <div class="contact-box">
+          <p>📞 Prefer to call?
+            <a href="tel:+66893666659">+66 89 366 6659</a>
+          </p>
+          <p>✉️ Email us at
+            <a href="mailto:info@annaragroup.com">info@annaragroup.com</a>
+          </p>
+          <p style="margin-top:8px;font-size:11px;opacity:.7">
+            Cherngtalay, Soi Pasak 8, Thalang District, Phuket 83110
+          </p>
+        </div>
+      </div>
+
+      <!-- Right: form card -->
+      <div class="form-card">
+        <div class="form-card-title">Request Your Private Consultation</div>
+
+        <form action="#" method="post" onsubmit="handleSubmit(event)">
+
+          <div class="f-row">
+            <div class="f-group">
+              <label>First Name *</label>
+              <input type="text" placeholder="First name" required>
+            </div>
+            <div class="f-group">
+              <label>Last Name *</label>
+              <input type="text" placeholder="Last name" required>
+            </div>
+          </div>
+
+          <div class="f-group">
+            <label>Email Address *</label>
+            <input type="email" placeholder="your@email.com" required>
+          </div>
+
+          <div class="f-group">
+            <label>Phone Number *</label>
+            <input type="tel" placeholder="+66 or international format" required>
+          </div>
+
+          <div class="f-group">
+            <label>LINE / WhatsApp / WeChat ID</label>
+            <input type="text" placeholder="Your preferred messaging ID">
+          </div>
+
+          <div class="f-row">
+            <div class="f-group">
+              <label>Budget (USD)</label>
+              <select>
+                <option value="">Select range</option>
+                <option>Under $1,000,000</option>
+                <option>$1,000,000 – $1,500,000</option>
+                <option>$1,500,000 – $2,000,000</option>
+                <option>$2,000,000 – $3,000,000</option>
+                <option>Above $3,000,000</option>
+              </select>
+            </div>
+            <div class="f-group">
+              <label>Preferred Villa</label>
+              <select>
+                <option value="">Select type</option>
+                <option>Villa Anna — 5 Bed (2 units)</option>
+                <option>Villa Nara — 4 Bed (7 units)</option>
+                <option>Either / Flexible</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="f-group">
+            <label>Buying Objective</label>
+            <select>
+              <option value="">Select objective</option>
+              <option>Personal Residence</option>
+              <option>Investment / Rental Income</option>
+              <option>Both Residence &amp; Investment</option>
+              <option>Undecided</option>
+            </select>
+          </div>
+
+          <div class="f-group">
+            <label>Additional Notes</label>
+            <textarea placeholder="Any specific requirements, questions, or preferred viewing dates..."></textarea>
+          </div>
+
+          <p class="f-consent">
+            By submitting this form I confirm I have read the
+            <a href="https://www.annaragroup.com/privacy-policy" target="_blank">Privacy Policy</a>
+            and consent to Annara Group Co., Ltd. contacting me regarding this property.
+          </p>
+
+          <button type="submit" class="btn-submit">
+            Submit — Request My Consultation
+          </button>
+
+        </form>
+
+        <div style="text-align:center;margin-top:16px">
+          <a href="https://www.annaragroup.com/contact-us" class="brochure-note" target="_blank">
+            or Download the E-Brochure First
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     NEWS & PROGRESS
+════════════════════════════════════════ -->
+<section>
+  <div class="container">
+
+    <div class="news-header">
+      <div>
+        <p class="sec-label">News &amp; Progress</p>
+        <div class="divider"></div>
+        <h2 class="sec-title">Ground Has Broken.<br><em>The Journey Has Begun.</em></h2>
+      </div>
+      <a href="https://www.annaragroup.com/newsandprogress"
+         class="btn-text" target="_blank">See All Updates</a>
+    </div>
+
+    <div class="news-grid">
+
+      <div class="news-card">
+        <img src="https://static.wixstatic.com/media/53cd70_afe5e8725b3c4c4ca89e3c9a08255173~mv2.jpg"
+             alt="Annara Residences official groundbreaking ceremony — Cherng Talay Phuket March 2025" loading="lazy">
+        <div class="news-body">
+          <p class="news-date">March 25, 2025</p>
+          <p class="news-title">Grand Mercure Phuket Ventures into Luxury Real Estate — Annara Residences Groundbreaking Ceremony</p>
+          <a href="https://www.annaragroup.com/newsandprogress" class="news-link" target="_blank">Read Full Story</a>
+        </div>
+      </div>
+
+      <div class="news-card">
+        <img src="https://static.wixstatic.com/media/53cd70_14d55d80235542a788b7f20d2d62e025~mv2.jpg"
+             alt="Annara Residences blessing ceremony and foundation stone laying — Phuket 2025" loading="lazy">
+        <div class="news-body">
+          <p class="news-date">March 25, 2025</p>
+          <p class="news-title">Grand Mercure Phuket Patong Executives Expand into Luxury Villa Development with Annara Residences</p>
+          <a href="https://www.annaragroup.com/newsandprogress" class="news-link" target="_blank">Read Full Story</a>
+        </div>
+      </div>
+
+      <div class="news-card">
+        <img src="https://static.wixstatic.com/media/53cd70_91323355b38d4768a1da3e4908037948~mv2.jpg"
+             alt="Owning Annara — luxury private pool villa Cherng Talay Phuket" loading="lazy">
+        <div class="news-body">
+          <p class="news-date">March 25, 2025</p>
+          <p class="news-title">Owning Annara: A Privilege Reserved for the Few — Private Pool Villa in Phuket's Most Coveted Address</p>
+          <a href="https://www.annaragroup.com/newsandprogress" class="news-link" target="_blank">Read Full Story</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     FOOTER
+════════════════════════════════════════ -->
+<footer class="site-footer">
+  <div class="container">
+
+    <div class="footer-grid">
+
+      <!-- Brand -->
+      <div>
+        <div>
+          <div class="f-logo-name">Annara</div>
+          <div class="f-logo-sub">Residences</div>
+        </div>
+        <p class="f-about">At Annara, we strive to deliver more than just a home — we create a haven of abundance, comfort, and joy. A true paradise for every resident.</p>
+        <div style="margin-top:24px">
+          <a href="https://www.google.com/maps/place/ANNARA+RESIDENCES/@7.9974907,98.3180487"
+             target="_blank"
+             class="btn-text">Get Directions to the Project →</a>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div>
+        <p class="f-nav-head">Navigate</p>
+        <div class="f-nav">
+          <a href="#home">Home</a>
+          <a href="#location">Location</a>
+          <a href="#features">Key Features</a>
+          <a href="#villas">Villa Types</a>
+          <a href="#specs">Project Info</a>
+          <a href="#register">Register</a>
+          <a href="https://www.annaragroup.com/our-philosophy" target="_blank">Our Philosophy</a>
+          <a href="https://www.annaragroup.com/design-concept" target="_blank">Design Concept</a>
+          <a href="https://www.annaragroup.com/masterplan" target="_blank">Master Plan</a>
+          <a href="https://www.annaragroup.com/anna" target="_blank">Villa Anna</a>
+          <a href="https://www.annaragroup.com/nara" target="_blank">Villa Nara</a>
+          <a href="https://www.annaragroup.com/newsandprogress" target="_blank">News &amp; Progress</a>
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div>
+        <p class="f-contact-head">Contact Us</p>
+        <p>📞 <a href="tel:+66893666659" style="color:var(--brown)">+(66) 89 366 6659</a></p>
+        <p>✉️ <a href="mailto:info@annaragroup.com" style="color:var(--brown)">info@annaragroup.com</a></p>
+        <p style="margin-top:12px;line-height:1.75;opacity:.72">
+          Cherngtalay, Soi Pasak 8<br>
+          Tambon Choeng Thale<br>
+          Thalang District, Phuket 83110<br>
+          Thailand
+        </p>
+        <div class="f-cta-box">
+          <a href="#register">Register for Priority Access</a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 Annara Group Co., Ltd. All rights reserved.</p>
+      <div class="social-row">
+        <a href="https://www.facebook.com/annaragroup" target="_blank">Facebook</a>
+        <a href="https://www.instagram.com/annaragroup" target="_blank">Instagram</a>
+        <a href="https://wa.me/66893666659" target="_blank">WhatsApp</a>
+        <a href="https://www.annaragroup.com/privacy-policy" target="_blank">Privacy Policy</a>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<!-- ══════════════════════════════════════
+     STICKY CTA BUTTON
+════════════════════════════════════════ -->
+<a href="#register" class="sticky-btn" id="stickyBtn">Register Now</a>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+  // Offset nav for scarcity bar height
+  (function(){
+    var scarcityBar = document.querySelector('.scarcity');
+    var nav = document.getElementById('mainNav');
+    function setNavTop(){
+      nav.style.top = scarcityBar.offsetHeight + 'px';
+    }
+    setNavTop();
+    window.addEventListener('resize', setNavTop);
+  })();
+
+  // Nav shadow on scroll
+  var nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', function(){
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+
+  // Hero parallax
+  var heroBg = document.getElementById('heroBg');
+  window.addEventListener('scroll', function(){
+    if(heroBg) heroBg.style.transform = 'translateY(' + (window.scrollY * 0.18) + 'px)';
+  }, { passive: true });
+
+  // Hide sticky button when form is in view
+  var stickyBtn = document.getElementById('stickyBtn');
+  var registerSection = document.getElementById('register');
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      stickyBtn.style.opacity = e.isIntersecting ? '0' : '1';
+      stickyBtn.style.pointerEvents = e.isIntersecting ? 'none' : 'auto';
+    });
+  }, { threshold: 0.1 });
+  if(registerSection) io.observe(registerSection);
+
+  // Fade-in on scroll for cards
+  var fadeEls = document.querySelectorAll(
+    '.feat-card, .villa-card, .news-card, .pillar, .spec-row, .loc-bullet, .perk'
+  );
+  fadeEls.forEach(function(el, i){
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.55s ease ' + (i % 4 * 0.08) + 's, transform 0.55s ease ' + (i % 4 * 0.08) + 's';
+  });
+  var fadeObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+        fadeObserver.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  fadeEls.forEach(function(el){ fadeObserver.observe(el); });
+
+  // Form submit handler (replace with real endpoint)
+  function handleSubmit(e){
+    e.preventDefault();
+    var btn = e.target.querySelector('.btn-submit');
+    btn.textContent = '✓ Submitted — We Will Contact You Shortly';
+    btn.style.background = 'var(--brown)';
+    btn.disabled = true;
+  }
+</script>
+
+</body>
+</html>
