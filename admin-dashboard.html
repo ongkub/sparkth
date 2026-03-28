@@ -750,15 +750,15 @@ tr:hover td{background:rgba(254,240,238,.4)}
 
       <div class="card" style="margin-bottom:0">
         <div class="card-h">🔑 LINE Channel Access Token</div>
-        <div class="config-field">
-          <label class="config-label">Channel Access Token
-            <span>— ใช้สำหรับ Validate Flex Message ผ่าน LINE API</span>
-          </label>
-          <input type="password" id="cfgChannelToken" class="config-inp"
-            placeholder="your-channel-access-token">
-          <p style="font-size:11px;color:var(--muted);margin-top:5px;font-weight:300">
-            ดูได้ที่ LINE Developers Console → Messaging API → Channel access token (long-lived)
-          </p>
+        <div class="info-box" style="margin:0">
+          <p>Token ถูกเก็บไว้ใน <strong>GAS Script Properties</strong> (server-side) เพื่อความปลอดภัย — browser ไม่เห็น token<br>
+          ตั้งค่าครั้งเดียวด้วยขั้นตอนด้านล่าง:</p>
+          <ol style="margin:8px 0 0 16px;padding:0;font-size:12px;line-height:1.8">
+            <li>เปิด Apps Script → ไปที่เมนู <strong>Project Settings</strong> (ไอคอนรูปเฟือง)</li>
+            <li>เลื่อนลงหา <strong>Script Properties</strong> → กด <em>Add script property</em></li>
+            <li>Property: <code>LINE_CHANNEL_TOKEN</code> · Value: ใส่ token ของคุณ</li>
+            <li>กด Save → Re-deploy GAS เวอร์ชันใหม่</li>
+          </ol>
         </div>
       </div>
 
@@ -1013,10 +1013,25 @@ const flexJson = {
           backgroundColor:"#FEF0EE",
           paddingAll:"28px",paddingTop:"36px",paddingBottom:"24px",
           contents:[
+            {type:"image",url:"https://page.sparkth.io/img/weddinglogo.png",margin:"0px"},
             {type:"text",text:"✦  WEDDING INVITATION  ✦",size:"xxs",color:"#5A8040",align:"center",weight:"bold"},
             {type:"text",text:"Praphat & Pattaraporn",size:"xxl",color:"#3A2E2C",align:"center",weight:"bold",margin:"md"},
-            {type:"text",text:"ประภาส & ภัทรภร",size:"sm",color:"#F59C9A",align:"center",margin:"xs"},
-            {type:"text",text:"ศรีสุมะ — ธีรคันธมาทน์",size:"xxs",color:"#5A8040",align:"center",margin:"xs"}
+            {
+              type:"box",layout:"horizontal",
+              contents:[
+                {type:"box",layout:"vertical",flex:3,contents:[
+                  {type:"text",text:"ประภาส",size:"sm",color:"#F59C9A",align:"end",margin:"xs"},
+                  {type:"text",text:"ศรีสุมะ",size:"xxs",color:"#5A8040",align:"end",margin:"xs"}
+                ]},
+                {type:"box",layout:"vertical",flex:1,contents:[
+                  {type:"text",text:"&",align:"center"}
+                ]},
+                {type:"box",layout:"vertical",flex:3,contents:[
+                  {type:"text",text:"ภัทรภร",size:"sm",color:"#F59C9A",align:"start",margin:"xs"},
+                  {type:"text",text:"ธีรคันธมาทน์",size:"xxs",color:"#5A8040",align:"start",margin:"xs"}
+                ]}
+              ]
+            }
           ]
         },
         {type:"separator",color:"#F5C8C4",margin:"none"},
@@ -1036,8 +1051,8 @@ const flexJson = {
                 {type:"separator",color:"#F5D8D4"},
                 {type:"box",layout:"vertical",flex:1,contents:[
                   {type:"text",text:"🕕  เวลา",size:"xxs",color:"#5A8040",weight:"bold"},
-                  {type:"text",text:"18:00 น.",size:"sm",color:"#3A2E2C",margin:"xs"},
-                  {type:"text",text:"เป็นต้นไป",size:"xxs",color:"#A08880"}
+                  {type:"text",text:"งานเช้าเริ่ม 8:00น.",size:"sm",color:"#3A2E2C",margin:"xs"},
+                  {type:"text",text:"งานเย็นเริ่ม 19:00น.",size:"sm",color:"#3A2E2C"}
                 ]}
               ]
             },
@@ -1105,41 +1120,34 @@ function copyFlexEditor(){
 }
 
 async function validateFlex(){
-  const token = localStorage.getItem('weddingChannelToken')||'';
-  if(!token){
-    showToast('⚠️ กรุณาใส่ Channel Access Token ใน Config ก่อน');
-    return;
-  }
   const parsed = getEditorJson();
+  const r = document.getElementById('validateResult');
   if(!parsed){
-    const r = document.getElementById('validateResult');
     r.textContent = '❌ JSON ไม่ถูกต้อง — ตรวจสอบรูปแบบ JSON อีกครั้ง';
     r.className = 'validate-result err'; r.style.display='block'; return;
   }
   const btn = event.currentTarget;
   btn.disabled=true; btn.textContent='⏳ กำลังตรวจสอบ...';
   try{
-    const resp = await fetch('https://api.line.me/v2/bot/message/validate/push',{
+    const resp = await fetch(SHEET_URL, {
       method:'POST',
-      headers:{
-        'Authorization':'Bearer '+token,
-        'Content-Type':'application/json'
-      },
-      body: JSON.stringify({ messages:[parsed] })
+      headers:{'Content-Type':'text/plain;charset=UTF-8'},
+      body: JSON.stringify({ action:'validateFlex', flexMessage: parsed })
     });
-    const r = document.getElementById('validateResult');
-    if(resp.ok){
+    const data = await resp.json().catch(()=>({}));
+    if(data.ok){
       r.textContent = '✅ Flex Message ถูกต้อง — ผ่านการตรวจสอบจาก LINE API';
       r.className = 'validate-result ok';
+    } else if(data.error === 'no_token'){
+      r.textContent = '⚠️ ยังไม่ได้ตั้งค่า LINE_CHANNEL_TOKEN ใน GAS Script Properties';
+      r.className = 'validate-result err';
     } else {
-      const err = await resp.json().catch(()=>({}));
-      r.textContent = `❌ ไม่ผ่าน (${resp.status}) — ${err.message||JSON.stringify(err)}`;
+      r.textContent = `❌ ไม่ผ่าน — ${data.message||JSON.stringify(data)}`;
       r.className = 'validate-result err';
     }
     r.style.display='block';
   }catch(e){
-    const r = document.getElementById('validateResult');
-    r.textContent = '❌ เรียก LINE API ไม่ได้ — ตรวจสอบ token และ network (CORS อาจบล็อกบน browser โดยตรง)';
+    r.textContent = '❌ เรียก GAS ไม่ได้ — ตรวจสอบ SHEET_URL';
     r.className = 'validate-result err'; r.style.display='block';
   }
   btn.disabled=false; btn.textContent='✅ Validate ด้วย LINE API';
@@ -1251,6 +1259,21 @@ function doPost(e) {
         data.senderName    || '',
         data.senderPicture || ''
       ]);
+    }
+
+    else if (action === 'validateFlex') {
+      const token = PropertiesService.getScriptProperties().getProperty('LINE_CHANNEL_TOKEN');
+      if (!token) return _json({ ok: false, error: 'no_token' });
+      const resp = UrlFetchApp.fetch('https://api.line.me/v2/bot/message/validate/push', {
+        method: 'post',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        payload: JSON.stringify({ messages: [data.flexMessage] }),
+        muteHttpExceptions: true
+      });
+      const code = resp.getResponseCode();
+      if (code === 200) return _json({ ok: true });
+      const body = JSON.parse(resp.getContentText() || '{}');
+      return _json({ ok: false, message: body.message || ('HTTP ' + code) });
     }
 
     return _json({ success: true });
@@ -1407,14 +1430,12 @@ function saveConfig(){
   const sheetView  = document.getElementById('cfgSheetView').value.trim();
   const liff       = document.getElementById('cfgLiff').value.trim();
   const adminLiff  = document.getElementById('cfgAdminLiff').value.trim();
-  const token      = document.getElementById('cfgChannelToken').value.trim();
   if(liff)      document.getElementById('cfgLiffUrl').value = 'https://liff.line.me/'+liff;
   if(sheetView) document.getElementById('linkSheet').href = sheetView;
   localStorage.setItem('weddingSheetUrl',      sheet);
   localStorage.setItem('weddingSheetView',     sheetView);
   localStorage.setItem('weddingLiffId',        liff);
   localStorage.setItem('weddingAdminLiffId',   adminLiff);
-  if(token) localStorage.setItem('weddingChannelToken', token);
   // re-init LIFF if admin LIFF changed
   if(adminLiff) initAdminLIFF();
   showToast('💾 บันทึกแล้ว — reload หน้าเพื่อให้ LIFF ทำงาน');
@@ -1425,12 +1446,10 @@ function loadConfig(){
   const sheetView = localStorage.getItem('weddingSheetView')||'';
   const liff      = localStorage.getItem('weddingLiffId')||'2006674119-opWzXpla';
   const adminLiff = localStorage.getItem('weddingAdminLiffId')||'';
-  const token     = localStorage.getItem('weddingChannelToken')||'';
   if(sheet)     document.getElementById('cfgSheet').value = sheet;
   if(sheetView){ document.getElementById('cfgSheetView').value = sheetView; document.getElementById('linkSheet').href=sheetView; }
   if(liff){ document.getElementById('cfgLiff').value = liff; document.getElementById('cfgLiffUrl').value='https://liff.line.me/'+liff; }
   if(adminLiff) document.getElementById('cfgAdminLiff').value = adminLiff;
-  if(token)     document.getElementById('cfgChannelToken').value = token;
 }
 loadConfig();
 
@@ -1448,8 +1467,9 @@ function showToast(msg){
 //  LIFF INIT (Admin)
 // ══════════════════════════════════════
 async function initAdminLIFF(){
+  const timeout = new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 10000));
   try {
-    await liff.init({ liffId: ADMIN_LIFF });
+    await Promise.race([liff.init({ liffId: ADMIN_LIFF }), timeout]);
     isInLINE = liff.isInClient();
     if(liff.isLoggedIn()){
       const p = await liff.getProfile();
@@ -1469,12 +1489,27 @@ function renderSendArea(){
   const area = document.getElementById('sendArea');
   if(!area) return;
 
+  if(!isInLINE){
+    // Not inside LINE app — show deep link to open in LINE
+    const currentUrl = encodeURIComponent(location.href);
+    area.innerHTML = `
+      <div class="desktop-warn">
+        <p>📱 <strong>กรุณาเปิดใน LINE app</strong><br>
+        <span style="font-size:12px;color:var(--muted)">Share Target Picker ใช้งานได้เฉพาะใน LINE app เท่านั้น</span></p>
+        <a class="send-btn" style="display:block;text-align:center;text-decoration:none"
+           href="https://line.me/R/ti/p/${ADMIN_LIFF}">
+          เปิดใน LINE app
+        </a>
+      </div>`;
+    return;
+  }
+
   if(liff.isLoggedIn()){
     area.innerHTML = `
       <button class="send-btn" id="sendBtn" onclick="sendInvite()">
         📨 เลือกเพื่อนและส่งการ์ดเชิญ
       </button>
-      <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:8px">Target Picker จะเปิดให้เลือกเพื่อนหรือกลุ่ม · ต้องเปิดใน LINE app (มือถือหรือ Desktop)</p>`;
+      <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:8px">Target Picker จะเปิดให้เลือกเพื่อนหรือกลุ่ม</p>`;
   } else {
     area.innerHTML = `
       <div class="desktop-warn">
