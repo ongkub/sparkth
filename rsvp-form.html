@@ -813,12 +813,21 @@ document.getElementById('rsvpForm').addEventListener('submit',async function(e){
   const btn=document.getElementById('subBtn');
   btn.disabled=true;
   btn.innerHTML='<span class="spin"></span>' + (currentLang==='en' ? 'Sending...' : 'กำลังส่งข้อมูล...');
+  try{ btn.style.opacity='0.7'; }catch(e){}
   try{
-    if(SHEET_URL!=='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
-      await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(data)});
-    }
-  }catch(err){console.warn('Sheet submit error:',err)}
-  // show success regardless (no-cors can't check response)
+    console.log('Submitting to:', SHEET_URL);
+    console.log('Data:', JSON.stringify(data));
+    const resp = await fetch(SHEET_URL, {
+      method: 'POST',
+      mode:   'no-cors',
+      headers:{'Content-Type':'text/plain;charset=UTF-8'},
+      body: JSON.stringify(data)
+    });
+    console.log('Fetch done (no-cors — cannot read response)');
+  }catch(err){
+    console.error('Sheet submit error:', err);
+  }
+  // no-cors cannot read response status — show success UI regardless
   showSuccess(data);
 });
 
