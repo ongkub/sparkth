@@ -306,6 +306,7 @@ body::before{
 /* ─── FADE IN ─── */
 .wrap{animation:rise .45s ease}
 </style>
+<script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
 </head>
 <body>
 <div class="toast" id="toast"></div>
@@ -532,6 +533,34 @@ body::before{
 </div><!-- /formView -->
 
 
+
+<!-- ═══ ALREADY SUBMITTED VIEW ═══ -->
+<div class="success" id="alreadyView">
+  <svg class="success-ring" viewBox="0 0 148 148" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <circle cx="74" cy="74" r="65" stroke="#FEF0EE" stroke-width="2"/>
+    <circle cx="74" cy="74" r="52" stroke="#9ECCF0" stroke-width="1" stroke-dasharray="5 5"/>
+    <circle cx="74" cy="10" r="7" fill="#F5C8C4" opacity=".75"/>
+    <circle cx="74" cy="10" r="3.5" fill="#FEFCFB" opacity=".9"/>
+    <circle cx="138" cy="74" r="7" fill="#C5DBA9" opacity=".7"/>
+    <circle cx="138" cy="74" r="3.5" fill="#FEFCFB" opacity=".9"/>
+    <circle cx="74" cy="138" r="7" fill="#F5C8C4" opacity=".75"/>
+    <circle cx="74" cy="138" r="3.5" fill="#FEFCFB" opacity=".9"/>
+    <circle cx="10" cy="74" r="7" fill="#C5DBA9" opacity=".7"/>
+    <circle cx="10" cy="74" r="3.5" fill="#FEFCFB" opacity=".9"/>
+    <circle cx="120" cy="28" r="5" fill="#C4B4DC" opacity=".6"/>
+    <circle cx="120" cy="120" r="5" fill="#F5C8C4" opacity=".6"/>
+    <circle cx="28" cy="120" r="5" fill="#9ECCF0" opacity=".55"/>
+    <circle cx="28" cy="28" r="5" fill="#C4B4DC" opacity=".6"/>
+    <path d="M54 54 Q74 44 94 54" stroke="#C5DBA9" stroke-width="1" opacity=".4"/>
+    <path d="M54 94 Q74 104 94 94" stroke="#C5DBA9" stroke-width="1" opacity=".4"/>
+    <text x="74" y="84" text-anchor="middle" font-size="34" font-family="sans-serif">✅</text>
+  </svg>
+  <div class="success-script">ส่งแล้วนะคะ</div>
+  <div class="success-sub">You're already on the list!</div>
+  <p class="success-msg">ท่านได้ยืนยันการร่วมงานไว้แล้ว<br>เราตั้งตารอต้อนรับท่านอย่างอบอุ่น<br>ในวันที่ 3 กรกฎาคม 2569 🌸</p>
+  <div class="success-card" id="alreadyCard"></div>
+</div>
+
 <!-- ═══ SUCCESS VIEW ═══ -->
 <div class="success" id="successView">
   <!-- Decorative ring -->
@@ -567,10 +596,34 @@ body::before{
 
 <script>
 // ══════════════════════════════════════
-//  CONFIG — แก้ URL ตรงนี้
+//  CONFIG
 // ══════════════════════════════════════
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwcoli2EosQS7L8vfLySmwG6fLrHBW-glaFo16jgtB1iK6_Q7v6JSxzo0b86T07iy58Iw/exec';
 const LIFF_ID   = '2006674119-opWzXpla';
+let lineUserId  = '';
+
+// ══════════════════════════════════════
+//  CHECK ALREADY SUBMITTED
+// ══════════════════════════════════════
+async function checkAlreadySubmitted(userId){
+  try{
+    const res = await fetch(SHEET_URL + '?userId=' + encodeURIComponent(userId));
+    const json = await res.json();
+    return json; // {submitted: bool, data?: {...}}
+  }catch(e){ return {submitted: false}; }
+}
+
+function showAlready(d){
+  document.getElementById('formView').style.display='none';
+  document.getElementById('alreadyView').classList.add('on');
+  if(d){
+    document.getElementById('alreadyCard').innerHTML=`
+      <div class="sc-row"><span class="sc-icon">👤</span><span class="sc-val"><strong>${d.name||'-'}</strong></span></div>
+      <div class="sc-row"><span class="sc-icon">🌸</span><span class="sc-val">${d.guests||1} ท่าน &nbsp;·&nbsp; ${d.side||''}</span></div>
+      <div class="sc-row"><span class="sc-icon">🍽️</span><span class="sc-val">${d.dietary||'-'}</span></div>
+      <div class="sc-row"><span class="sc-icon">📅</span><span class="sc-val">3 กรกฎาคม 2569 · Chatrium Riverside</span></div>`;
+  }
+}
 
 // ══════════════════════════════════════
 //  GUEST STEPPER
@@ -627,6 +680,7 @@ function collect(){
   if(allergy) diets.push('แพ้: '+allergy);
   return{
     timestamp:new Date().toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}),
+    lineUserId:lineUserId,
     name:document.getElementById('fname').value.trim(),
     phone:document.getElementById('fphone').value.trim(),
     side:document.querySelector('input[name=side]:checked')?.value||'',
@@ -685,15 +739,20 @@ document.getElementById('rsvpForm').addEventListener('submit',async function(e){
 // ══════════════════════════════════════
 //  LIFF (uncomment when deploying to LINE)
 // ══════════════════════════════════════
-// liff.init({ liffId: LIFF_ID })
-//   .then(() => {
-//     if(liff.isLoggedIn()){
-//       liff.getProfile().then(p => {
-//         document.getElementById('fname').value = p.displayName;
-//       });
-//     }
-//   })
-//   .catch(err => console.error('LIFF init error',err));
+liff.init({ liffId: LIFF_ID })
+  .then(async () => {
+    if(!liff.isLoggedIn()){ liff.login(); return; }
+    const profile = await liff.getProfile();
+    lineUserId = profile.userId;
+    // pre-fill name
+    if(!document.getElementById('fname').value){
+      document.getElementById('fname').value = profile.displayName;
+    }
+    // check if already submitted
+    const check = await checkAlreadySubmitted(lineUserId);
+    if(check.submitted){ showAlready(check.data); }
+  })
+  .catch(err => console.error('LIFF init error', err));
 </script>
 </body>
 </html>
