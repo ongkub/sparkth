@@ -336,6 +336,57 @@ tr:hover td{background:rgba(254,240,238,.4)}
 .tl-meta{font-size:11px;color:var(--muted);margin-top:1px}
 .loading-overlay{display:flex;align-items:center;justify-content:center;padding:40px;gap:10px;color:var(--muted);font-size:13px}
 
+/* ─── RESPONSIVE ─── */
+.hamburger{
+  display:none;flex-direction:column;justify-content:center;gap:5px;
+  background:none;border:none;cursor:pointer;padding:6px;
+  -webkit-tap-highlight-color:transparent;flex-shrink:0;
+}
+.hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:all .25s}
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.35);z-index:150;
+}
+.sidebar-overlay.on{display:block}
+
+@media(max-width:900px){
+  .main{padding:20px 20px}
+  .rsvp-summary{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .topbar{padding:10px 14px}
+  .topbar-name{font-size:18px}
+  .badge{display:none}
+  .hamburger{display:flex}
+  .sidebar{
+    position:fixed;left:-240px;top:0;bottom:0;height:100vh;
+    z-index:200;transition:left .25s ease;
+    overflow-y:auto;padding-top:10px;
+    box-shadow:none;
+  }
+  .sidebar.open{left:0;box-shadow:4px 0 24px rgba(0,0,0,.12)}
+  .page{display:block}
+  .main{padding:14px 12px;min-height:auto}
+  .sec-title{font-size:20px}
+  .grid-2{grid-template-columns:1fr}
+  .rsvp-summary{grid-template-columns:1fr 1fr}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tbl-head{flex-direction:column;gap:8px;align-items:stretch}
+  .tbl-search{width:100%}
+  table{min-width:560px}
+  .dash-grid{grid-template-columns:1fr}
+  .flex-layout{grid-template-columns:1fr}
+  .code-box{font-size:11px}
+  .send-section{padding:16px}
+}
+@media(max-width:480px){
+  .topbar-sub{display:none}
+  .main{padding:10px 8px}
+  .card{padding:14px}
+  .stat-num{font-size:24px}
+  .sec-title{font-size:18px}
+}
+
 </style>
 </head>
 <body>
@@ -345,6 +396,9 @@ tr:hover td{background:rgba(254,240,238,.4)}
 <!-- TOP BAR -->
 <div class="topbar">
   <div class="topbar-left">
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <img src="img/weddinglogo.png" alt="PP" style="width:38px;height:38px;object-fit:contain;border-radius:8px;background:#1A1A1A;padding:2px">
     <div>
       <div class="topbar-name">Praphat &amp; Pattaraporn</div>
@@ -353,6 +407,7 @@ tr:hover td{background:rgba(254,240,238,.4)}
   </div>
   <span class="badge">ADMIN PANEL</span>
 </div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <!-- PAGE -->
 <div class="page">
@@ -889,6 +944,16 @@ function nav(id){
   event.currentTarget.classList.add('active');
   if(id==='rsvp') loadRSVP();
   if(id==='dashboard') loadDashboard();
+  if(window.innerWidth <= 768) closeSidebar();
+}
+
+function toggleSidebar(){
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('on');
+}
+function closeSidebar(){
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('on');
 }
 
 // ══════════════════════════════════════
@@ -1262,16 +1327,9 @@ async function sendInvite(){
   const btn = document.getElementById('sendBtn');
   if(!btn) return;
 
-  // ตรวจสอบ shareTargetPicker available (ต้องเปิดใน LINE app)
-  if(!liff.isApiAvailable('shareTargetPicker')){
-    showToast('❌ กรุณาเปิดหน้านี้ผ่าน LINE app (มือถือหรือ Desktop) เพื่อใช้งาน Target Picker');
-    return;
-  }
-
   btn.disabled = true;
   btn.innerHTML = '<span class="spin-icon">⟳</span> กำลังเปิด...';
   try {
-    // shareTargetPicker ต้องรับ array ของ message objects
     const messages = [{
       type:     flexJson.type,
       altText:  flexJson.altText,
@@ -1291,10 +1349,17 @@ async function sendInvite(){
       loadInviteCount();
     } else if(result && result.status === 'cancel'){
       showToast('ยกเลิกการส่ง');
+    } else {
+      showToast('✅ ส่งแล้ว');
+      loadInviteCount();
     }
   } catch(e){
     console.error('shareTargetPicker error:', e);
-    showToast('❌ Error: ' + (e.message || e));
+    if(e.code === 'FORBIDDEN' || String(e).includes('not available')){
+      showToast('❌ กรุณาเปิดหน้านี้ผ่าน LINE app เพื่อใช้ Target Picker');
+    } else {
+      showToast('❌ ' + (e.message || String(e)));
+    }
   }
   btn.disabled = false;
   btn.innerHTML = '📨 เลือกเพื่อนและส่งการ์ดเชิญ';
