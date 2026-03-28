@@ -1248,7 +1248,7 @@ function renderSendArea(){
       <button class="send-btn" id="sendBtn" onclick="sendInvite()">
         📨 เลือกเพื่อนและส่งการ์ดเชิญ
       </button>
-      <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:8px">Target Picker จะเปิดขึ้นมาให้เลือกเพื่อนหรือกลุ่มใน LINE</p>`;
+      <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:8px">Target Picker จะเปิดให้เลือกเพื่อนหรือกลุ่ม · ต้องเปิดใช้งานใน LINE Developers Console ก่อน</p>`;
   } else {
     const adminUrl = 'https://page.sparkth.io/admin-dashboard.html';
     const liffUrl  = 'https://liff.line.me/' + ADMIN_LIFF + '?redirectTo=' + encodeURIComponent(adminUrl);
@@ -1268,12 +1268,24 @@ function renderSendArea(){
 async function sendInvite(){
   const btn = document.getElementById('sendBtn');
   if(!btn) return;
+
+  // ตรวจสอบ shareTargetPicker available
+  if(!liff.isApiAvailable('shareTargetPicker')){
+    showToast('❌ กรุณาเปิด "Share Target Picker" ใน LINE Developers Console → LIFF → Features');
+    return;
+  }
+
   btn.disabled = true;
   btn.innerHTML = '<span class="spin-icon">⟳</span> กำลังเปิด...';
   try {
-    const result = await liff.shareTargetPicker([flexJson]);
-    if(result){
-      // log to sheet
+    // shareTargetPicker ต้องรับ array ของ message objects
+    const messages = [{
+      type:     flexJson.type,
+      altText:  flexJson.altText,
+      contents: flexJson.contents
+    }];
+    const result = await liff.shareTargetPicker(messages, { isMultiple: true });
+    if(result && result.status === 'success'){
       await fetch(SHEET_URL, {method:'POST', mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=UTF-8'},
         body: JSON.stringify({
@@ -1284,8 +1296,13 @@ async function sendInvite(){
       });
       showToast('✅ ส่งการ์ดเชิญแล้ว!');
       loadInviteCount();
+    } else if(result && result.status === 'cancel'){
+      showToast('ยกเลิกการส่ง');
     }
-  } catch(e){ showToast('❌ ยกเลิกการส่ง'); }
+  } catch(e){
+    console.error('shareTargetPicker error:', e);
+    showToast('❌ Error: ' + (e.message || e));
+  }
   btn.disabled = false;
   btn.innerHTML = '📨 เลือกเพื่อนและส่งการ์ดเชิญ';
 }
