@@ -816,19 +816,16 @@ document.getElementById('rsvpForm').addEventListener('submit',async function(e){
   btn.innerHTML='<span class="spin"></span>' + (currentLang==='en' ? 'Sending...' : 'กำลังส่งข้อมูล...');
   try{ btn.style.opacity='0.7'; }catch(e){}
   try{
-    console.log('Submitting to:', SHEET_URL);
-    console.log('Data:', JSON.stringify(data));
     const resp = await fetch(SHEET_URL, {
       method: 'POST',
-      mode:   'no-cors',
       headers:{'Content-Type':'text/plain;charset=UTF-8'},
       body: JSON.stringify(data)
     });
-    console.log('Fetch done (no-cors — cannot read response)');
+    const json = await resp.json();
+    if(!json.success) console.warn('GAS error:', json.error);
   }catch(err){
     console.error('Sheet submit error:', err);
   }
-  // no-cors cannot read response status — show success UI regardless
   showSuccess(data);
 });
 
@@ -841,7 +838,7 @@ liff.init({ liffId: LIFF_ID })
     const profile = await liff.getProfile();
     lineUserId = profile.userId;
     // track visitor (fire and forget) — no profile data stored
-    fetch(SHEET_URL,{method:'POST',mode:'no-cors',
+    fetch(SHEET_URL,{method:'POST',
       headers:{'Content-Type':'text/plain;charset=UTF-8'},
       body:JSON.stringify({
         action:'visit',

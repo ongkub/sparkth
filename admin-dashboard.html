@@ -1337,7 +1337,7 @@ async function sendInvite(){
     }];
     const result = await liff.shareTargetPicker(messages, { isMultiple: true });
     if(result && result.status === 'success'){
-      await fetch(SHEET_URL, {method:'POST', mode:'no-cors',
+      await fetch(SHEET_URL, {method:'POST',
         headers:{'Content-Type':'text/plain;charset=UTF-8'},
         body: JSON.stringify({
           action:'invite', senderUid: adminUserId,
