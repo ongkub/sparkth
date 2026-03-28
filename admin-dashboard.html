@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Praphat &amp; Pattaraporn Wedding</title>
-<script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js">
+<script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Noto+Sans+Thai:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -646,14 +646,15 @@ tr:hover td{background:rgba(254,240,238,.4)}
             </label>
             <input type="text" id="cfgLiff" class="config-inp"
               placeholder="2006674119-xxxxxxxxx"
-              value="2006674119-opWzXpla">
+              value="2006674119-opWzXpla" id="cfgLiff">
           </div>
           <div class="config-field">
             <label class="config-label">Admin LIFF ID
               <span>— endpoint: page.sparkth.io/admin-dashboard.html</span>
             </label>
             <input type="text" id="cfgAdminLiff" class="config-inp"
-              placeholder="2006674119-yyyyyyyyy">
+              placeholder="2006674119-yyyyyyyyy"
+              value="2006674119-kldPE7YA">
           </div>
           <div class="config-field">
             <label class="config-label">RSVP LIFF URL
@@ -893,7 +894,7 @@ function nav(id){
 // ══════════════════════════════════════
 //  FLEX MESSAGE JSON
 // ══════════════════════════════════════
-const liffId = localStorage.getItem('weddingLiffId')||'YOUR_LIFF_ID';
+const liffId = localStorage.getItem('weddingLiffId')||'2006674119-opWzXpla';
 const flexJson = {
   type:"flex",
   altText:"🌸 คุณได้รับการ์ดเชิญงานแต่งงาน Praphat & Pattaraporn · 3 กรกฎาคม 2569",
