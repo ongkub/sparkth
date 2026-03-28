@@ -1243,24 +1243,17 @@ function renderSendArea(){
   const area = document.getElementById('sendArea');
   if(!area) return;
 
-  if(isInLINE){
+  if(liff.isLoggedIn()){
     area.innerHTML = `
       <button class="send-btn" id="sendBtn" onclick="sendInvite()">
         📨 เลือกเพื่อนและส่งการ์ดเชิญ
       </button>
-      <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:8px">Target Picker จะเปิดให้เลือกเพื่อนหรือกลุ่ม · ต้องเปิดใช้งานใน LINE Developers Console ก่อน</p>`;
+      <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:8px">Target Picker จะเปิดให้เลือกเพื่อนหรือกลุ่ม · ต้องเปิดใน LINE app (มือถือหรือ Desktop)</p>`;
   } else {
-    const adminUrl = 'https://page.sparkth.io/admin-dashboard.html';
-    const liffUrl  = 'https://liff.line.me/' + ADMIN_LIFF + '?redirectTo=' + encodeURIComponent(adminUrl);
-    const qrUrl   = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=3A2E2C&bgcolor=FEFCFB&data=' + encodeURIComponent(liffUrl);
     area.innerHTML = `
       <div class="desktop-warn">
-        <p>🖥️ <strong>Target Picker ใช้ได้บนมือถือเท่านั้น</strong><br>
-        สแกน QR หรือเปิดลิ้งนี้ใน LINE บนมือถือเพื่อส่งการ์ดเชิญ</p>
-        <div class="qr-wrap"><img src="${qrUrl}" alt="QR Code"></div>
-        <a href="${liffUrl}" class="open-line-btn" target="_blank">
-          <span style="font-size:16px">💬</span> เปิดใน LINE
-        </a>
+        <p>🔐 <strong>กรุณา Login ก่อนใช้งาน</strong></p>
+        <button class="send-btn" onclick="liff.login()">Login ด้วย LINE</button>
       </div>`;
   }
 }
@@ -1269,9 +1262,9 @@ async function sendInvite(){
   const btn = document.getElementById('sendBtn');
   if(!btn) return;
 
-  // ตรวจสอบ shareTargetPicker available
+  // ตรวจสอบ shareTargetPicker available (ต้องเปิดใน LINE app)
   if(!liff.isApiAvailable('shareTargetPicker')){
-    showToast('❌ กรุณาเปิด "Share Target Picker" ใน LINE Developers Console → LIFF → Features');
+    showToast('❌ กรุณาเปิดหน้านี้ผ่าน LINE app (มือถือหรือ Desktop) เพื่อใช้งาน Target Picker');
     return;
   }
 
