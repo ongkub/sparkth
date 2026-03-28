@@ -305,6 +305,30 @@ body::before{
 .sc-val{font-weight:300;color:var(--muted);line-height:1.5}
 .sc-val strong{font-weight:500;color:var(--text)}
 
+/* ─── DRESS CODE CARD ─── */
+.dresscode-card{
+  margin-top:14px;background:linear-gradient(135deg,rgba(197,219,169,.1),rgba(158,204,240,.1));
+  border-radius:16px;padding:18px;
+  border:1px solid rgba(197,219,169,.35);width:100%;max-width:300px;
+  text-align:center;
+}
+.dresscode-title{font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--olive);margin-bottom:6px}
+.dresscode-theme{font-size:15px;font-weight:500;color:var(--text);margin-bottom:10px}
+.color-row{display:flex;justify-content:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.color-chip{display:flex;flex-direction:column;align-items:center;gap:4px}
+.color-circle{width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(0,0,0,.07);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.color-name{font-size:9.5px;color:var(--muted);text-align:center;line-height:1.3;max-width:42px}
+.dresscode-note{font-size:12px;font-weight:300;color:var(--muted);line-height:1.7;margin-top:2px}
+
+/* ─── EDIT BUTTON ─── */
+.edit-btn{
+  margin-top:14px;padding:10px 24px;
+  background:transparent;border:1.5px solid var(--border);
+  border-radius:50px;font-family:inherit;font-size:13px;
+  font-weight:500;color:var(--muted);cursor:pointer;
+  transition:all .2s;
+}
+.edit-btn:hover{border-color:var(--rose);color:var(--rose)}
 
 /* ─── PP MONOGRAM LOGO ─── */
 .pp-logo-wrap{
@@ -536,6 +560,10 @@ function applyLang(){
               <input type="radio" name="session" id="sess-evening" value="ช่วงเย็น (19:00 น.)">
               <label for="sess-evening"><span data-th="🌙 งานเลี้ยงเย็น — 19:00 น." data-en="🌙 Evening Reception — 7:00 PM">🌙 งานเลี้ยงเย็น — 19:00 น.</span></label>
             </div>
+            <div class="pill">
+              <input type="radio" name="session" id="sess-both" value="มาทั้งสองช่วง (08:00 และ 19:00 น.)">
+              <label for="sess-both"><span data-th="🌟 มาทั้งสองช่วง" data-en="🌟 Both Sessions">🌟 มาทั้งสองช่วง</span></label>
+            </div>
           </div>
         </div>
         <div class="field">
@@ -651,10 +679,23 @@ function applyLang(){
     <path d="M54 94 Q74 104 94 94" stroke="#C5DBA9" stroke-width="1" opacity=".4"/>
     <text x="74" y="84" text-anchor="middle" font-size="34" font-family="sans-serif">✅</text>
   </svg>
-  <div class="success-script">ส่งแล้วนะคะ</div>
-  <div class="success-sub">You're already on the list!</div>
-  <p class="success-msg">ท่านได้ยืนยันการร่วมงานไว้แล้ว<br>เราตั้งตารอต้อนรับท่านอย่างอบอุ่น<br>ในวันที่ 3 กรกฎาคม 2569 🌸</p>
+  <div class="success-script">ยืนยันแล้วนะคะ</div>
+  <div class="success-sub">ตั้งตารอพบท่านค่ะ 🌸</div>
+  <p class="success-msg">ท่านได้ยืนยันการร่วมงานไว้แล้ว<br>วันพฤหัสบดีที่ 3 กรกฎาคม 2569<br>Chatrium Riverside, Bangkok</p>
   <div class="success-card" id="alreadyCard"></div>
+  <div class="dresscode-card">
+    <div class="dresscode-title">ธีมการแต่งกาย</div>
+    <div class="dresscode-theme">🌿 Garden Romance</div>
+    <div class="color-row">
+      <div class="color-chip"><div class="color-circle" style="background:#FEFCFB;border-color:#E8D8D0"></div><div class="color-name">ครีม</div></div>
+      <div class="color-chip"><div class="color-circle" style="background:#F5C8C4"></div><div class="color-name">ชมพู<br>กุหลาบ</div></div>
+      <div class="color-chip"><div class="color-circle" style="background:#C5DBA9"></div><div class="color-name">เขียว<br>เซจ</div></div>
+      <div class="color-chip"><div class="color-circle" style="background:#9ECCF0"></div><div class="color-name">ฟ้า<br>อ่อน</div></div>
+      <div class="color-chip"><div class="color-circle" style="background:#FFBE98"></div><div class="color-name">พีช</div></div>
+    </div>
+    <p class="dresscode-note">แนะนำชุดโทนพาสเทลหรือเอิร์ธโทน<br>แต่ไม่จำเป็นต้องตามธีมนะคะ<br>ขอแค่มาร่วมงานด้วยกันก็ดีใจมากแล้วค่ะ 💕</p>
+  </div>
+  <button class="edit-btn" onclick="editForm()">✏️ แก้ไขข้อมูล</button>
 </div>
 
 <!-- ═══ SUCCESS VIEW ═══ -->
@@ -683,10 +724,17 @@ function applyLang(){
     <!-- Center emoji rendered as text -->
     <text x="74" y="84" text-anchor="middle" font-size="34" font-family="sans-serif">💐</text>
   </svg>
-  <div class="success-script">ขอบคุณมากค่ะ</div>
-  <div class="success-sub">See you on July 3rd!</div>
-  <p class="success-msg">เราได้รับการยืนยันของท่านแล้ว<br>และตั้งตารอต้อนรับอย่างอบอุ่น<br>ในวันแห่งความสุขของเรา 🌸</p>
+  <div class="success-script">ขอบคุณที่ตอบรับนะคะ</div>
+  <div class="success-sub">ยินดีที่จะได้พบกัน! 🌸</div>
+  <p class="success-msg">เราได้รับการยืนยันของท่านแล้ว<br>ตั้งตารอต้อนรับอย่างอบอุ่นค่ะ</p>
   <div class="success-card" id="summaryCard"></div>
+  <div class="dresscode-card" id="dresscodeCard" style="display:none">
+    <div class="dresscode-title">ธีมการแต่งกาย</div>
+    <div class="dresscode-theme">🌿 Garden Romance</div>
+    <div class="color-row" id="colorRow"></div>
+    <p class="dresscode-note">แนะนำชุดโทนพาสเทลหรือเอิร์ธโทน<br>แต่ไม่จำเป็นต้องตามธีมนะคะ<br>ขอแค่มาร่วมงานด้วยกันก็ดีใจมากแล้วค่ะ 💕</p>
+  </div>
+  <button class="edit-btn" id="editBtn" style="display:none" onclick="editForm()">✏️ แก้ไขข้อมูล</button>
 </div>
 
 
@@ -802,31 +850,59 @@ function collect(){
 // ══════════════════════════════════════
 //  SHOW SUCCESS
 // ══════════════════════════════════════
+const SESSION_LABEL = {
+  'ช่วงเช้า (08:00 น.)':                '🌅 พิธีเช้า · 03/07/2026 เวลา 08:00 น.',
+  'ช่วงเย็น (19:00 น.)':                '🌙 งานเลี้ยงเย็น · 03/07/2026 เวลา 19:00 น.',
+  'มาทั้งสองช่วง (08:00 และ 19:00 น.)': '🌟 ทั้งสองช่วง · 08:00 น. และ 19:00 น.'
+};
+const DRESS_COLORS = [
+  {bg:'#FEFCFB',border:'#E8D8D0',name:'ครีม'},
+  {bg:'#F5C8C4',name:'ชมพูกุหลาบ'},
+  {bg:'#C5DBA9',name:'เขียวเซจ'},
+  {bg:'#9ECCF0',name:'ฟ้าอ่อน'},
+  {bg:'#FFBE98',name:'พีช'},
+];
+
 function showSuccess(d){
   document.getElementById('formView').style.display='none';
-  const sv=document.getElementById('successView');
-  sv.classList.add('on');
+  document.getElementById('successView').classList.add('on');
+
   document.getElementById('summaryCard').innerHTML=`
     <div class="sc-row">
       <span class="sc-icon">👤</span>
       <span class="sc-val"><strong>${d.firstName} ${d.lastName}</strong></span>
     </div>
     <div class="sc-row">
+      <span class="sc-icon">🕐</span>
+      <span class="sc-val">${SESSION_LABEL[d.session]||d.session}</span>
+    </div>
+    <div class="sc-row">
+      <span class="sc-icon">📅</span>
+      <span class="sc-val">วันพฤหัสบดีที่ 3 กรกฎาคม 2569<br><small style="color:var(--muted)">Chatrium Riverside, Bangkok</small></span>
+    </div>
+    <div class="sc-row">
       <span class="sc-icon">🌸</span>
       <span class="sc-val">${d.guests} ท่าน &nbsp;·&nbsp; ${d.side}</span>
     </div>
     <div class="sc-row">
-      <span class="sc-icon">🕐</span>
-      <span class="sc-val">${d.session}</span>
-    </div>
-    <div class="sc-row">
       <span class="sc-icon">🍽️</span>
       <span class="sc-val">${d.dietary}</span>
-    </div>
-    <div class="sc-row">
-      <span class="sc-icon">📅</span>
-      <span class="sc-val">3 กรกฎาคม 2569 · Chatrium Riverside</span>
     </div>`;
+
+  document.getElementById('colorRow').innerHTML =
+    DRESS_COLORS.map(c=>`<div class="color-chip">
+      <div class="color-circle" style="background:${c.bg}${c.border?';border-color:'+c.border:''}"></div>
+      <div class="color-name">${c.name}</div>
+    </div>`).join('');
+  document.getElementById('dresscodeCard').style.display='block';
+  document.getElementById('editBtn').style.display='inline-block';
+}
+
+function editForm(){
+  document.getElementById('successView').classList.remove('on');
+  document.getElementById('alreadyView').classList.remove('on');
+  document.getElementById('formView').style.display='';
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // ══════════════════════════════════════
