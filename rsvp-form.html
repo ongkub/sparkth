@@ -167,6 +167,7 @@ body::before{
 
 /* ─── RADIO PILLS ─── */
 .pills{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pills-3{grid-template-columns:1fr 1fr 1fr}
 .pill input[type=radio]{position:absolute;opacity:0;width:0;height:0}
 .pill label{
   display:flex;align-items:center;justify-content:center;
@@ -551,7 +552,7 @@ function applyLang(){
         </div>
         <div class="field">
           <label class="label" data-th="ช่วงที่จะมาร่วมงาน" data-en="Session">ช่วงที่จะมาร่วมงาน <span class="req">*</span></label>
-          <div class="pills">
+          <div class="pills pills-3">
             <div class="pill">
               <input type="radio" name="session" id="sess-morning" value="ช่วงเช้า (08:00 น.)">
               <label for="sess-morning"><span data-th="🌅 พิธีเช้า — 08:00 น." data-en="🌅 Morning Ceremony — 8:00 AM">🌅 พิธีเช้า — 08:00 น.</span></label>
@@ -917,15 +918,19 @@ document.getElementById('rsvpForm').addEventListener('submit',async function(e){
   btn.innerHTML='<span class="spin"></span>' + (currentLang==='en' ? 'Sending...' : 'กำลังส่งข้อมูล...');
   try{ btn.style.opacity='0.7'; }catch(e){}
   try{
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), 10000);
     const resp = await fetch(SHEET_URL, {
       method: 'POST',
       headers:{'Content-Type':'text/plain;charset=UTF-8'},
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
+      signal: ctrl.signal
     });
-    const json = await resp.json();
-    if(!json.success) console.warn('GAS error:', json.error);
+    clearTimeout(t);
+    const json = await resp.json().catch(()=>({}));
+    if(json.success === false) console.warn('GAS error:', json.error);
   }catch(err){
-    console.error('Sheet submit error:', err);
+    console.error('Sheet submit:', err.name==='AbortError'?'timeout':err);
   }
   showSuccess(data);
 });
