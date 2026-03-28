@@ -526,6 +526,19 @@ function applyLang(){
           </div>
         </div>
         <div class="field">
+          <label class="label" data-th="ช่วงที่จะมาร่วมงาน" data-en="Session">ช่วงที่จะมาร่วมงาน <span class="req">*</span></label>
+          <div class="pills">
+            <div class="pill">
+              <input type="radio" name="session" id="sess-morning" value="ช่วงเช้า (08:00 น.)">
+              <label for="sess-morning"><span data-th="🌅 พิธีเช้า — 08:00 น." data-en="🌅 Morning Ceremony — 8:00 AM">🌅 พิธีเช้า — 08:00 น.</span></label>
+            </div>
+            <div class="pill">
+              <input type="radio" name="session" id="sess-evening" value="ช่วงเย็น (19:00 น.)">
+              <label for="sess-evening"><span data-th="🌙 งานเลี้ยงเย็น — 19:00 น." data-en="🌙 Evening Reception — 7:00 PM">🌙 งานเลี้ยงเย็น — 19:00 น.</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="field">
           <label class="label" for="frel" data-th="ความสัมพันธ์" data-en="Relationship">ความสัมพันธ์ <span class="req">*</span></label>
           <select id="frel" class="sel">
             <option value="" data-th="— เลือกความสัมพันธ์ —" data-en="— Select relationship —">— เลือกความสัมพันธ์ —</option>
@@ -754,6 +767,8 @@ function validate(){
   if(!ln){toast(en?'⚠️ Please enter your last name':'⚠️ กรุณากรอกนามสกุล');document.getElementById('flastname').focus();return false}
   if(!phone){toast(en?'⚠️ Please enter your phone number':'⚠️ กรุณากรอกเบอร์โทรศัพท์');document.getElementById('fphone').focus();return false}
   if(!side){toast(en?'⚠️ Please select a side':'⚠️ กรุณาเลือกฝั่งของท่าน');return false}
+  const sess=document.querySelector('input[name=session]:checked');
+  if(!sess){toast(en?'⚠️ Please select a session':'⚠️ กรุณาเลือกช่วงที่จะมาร่วมงาน');return false}
   if(!rel){toast(en?'⚠️ Please select your relationship':'⚠️ กรุณาเลือกความสัมพันธ์');return false}
   return true;
 }
@@ -776,6 +791,7 @@ function collect(){
     name:fn + ' ' + ln,
     phone:document.getElementById('fphone').value.trim(),
     side:document.querySelector('input[name=side]:checked')?.value||'',
+    session:document.querySelector('input[name=session]:checked')?.value||'',
     relationship:document.getElementById('frel').selectedOptions[0]?.text||'',
     guests:guestCount,
     dietary:diets.join(', ')||'ทานได้ทุกอย่าง',
@@ -798,6 +814,10 @@ function showSuccess(d){
     <div class="sc-row">
       <span class="sc-icon">🌸</span>
       <span class="sc-val">${d.guests} ท่าน &nbsp;·&nbsp; ${d.side}</span>
+    </div>
+    <div class="sc-row">
+      <span class="sc-icon">🕐</span>
+      <span class="sc-val">${d.session}</span>
     </div>
     <div class="sc-row">
       <span class="sc-icon">🍽️</span>
