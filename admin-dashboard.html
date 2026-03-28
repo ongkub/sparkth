@@ -605,10 +605,14 @@ tr:hover td{background:rgba(254,240,238,.4)}
                 <div class="avatar">💍</div>
                 <div class="flex-card">
                   <div class="fc-header">
+                    <img src="img/weddinglogo.png" style="max-width:100%;margin-bottom:4px" onerror="this.style.display='none'">
                     <div class="fc-eyebrow">✦  WEDDING INVITATION  ✦</div>
                     <div class="fc-name">Praphat &amp; Pattaraporn</div>
-                    <div class="fc-thai">ประภาส &amp; ภัทรภร</div>
-                    <div class="fc-family">ศรีสุมะ — ธีรคันธมาทน์</div>
+                    <div style="display:flex;justify-content:center;gap:8px;margin-top:4px">
+                      <div style="text-align:right"><div class="fc-thai">ประภาส</div><div class="fc-family">ศรีสุมะ</div></div>
+                      <div style="color:#3A2E2C;font-size:13px">&amp;</div>
+                      <div style="text-align:left"><div class="fc-thai">ภัทรภร</div><div class="fc-family">ธีรคันธมาทน์</div></div>
+                    </div>
                   </div>
                   <div class="fc-sep"></div>
                   <div class="fc-body">
@@ -621,8 +625,8 @@ tr:hover td{background:rgba(254,240,238,.4)}
                       <div style="width:1px;background:#F5D8D4;flex-shrink:0"></div>
                       <div class="fc-col" style="padding-left:8px">
                         <div class="fc-lbl">🕕  เวลา</div>
-                        <div class="fc-val">18:00 น.</div>
-                        <div class="fc-sub">เป็นต้นไป</div>
+                        <div class="fc-val">งานเช้าเริ่ม 8:00น.</div>
+                        <div class="fc-sub">งานเย็นเริ่ม 19:00น.</div>
                       </div>
                     </div>
                     <div class="fc-sep2"></div>
@@ -870,7 +874,7 @@ tr:hover td{background:rgba(254,240,238,.4)}
           </p>
         </div>
         <div class="code-wrap">
-          <button class="copy-btn" onclick="copyCode('scriptCode','copy2')">Copy</button>
+          <button class="copy-btn" id="copy2" onclick="copyCode('scriptCode',this)">Copy</button>
           <div class="code-box tall" id="scriptCode"></div>
         </div>
       </div>
@@ -878,7 +882,7 @@ tr:hover td{background:rgba(254,240,238,.4)}
       <div class="card">
         <div class="card-h">📋 Column Headers สำหรับ Row 1 ใน Google Sheet</div>
         <div class="code-wrap">
-          <button class="copy-btn" onclick="copyCode('sheetHeaders','copy3')">Copy</button>
+          <button class="copy-btn" id="copy3" onclick="copyCode('sheetHeaders',this)">Copy</button>
           <div class="code-box" id="sheetHeaders">Timestamp	LINE UID	First Name	Last Name	Full Name	Phone	Side	Relationship	Guests	Dietary	Message	Session	Picture URL</div>
         </div>
         <p style="font-size:12px;font-weight:300;color:var(--muted);margin-top:8px">Sheet1 (13 columns) — Visitors และ Invites จะถูกสร้างอัตโนมัติ</p>
@@ -1412,14 +1416,25 @@ document.getElementById('scriptCode').textContent = scriptCode;
 // ══════════════════════════════════════
 //  COPY CODE
 // ══════════════════════════════════════
-function copyCode(elId, btnId){
+function copyCode(elId, btn){
   const txt = document.getElementById(elId).textContent;
-  navigator.clipboard.writeText(txt).then(()=>{
-    const btn = document.getElementById(btnId)||event.currentTarget;
-    btn.textContent='Copied!';btn.classList.add('copied');
-    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},2000);
+  const button = (typeof btn === 'string') ? document.getElementById(btn) : btn;
+  function onCopied(){
+    if(button){ button.textContent='Copied!'; button.classList.add('copied');
+      setTimeout(()=>{ button.textContent='Copy'; button.classList.remove('copied'); },2000); }
     showToast('✅ คัดลอกแล้ว');
-  });
+  }
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(txt).then(onCopied).catch(()=>{
+      document.execCommand('copy'); onCopied();
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    onCopied();
+  }
 }
 
 // ══════════════════════════════════════
@@ -1497,7 +1512,7 @@ function renderSendArea(){
         <p>📱 <strong>กรุณาเปิดใน LINE app</strong><br>
         <span style="font-size:12px;color:var(--muted)">Share Target Picker ใช้งานได้เฉพาะใน LINE app เท่านั้น</span></p>
         <a class="send-btn" style="display:block;text-align:center;text-decoration:none"
-           href="https://line.me/R/ti/p/${ADMIN_LIFF}">
+           href="https://liff.line.me/${ADMIN_LIFF}">
           เปิดใน LINE app
         </a>
       </div>`;
