@@ -258,6 +258,30 @@ body{
 .info-box p{font-size:13px;font-weight:300;color:var(--text);line-height:1.7}
 .info-box strong{font-weight:500}
 
+/* ─── FLEX EDITOR ─── */
+.flex-editor-ta{
+  width:100%;padding:14px;
+  border:1.5px solid var(--border);border-radius:12px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;
+  color:#5D4037;background:var(--code-bg);outline:none;
+  resize:vertical;min-height:320px;max-height:540px;
+  transition:border-color .2s;
+}
+.flex-editor-ta:focus{border-color:var(--rose)}
+.validate-btn{
+  padding:9px 18px;background:linear-gradient(135deg,var(--olive),#8ab87a);
+  border:none;border-radius:10px;color:white;
+  font-family:'Noto Sans Thai','Sarabun',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:opacity .15s,transform .15s;
+}
+.validate-btn:active{transform:scale(.98);opacity:.9}
+.validate-result{
+  margin-top:8px;padding:10px 14px;border-radius:10px;
+  font-size:12.5px;font-weight:300;line-height:1.6;display:none;
+}
+.validate-result.ok{background:rgba(197,219,169,.18);border:1px solid rgba(197,219,169,.4);color:#3A6A3A}
+.validate-result.err{background:rgba(240,112,112,.1);border:1px solid rgba(240,112,112,.3);color:#8A2020}
+
 /* ─── TOAST ─── */
 .toast{
   position:fixed;bottom:24px;right:24px;
@@ -622,17 +646,19 @@ tr:hover td{background:rgba(254,240,238,.4)}
           </div>
         </div>
 
-        <!-- JSON -->
+        <!-- JSON editor -->
         <div>
-          <div class="card-h" style="margin-bottom:12px">📋 Flex Message JSON</div>
+          <div class="card-h" style="margin-bottom:12px">✏️ แก้ไข Flex Message JSON</div>
           <div class="info-box">
-            <p>แทนที่ <strong>YOUR_LIFF_ID</strong> ด้วย LIFF ID ที่สร้างใน LINE Developers<br>
-            แล้วนำ JSON ทั้งหมดไปใส่ใน <strong>LINE API Explorer</strong> หรือ Messaging API</p>
+            <p>แก้ไข JSON ด้านล่างได้เลย · กด <strong>Validate</strong> เพื่อตรวจสอบด้วย LINE API<br>
+            (ต้องใส่ Channel Access Token ใน Config ก่อน)</p>
           </div>
-          <div class="code-wrap">
-            <button class="copy-btn" onclick="copyCode('flexJson','copy1')">Copy</button>
-            <div class="code-box" id="flexJson"></div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <button class="validate-btn" onclick="validateFlex()">✅ Validate ด้วย LINE API</button>
+            <button class="copy-btn" style="position:static;margin:0" onclick="copyFlexEditor()">Copy JSON</button>
           </div>
+          <textarea id="flexJsonEditor" class="flex-editor-ta" spellcheck="false" oninput="onFlexEditorChange()"></textarea>
+          <div id="validateResult" class="validate-result"></div>
         </div>
       </div>
 
@@ -719,6 +745,20 @@ tr:hover td{background:rgba(254,240,238,.4)}
               placeholder="https://liff.line.me/2006674119-opWzXpla"
               readonly style="background:#F5F0EB">
           </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:0">
+        <div class="card-h">🔑 LINE Channel Access Token</div>
+        <div class="config-field">
+          <label class="config-label">Channel Access Token
+            <span>— ใช้สำหรับ Validate Flex Message ผ่าน LINE API</span>
+          </label>
+          <input type="password" id="cfgChannelToken" class="config-inp"
+            placeholder="your-channel-access-token">
+          <p style="font-size:11px;color:var(--muted);margin-top:5px;font-weight:300">
+            ดูได้ที่ LINE Developers Console → Messaging API → Channel access token (long-lived)
+          </p>
         </div>
       </div>
 
@@ -839,9 +879,9 @@ tr:hover td{background:rgba(254,240,238,.4)}
         <div class="card-h">📋 Column Headers สำหรับ Row 1 ใน Google Sheet</div>
         <div class="code-wrap">
           <button class="copy-btn" onclick="copyCode('sheetHeaders','copy3')">Copy</button>
-          <div class="code-box" id="sheetHeaders">Timestamp	LINE UID	First Name	Last Name	Full Name	Phone	Side	Relationship	Guests	Dietary	Message</div>
+          <div class="code-box" id="sheetHeaders">Timestamp	LINE UID	First Name	Last Name	Full Name	Phone	Side	Relationship	Guests	Dietary	Message	Session	Picture URL</div>
         </div>
-        <p style="font-size:12px;font-weight:300;color:var(--muted);margin-top:8px">Sheet1 (11 columns) — Visitors และ Invites จะถูกสร้างอัตโนมัติ</p>
+        <p style="font-size:12px;font-weight:300;color:var(--muted);margin-top:8px">Sheet1 (13 columns) — Visitors และ Invites จะถูกสร้างอัตโนมัติ</p>
       </div>
     </div>
 
@@ -1043,21 +1083,81 @@ const flexJson = {
     }
   }
 };
-document.getElementById('flexJson').textContent = JSON.stringify(flexJson,null,2);
+document.getElementById('flexJsonEditor').value = JSON.stringify(flexJson,null,2);
+
+// ══════════════════════════════════════
+//  FLEX EDITOR HELPERS
+// ══════════════════════════════════════
+function getEditorJson(){
+  try{ return JSON.parse(document.getElementById('flexJsonEditor').value); }
+  catch(e){ return null; }
+}
+
+function onFlexEditorChange(){
+  // clear old validate result on edit
+  const r = document.getElementById('validateResult');
+  r.style.display='none';
+}
+
+function copyFlexEditor(){
+  const txt = document.getElementById('flexJsonEditor').value;
+  navigator.clipboard.writeText(txt).then(()=>showToast('✅ คัดลอกแล้ว'));
+}
+
+async function validateFlex(){
+  const token = localStorage.getItem('weddingChannelToken')||'';
+  if(!token){
+    showToast('⚠️ กรุณาใส่ Channel Access Token ใน Config ก่อน');
+    return;
+  }
+  const parsed = getEditorJson();
+  if(!parsed){
+    const r = document.getElementById('validateResult');
+    r.textContent = '❌ JSON ไม่ถูกต้อง — ตรวจสอบรูปแบบ JSON อีกครั้ง';
+    r.className = 'validate-result err'; r.style.display='block'; return;
+  }
+  const btn = event.currentTarget;
+  btn.disabled=true; btn.textContent='⏳ กำลังตรวจสอบ...';
+  try{
+    const resp = await fetch('https://api.line.me/v2/bot/message/validate/push',{
+      method:'POST',
+      headers:{
+        'Authorization':'Bearer '+token,
+        'Content-Type':'application/json'
+      },
+      body: JSON.stringify({ messages:[parsed] })
+    });
+    const r = document.getElementById('validateResult');
+    if(resp.ok){
+      r.textContent = '✅ Flex Message ถูกต้อง — ผ่านการตรวจสอบจาก LINE API';
+      r.className = 'validate-result ok';
+    } else {
+      const err = await resp.json().catch(()=>({}));
+      r.textContent = `❌ ไม่ผ่าน (${resp.status}) — ${err.message||JSON.stringify(err)}`;
+      r.className = 'validate-result err';
+    }
+    r.style.display='block';
+  }catch(e){
+    const r = document.getElementById('validateResult');
+    r.textContent = '❌ เรียก LINE API ไม่ได้ — ตรวจสอบ token และ network (CORS อาจบล็อกบน browser โดยตรง)';
+    r.className = 'validate-result err'; r.style.display='block';
+  }
+  btn.disabled=false; btn.textContent='✅ Validate ด้วย LINE API';
+}
 
 // ══════════════════════════════════════
 //  APPS SCRIPT CODE
 // ══════════════════════════════════════
-const scriptCode = `// Google Apps Script — Wedding RSVP v3
+const scriptCode = `// Google Apps Script — Wedding RSVP v4
 // Deploy as Web App: Execute as Me | Anyone can access
 // =====================================================
 // Sheet1 columns:
 //   A: Timestamp  B: LINE UID  C: First Name  D: Last Name
 //   E: Full Name  F: Phone  G: Side  H: Relationship
-//   I: Guests  J: Dietary  K: Message
+//   I: Guests  J: Dietary  K: Message  L: Session  M: Picture URL
 //
 // Visitors columns:
-//   A: Timestamp  B: LINE UID  C: Status (visited/submitted)
+//   A: Timestamp  B: LINE UID  C: Status  D: Picture URL
 //
 // Invites columns:
 //   A: Timestamp  B: Sender UID  C: Sender Name  D: Sender Picture
@@ -1086,13 +1186,57 @@ function doPost(e) {
         data.relationship || '',
         data.guests       || 1,
         data.dietary      || '',
-        data.message      || ''
+        data.message      || '',
+        data.session      || '',
+        data.pictureUrl   || ''
       ]);
-      _updateVisitorStatus(ss, data.lineUserId, 'submitted');
+      _updateVisitorStatus(ss, data.lineUserId, 'submitted', data.pictureUrl);
+    }
+
+    else if (action === 'update') {
+      // find existing row by LINE UID and update it
+      const sheet = ss.getSheetByName(SHEET_RSVP);
+      if (!sheet) return _json({ success: false, error: 'Sheet not found' });
+      const rows = sheet.getDataRange().getValues();
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i][1] === data.lineUserId) {
+          const row = i + 1;
+          sheet.getRange(row, 1).setValue(data.timestamp || new Date().toLocaleString('th-TH'));
+          sheet.getRange(row, 3).setValue(data.firstName    || '');
+          sheet.getRange(row, 4).setValue(data.lastName     || '');
+          sheet.getRange(row, 5).setValue(data.name         || '');
+          sheet.getRange(row, 6).setValue(data.phone        || '');
+          sheet.getRange(row, 7).setValue(data.side         || '');
+          sheet.getRange(row, 8).setValue(data.relationship || '');
+          sheet.getRange(row, 9).setValue(data.guests       || 1);
+          sheet.getRange(row, 10).setValue(data.dietary     || '');
+          sheet.getRange(row, 11).setValue(data.message     || '');
+          sheet.getRange(row, 12).setValue(data.session     || '');
+          if (data.pictureUrl) sheet.getRange(row, 13).setValue(data.pictureUrl);
+          return _json({ success: true });
+        }
+      }
+      // not found — append as new
+      sheet.appendRow([
+        data.timestamp    || new Date().toLocaleString('th-TH'),
+        data.lineUserId   || '',
+        data.firstName    || '',
+        data.lastName     || '',
+        data.name         || '',
+        data.phone        || '',
+        data.side         || '',
+        data.relationship || '',
+        data.guests       || 1,
+        data.dietary      || '',
+        data.message      || '',
+        data.session      || '',
+        data.pictureUrl   || ''
+      ]);
+      _updateVisitorStatus(ss, data.lineUserId, 'submitted', data.pictureUrl);
     }
 
     else if (action === 'visit') {
-      _upsertVisitor(ss, data.lineUserId);
+      _upsertVisitor(ss, data.lineUserId, data.pictureUrl);
     }
 
     else if (action === 'invite') {
@@ -1131,13 +1275,17 @@ function doGet(e) {
         return _json({
           submitted: true,
           data: {
-            firstName: rows[i][2],           // col C
-            lastName:  rows[i][3],           // col D
-            name:      rows[i][4],           // col E
-            phone:     rows[i][5],           // col F
-            side:      rows[i][6],           // col G
-            guests:    rows[i][8],           // col I
-            dietary:   rows[i][9]            // col J
+            firstName:    rows[i][2],        // col C
+            lastName:     rows[i][3],        // col D
+            name:         rows[i][4],        // col E
+            phone:        rows[i][5],        // col F
+            side:         rows[i][6],        // col G
+            relationship: rows[i][7],        // col H
+            guests:       rows[i][8],        // col I
+            dietary:      rows[i][9],        // col J
+            message:      rows[i][10],       // col K
+            session:      rows[i][11],       // col L
+            photo:        rows[i][12] || ''  // col M
           }
         });
       }
@@ -1164,7 +1312,9 @@ function doGet(e) {
       relationship:  r[7],
       guests:        r[8],
       dietary:       r[9],
-      message:       r[10]
+      message:       r[10],
+      session:       r[11] || '',
+      photo:         r[12] || ''
     }));
 
     const submittedUids = new Set(submitted.map(r => r.lineUid));
@@ -1174,7 +1324,8 @@ function doGet(e) {
         status:    'visited',
         timestamp: r[0],
         lineUid:   r[1],
-        name: ''
+        name:      '',
+        photo:     r[3] || ''
       }));
 
     return _json({ submitted, visited });
@@ -1197,32 +1348,38 @@ function _json(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-function _upsertVisitor(ss, uid) {
+function _upsertVisitor(ss, uid, pictureUrl) {
   if (!uid) return;
   let sheet = ss.getSheetByName(SHEET_VISITORS);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_VISITORS);
-    sheet.appendRow(['Timestamp', 'LINE UID', 'Status']);
+    sheet.appendRow(['Timestamp', 'LINE UID', 'Status', 'Picture URL']);
   }
   const rows = sheet.getDataRange().getValues();
   for (let i = 1; i < rows.length; i++) {
-    if (rows[i][1] === uid) return; // already exists
+    if (rows[i][1] === uid) {
+      // update picture if newly available
+      if (pictureUrl && !rows[i][3]) sheet.getRange(i+1, 4).setValue(pictureUrl);
+      return;
+    }
   }
   sheet.appendRow([
     new Date().toLocaleString('th-TH'),
     uid,
-    'visited'
+    'visited',
+    pictureUrl || ''
   ]);
 }
 
-function _updateVisitorStatus(ss, uid, status) {
+function _updateVisitorStatus(ss, uid, status, pictureUrl) {
   if (!uid) return;
   const sheet = ss.getSheetByName(SHEET_VISITORS);
   if (!sheet) return;
   const rows = sheet.getDataRange().getValues();
   for (let i = 1; i < rows.length; i++) {
     if (rows[i][1] === uid) {
-      sheet.getRange(i + 1, 3).setValue(status); // col C = Status
+      sheet.getRange(i + 1, 3).setValue(status);
+      if (pictureUrl) sheet.getRange(i + 1, 4).setValue(pictureUrl);
       return;
     }
   }
@@ -1250,12 +1407,14 @@ function saveConfig(){
   const sheetView  = document.getElementById('cfgSheetView').value.trim();
   const liff       = document.getElementById('cfgLiff').value.trim();
   const adminLiff  = document.getElementById('cfgAdminLiff').value.trim();
+  const token      = document.getElementById('cfgChannelToken').value.trim();
   if(liff)      document.getElementById('cfgLiffUrl').value = 'https://liff.line.me/'+liff;
   if(sheetView) document.getElementById('linkSheet').href = sheetView;
   localStorage.setItem('weddingSheetUrl',      sheet);
   localStorage.setItem('weddingSheetView',     sheetView);
   localStorage.setItem('weddingLiffId',        liff);
   localStorage.setItem('weddingAdminLiffId',   adminLiff);
+  if(token) localStorage.setItem('weddingChannelToken', token);
   // re-init LIFF if admin LIFF changed
   if(adminLiff) initAdminLIFF();
   showToast('💾 บันทึกแล้ว — reload หน้าเพื่อให้ LIFF ทำงาน');
@@ -1266,10 +1425,12 @@ function loadConfig(){
   const sheetView = localStorage.getItem('weddingSheetView')||'';
   const liff      = localStorage.getItem('weddingLiffId')||'2006674119-opWzXpla';
   const adminLiff = localStorage.getItem('weddingAdminLiffId')||'';
+  const token     = localStorage.getItem('weddingChannelToken')||'';
   if(sheet)     document.getElementById('cfgSheet').value = sheet;
   if(sheetView){ document.getElementById('cfgSheetView').value = sheetView; document.getElementById('linkSheet').href=sheetView; }
   if(liff){ document.getElementById('cfgLiff').value = liff; document.getElementById('cfgLiffUrl').value='https://liff.line.me/'+liff; }
   if(adminLiff) document.getElementById('cfgAdminLiff').value = adminLiff;
+  if(token)     document.getElementById('cfgChannelToken').value = token;
 }
 loadConfig();
 
@@ -1330,10 +1491,11 @@ async function sendInvite(){
   btn.disabled = true;
   btn.innerHTML = '<span class="spin-icon">⟳</span> กำลังเปิด...';
   try {
+    const editorParsed = getEditorJson() || flexJson;
     const messages = [{
-      type:     flexJson.type,
-      altText:  flexJson.altText,
-      contents: flexJson.contents
+      type:     editorParsed.type     || flexJson.type,
+      altText:  editorParsed.altText  || flexJson.altText,
+      contents: editorParsed.contents || flexJson.contents
     }];
     const result = await liff.shareTargetPicker(messages, { isMultiple: true });
     if(result && result.status === 'success'){
@@ -1427,15 +1589,19 @@ function renderTable(rows){
       <th>แขก</th><th>จำนวน</th><th>ฝั่ง</th><th>ความสัมพันธ์</th><th>อาหาร</th><th>เวลา</th><th>สถานะ</th>
     </tr></thead><tbody>`;
   filtered.forEach(r=>{
-    const pic = '';
-    const fallback = `<div class="avatar-fallback">🌸</div>`;
+    const pic = r.photo
+      ? `<img class="avatar-img" src="${r.photo}" alt="" onerror="this.style.display='none'">`
+      : '';
+    const fallback = `<div class="avatar-fallback" style="${r.photo?'display:none':''}">🌸</div>`;
     const badge = r.status==='submitted'
       ? '<span class="status-badge status-submitted">✅ กรอกแล้ว</span>'
       : '<span class="status-badge status-visited">👁️ เปิดแล้ว</span>';
+    const sessText = r.session ? `<div class="cell-sub" style="font-size:10px">${r.session}</div>` : '';
     html += `<tr>
       <td><div class="avatar-cell">${pic}${fallback}<div>
         <div class="cell-name">${r.name||'-'}</div>
-        <div class="cell-sub">${r.phone?r.phone:''}</div>
+        <div class="cell-sub">${r.phone||''}</div>
+        ${sessText}
       </div></div></td>
       <td>${r.guests||'-'}</td>
       <td>${r.side||'-'}</td>

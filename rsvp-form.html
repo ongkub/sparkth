@@ -167,7 +167,23 @@ body::before{
 
 /* ─── RADIO PILLS ─── */
 .pills{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.pills-3{grid-template-columns:1fr 1fr 1fr}
+.pills-3{grid-template-columns:1fr}
+
+/* ─── LOADING SCREEN ─── */
+.loading-screen{
+  position:fixed;inset:0;z-index:999;
+  background:var(--ivory);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;transition:opacity .5s ease;
+}
+.loading-screen.hide{opacity:0;pointer-events:none}
+.loading-logo{
+  width:88px;height:auto;
+  animation:loadPulse 1.6s ease-in-out infinite;
+  filter:drop-shadow(0 4px 14px rgba(245,156,154,.3));
+}
+@keyframes loadPulse{0%,100%{opacity:.7;transform:scale(.96)}50%{opacity:1;transform:scale(1)}}
+.loading-text{font-size:13px;font-weight:300;color:var(--muted);letter-spacing:.4px}
 .pill input[type=radio]{position:absolute;opacity:0;width:0;height:0}
 .pill label{
   display:flex;align-items:center;justify-content:center;
@@ -397,6 +413,10 @@ function applyLang(){
 </script>
 </head>
 <body>
+<div id="loadingScreen" class="loading-screen">
+  <img src="img/weddinglogo.png" alt="" class="loading-logo">
+  <div class="loading-text">กำลังโหลด...</div>
+</div>
 <div class="toast" id="toast"></div>
 
 <!-- ═══ MAIN FORM VIEW ═══ -->
@@ -551,7 +571,7 @@ function applyLang(){
           </div>
         </div>
         <div class="field">
-          <label class="label" data-th="ช่วงที่จะมาร่วมงาน" data-en="Session">ช่วงที่จะมาร่วมงาน <span class="req">*</span></label>
+          <label class="label" data-th="สะดวกมาร่วมงานช่วงใด" data-en="Attendance &amp; Session">สะดวกมาร่วมงานช่วงใด <span class="req">*</span></label>
           <div class="pills pills-3">
             <div class="pill">
               <input type="radio" name="session" id="sess-morning" value="ช่วงเช้า (08:00 น.)">
@@ -564,6 +584,10 @@ function applyLang(){
             <div class="pill">
               <input type="radio" name="session" id="sess-both" value="มาทั้งสองช่วง (08:00 และ 19:00 น.)">
               <label for="sess-both"><span data-th="🌟 มาทั้งสองช่วง" data-en="🌟 Both Sessions">🌟 มาทั้งสองช่วง</span></label>
+            </div>
+            <div class="pill">
+              <input type="radio" name="session" id="sess-none" value="ไม่สะดวกมาร่วมงาน">
+              <label for="sess-none"><span data-th="🙏 ไม่สะดวกมาร่วมงาน" data-en="🙏 Unable to Attend">🙏 ไม่สะดวกมาร่วมงาน</span></label>
             </div>
           </div>
         </div>
@@ -614,12 +638,8 @@ function applyLang(){
               <label for="d-norm"><span data-th="🍽️ ทานได้ทุกอย่าง" data-en="🍽️ No restrictions">🍽️ ทานได้ทุกอย่าง</span></label>
             </div>
             <div class="chip">
-              <input type="checkbox" id="d-veg" value="มังสวิรัติ">
-              <label for="d-veg"><span data-th="🥦 มังสวิรัติ" data-en="🥦 Vegetarian">🥦 มังสวิรัติ</span></label>
-            </div>
-            <div class="chip">
-              <input type="checkbox" id="d-vegan" value="วีแกน">
-              <label for="d-vegan"><span data-th="🌱 วีแกน" data-en="🌱 Vegan">🌱 วีแกน</span></label>
+              <input type="checkbox" id="d-veg" value="มังสวิรัติ / วีแกน">
+              <label for="d-veg"><span data-th="🥦 มังสวิรัติ / วีแกน" data-en="🥦 Vegetarian / Vegan">🥦 มังสวิรัติ / วีแกน</span></label>
             </div>
             <div class="chip">
               <input type="checkbox" id="d-halal" value="ฮาลาล">
@@ -746,7 +766,10 @@ function applyLang(){
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwcoli2EosQS7L8vfLySmwG6fLrHBW-glaFo16jgtB1iK6_Q7v6JSxzo0b86T07iy58Iw/exec';
 const LIFF_ID   = '2006674119-opWzXpla';
 let lineUserId       = '';
+let lineUserPic      = '';
 let currentLang      = 'th';
+let isEditing        = false;
+let lastData         = null;
 
 // ══════════════════════════════════════
 //  CHECK ALREADY SUBMITTED
@@ -760,11 +783,13 @@ async function checkAlreadySubmitted(userId){
 }
 
 function showAlready(d){
+  lastData = d;
   document.getElementById('formView').style.display='none';
   document.getElementById('alreadyView').classList.add('on');
   if(d){
     document.getElementById('alreadyCard').innerHTML=`
       <div class="sc-row"><span class="sc-icon">👤</span><span class="sc-val"><strong>${d.name||'-'}</strong></span></div>
+      <div class="sc-row"><span class="sc-icon">🕐</span><span class="sc-val">${SESSION_LABEL[d.session]||d.session||'-'}</span></div>
       <div class="sc-row"><span class="sc-icon">🌸</span><span class="sc-val">${d.guests||1} ท่าน &nbsp;·&nbsp; ${d.side||''}</span></div>
       <div class="sc-row"><span class="sc-icon">🍽️</span><span class="sc-val">${d.dietary||'-'}</span></div>
       <div class="sc-row"><span class="sc-icon">📅</span><span class="sc-val">3 กรกฎาคม 2569 · Chatrium Riverside</span></div>`;
@@ -832,9 +857,10 @@ function collect(){
   const fn = document.getElementById('ffirstname').value.trim();
   const ln = document.getElementById('flastname').value.trim();
   return{
-    action:'submit',
+    action: isEditing ? 'update' : 'submit',
     timestamp:new Date().toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}),
     lineUserId:lineUserId,
+    pictureUrl:lineUserPic,
     firstName:fn,
     lastName:ln,
     name:fn + ' ' + ln,
@@ -854,7 +880,8 @@ function collect(){
 const SESSION_LABEL = {
   'ช่วงเช้า (08:00 น.)':                '🌅 พิธีเช้า · 03/07/2026 เวลา 08:00 น.',
   'ช่วงเย็น (19:00 น.)':                '🌙 งานเลี้ยงเย็น · 03/07/2026 เวลา 19:00 น.',
-  'มาทั้งสองช่วง (08:00 และ 19:00 น.)': '🌟 ทั้งสองช่วง · 08:00 น. และ 19:00 น.'
+  'มาทั้งสองช่วง (08:00 และ 19:00 น.)': '🌟 ทั้งสองช่วง · 08:00 น. และ 19:00 น.',
+  'ไม่สะดวกมาร่วมงาน':                  '🙏 ไม่สะดวกมาร่วมงาน'
 };
 const DRESS_COLORS = [
   {bg:'#FEFCFB',border:'#E8D8D0',name:'ครีม'},
@@ -865,6 +892,8 @@ const DRESS_COLORS = [
 ];
 
 function showSuccess(d){
+  lastData = d;
+  isEditing = false;
   document.getElementById('formView').style.display='none';
   document.getElementById('successView').classList.add('on');
 
@@ -903,7 +932,48 @@ function editForm(){
   document.getElementById('successView').classList.remove('on');
   document.getElementById('alreadyView').classList.remove('on');
   document.getElementById('formView').style.display='';
+  isEditing = true;
+  if(lastData) populateForm(lastData);
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function populateForm(d){
+  if(!d) return;
+  if(d.firstName) document.getElementById('ffirstname').value = d.firstName;
+  if(d.lastName)  document.getElementById('flastname').value  = d.lastName;
+  if(d.phone)     document.getElementById('fphone').value     = d.phone;
+  if(d.side){
+    const sideEl = document.querySelector(`input[name=side][value="${d.side}"]`);
+    if(sideEl) sideEl.checked = true;
+  }
+  if(d.session){
+    const sessEl = document.querySelector(`input[name=session][value="${d.session}"]`);
+    if(sessEl) sessEl.checked = true;
+  }
+  if(d.guests){
+    guestCount = +d.guests || 1;
+    document.getElementById('guestNum').textContent = guestCount;
+    document.getElementById('guestVal').value = guestCount;
+    document.getElementById('btnDec').disabled = guestCount <= 1;
+    document.getElementById('btnInc').disabled = guestCount >= 10;
+  }
+  if(d.relationship){
+    const sel = document.getElementById('frel');
+    for(let i=0; i<sel.options.length; i++){
+      if(sel.options[i].value === d.relationship || sel.options[i].textContent.includes(d.relationship)){
+        sel.selectedIndex = i; break;
+      }
+    }
+  }
+  // dietary
+  document.querySelectorAll('.chip input[type=checkbox]').forEach(cb=>cb.checked=false);
+  if(d.dietary){
+    const diets = d.dietary.split(',').map(s=>s.trim());
+    document.querySelectorAll('.chip input[type=checkbox]').forEach(cb=>{
+      if(diets.some(dt=>dt.includes(cb.value)||cb.value.includes(dt))) cb.checked=true;
+    });
+  }
+  if(d.message) document.getElementById('fmsg').value = d.message;
 }
 
 // ══════════════════════════════════════
@@ -932,31 +1002,45 @@ document.getElementById('rsvpForm').addEventListener('submit',async function(e){
   }catch(err){
     console.error('Sheet submit:', err.name==='AbortError'?'timeout':err);
   }
+  btn.disabled = false;
+  btn.innerHTML = '<span data-th="✉️&nbsp;&nbsp;ยืนยันการเข้าร่วมงาน" data-en="✉️&nbsp;&nbsp;Confirm Attendance">✉️&nbsp;&nbsp;ยืนยันการเข้าร่วมงาน</span>';
+  try{ btn.style.opacity='1'; }catch(e){}
   showSuccess(data);
 });
 
 // ══════════════════════════════════════
 //  LIFF (uncomment when deploying to LINE)
 // ══════════════════════════════════════
+function hideLoadingScreen(){
+  const ls = document.getElementById('loadingScreen');
+  if(ls){ ls.classList.add('hide'); setTimeout(()=>ls.remove(), 600); }
+}
+
 liff.init({ liffId: LIFF_ID })
   .then(async () => {
     if(!liff.isLoggedIn()){ liff.login(); return; }
     const profile = await liff.getProfile();
-    lineUserId = profile.userId;
-    // track visitor (fire and forget) — no profile data stored
+    lineUserId  = profile.userId;
+    lineUserPic = profile.pictureUrl || '';
+    // track visitor
     fetch(SHEET_URL,{method:'POST',
       headers:{'Content-Type':'text/plain;charset=UTF-8'},
       body:JSON.stringify({
         action:'visit',
         lineUserId,
+        pictureUrl: lineUserPic,
         timestamp:new Date().toLocaleString('th-TH',{timeZone:'Asia/Bangkok'})
       })
     }).catch(()=>{});
     // check if already submitted
     const check = await checkAlreadySubmitted(lineUserId);
     if(check.submitted){ showAlready(check.data); }
+    hideLoadingScreen();
   })
-  .catch(err => console.error('LIFF init error', err));
+  .catch(err => {
+    console.error('LIFF init error', err);
+    hideLoadingScreen();
+  });
 
 // ══════════════════════════════════════
 //  LANGUAGE SWITCH
