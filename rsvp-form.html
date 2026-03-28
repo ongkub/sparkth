@@ -570,7 +570,7 @@ body::before{
 //  CONFIG — แก้ URL ตรงนี้
 // ══════════════════════════════════════
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwcoli2EosQS7L8vfLySmwG6fLrHBW-glaFo16jgtB1iK6_Q7v6JSxzo0b86T07iy58Iw/exec';
-const LIFF_ID   = '2006674119-opWzXpla'; // ตั้งใน admin page
+const LIFF_ID   = '2006674119-opWzXpla';
 
 // ══════════════════════════════════════
 //  GUEST STEPPER
@@ -675,7 +675,7 @@ document.getElementById('rsvpForm').addEventListener('submit',async function(e){
   btn.innerHTML='<span class="spin"></span>กำลังส่งข้อมูล...';
   try{
     if(SHEET_URL!=='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
-      await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+      await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(data)});
     }
   }catch(err){console.warn('Sheet submit error:',err)}
   // show success regardless (no-cors can't check response)
