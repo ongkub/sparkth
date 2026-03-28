@@ -306,7 +306,57 @@ body::before{
 /* ─── FADE IN ─── */
 .wrap{animation:rise .45s ease}
 </style>
-<script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
+<script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js">
+// ══════════════════════════════════════
+//  LANGUAGE SWITCH
+// ══════════════════════════════════════
+function toggleLang(){
+  currentLang = currentLang === 'th' ? 'en' : 'th';
+  applyLang();
+}
+
+function applyLang(){
+  const en = currentLang === 'en';
+  // toggle button label
+  document.getElementById('langBtn').textContent = en ? 'ภาษาไทย' : 'EN';
+
+  // swap all data-th / data-en text content
+  document.querySelectorAll('[data-th]').forEach(el => {
+    const val = en ? el.dataset.en : el.dataset.th;
+    if(val !== undefined) el.innerHTML = val;
+  });
+
+  // swap select options
+  document.querySelectorAll('option[data-th]').forEach(opt => {
+    opt.textContent = en ? opt.dataset.en : opt.dataset.th;
+  });
+
+  // swap textarea placeholder
+  const ta = document.getElementById('fmsg');
+  if(ta){
+    ta.placeholder = en ? ta.dataset.enPlaceholder : ta.dataset.thPlaceholder;
+  }
+
+  // swap step label inside label spans
+  document.querySelectorAll('label span[data-th]').forEach(el => {
+    el.textContent = en ? el.dataset.en : el.dataset.th;
+  });
+
+  // success/already views
+  const dateStr = en ? '3 July 2026 · Chatrium Riverside' : '3 กรกฎาคม 2569 · Chatrium Riverside';
+  document.querySelectorAll('.sc-icon + .sc-val span').forEach(el => {
+    if(el.textContent.includes('กรกฎาคม') || el.textContent.includes('July')) el.textContent = dateStr;
+  });
+
+  // submit button in already / success
+  const subBtn = document.getElementById('subBtn');
+  if(subBtn && !subBtn.disabled){
+    const sp = subBtn.querySelector('span[data-th]');
+    if(sp) sp.innerHTML = en ? '✉️&nbsp;&nbsp;Confirm Attendance' : '✉️&nbsp;&nbsp;ยืนยันการเข้าร่วมงาน';
+  }
+}
+
+</script>
 </head>
 <body>
 <div class="toast" id="toast"></div>
@@ -381,6 +431,15 @@ body::before{
     <div class="pp-logo-wrap">
       <img src="img/weddinglogo.png" alt="PP Monogram" class="pp-logo">
     </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+      <button onclick="toggleLang()" id="langBtn" style="
+        background:transparent;border:1.5px solid var(--border);
+        border-radius:50px;padding:5px 14px;font-family:inherit;
+        font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;
+        letter-spacing:.5px;transition:all .2s">
+        EN
+      </button>
+    </div>
     <span class="eyebrow">✦ Wedding Invitation ✦</span>
     <span class="couple-name">Praphat <span class="amp">&amp;</span><br>Pattaraporn</span>
     <span class="event-date">III · VII · MMXXVI</span>
@@ -398,11 +457,14 @@ body::before{
 
   <!-- Intro -->
   <div class="form-intro">
-    <h2>ยืนยันการเข้าร่วมงาน</h2>
-    <p>กรุณาตอบรับภายใน <strong>20 มิถุนายน 2569</strong><br>เพื่อให้เราจัดเตรียมต้อนรับทุกท่านอย่างอบอุ่น</p>
+    <h2 data-th="ยืนยันการเข้าร่วมงาน" data-en="RSVP Confirmation">ยืนยันการเข้าร่วมงาน</h2>
+    <p data-th="กรุณาตอบรับภายใน <strong>20 มิถุนายน 2569</strong><br>เพื่อให้เราจัดเตรียมต้อนรับทุกท่านอย่างอบอุ่น"
+       data-en="Please RSVP by <strong>20 June 2026</strong><br>so we can warmly prepare for your arrival">
+      กรุณาตอบรับภายใน <strong>20 มิถุนายน 2569</strong><br>เพื่อให้เราจัดเตรียมต้อนรับทุกท่านอย่างอบอุ่น
+    </p>
   </div>
 
-  <p class="req-note">* ช่องที่มีเครื่องหมายดอกจัน จำเป็นต้องกรอก</p>
+  <p class="req-note" data-th="* ช่องที่มีเครื่องหมายดอกจัน จำเป็นต้องกรอก" data-en="* Required fields">* ช่องที่มีเครื่องหมายดอกจัน จำเป็นต้องกรอก</p>
 
   <form id="rsvpForm" novalidate>
     <div class="cards">
@@ -411,14 +473,29 @@ body::before{
       <div class="card">
         <div class="card-head">
           <div class="card-icon">👤</div>
-          <span class="card-title">ข้อมูลผู้ติดต่อ</span>
+          <span class="card-title" data-th="ข้อมูลผู้ติดต่อ" data-en="Contact Information">ข้อมูลผู้ติดต่อ</span>
         </div>
-        <div class="field">
-          <label class="label" for="fname">ชื่อ-นามสกุล <span class="req">*</span></label>
-          <input type="text" id="fname" class="inp" placeholder="กรอกชื่อ-นามสกุลของท่าน" autocomplete="name">
+        <p style="font-size:11.5px;color:var(--muted);font-weight:300;margin-bottom:12px;line-height:1.6"
+           data-th="กรุณากรอกชื่อจริง เพื่อใช้ในการจัดทำซองเชิญ"
+           data-en="Please enter your real name as it will appear on the invitation envelope">
+           กรุณากรอกชื่อจริง เพื่อใช้ในการจัดทำซองเชิญ
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" for="ffirstname" data-th="ชื่อจริง" data-en="First Name">ชื่อจริง <span class="req">*</span></label>
+            <input type="text" id="ffirstname" class="inp"
+              placeholder="เช่น สมชาย / John"
+              autocomplete="given-name">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" for="flastname" data-th="นามสกุล" data-en="Last Name">นามสกุล <span class="req">*</span></label>
+            <input type="text" id="flastname" class="inp"
+              placeholder="เช่น ใจดี / Smith"
+              autocomplete="family-name">
+          </div>
         </div>
-        <div class="field">
-          <label class="label" for="fphone">เบอร์โทรศัพท์ <span class="req">*</span></label>
+        <div class="field" style="margin-top:12px">
+          <label class="label" for="fphone" data-th="เบอร์โทรศัพท์" data-en="Phone Number">เบอร์โทรศัพท์ <span class="req">*</span></label>
           <input type="tel" id="fphone" class="inp" placeholder="0xx-xxx-xxxx" autocomplete="tel" inputmode="tel">
         </div>
       </div>
@@ -427,30 +504,30 @@ body::before{
       <div class="card">
         <div class="card-head">
           <div class="card-icon">💍</div>
-          <span class="card-title">ความสัมพันธ์</span>
+          <span class="card-title" data-th="ความสัมพันธ์" data-en="Relationship">ความสัมพันธ์</span>
         </div>
         <div class="field">
-          <label class="label">ท่านเป็นแขกฝั่งใด <span class="req">*</span></label>
+          <label class="label" data-th="ท่านเป็นแขกฝั่งใด" data-en="Whose side are you on?">ท่านเป็นแขกฝั่งใด <span class="req">*</span></label>
           <div class="pills">
             <div class="pill">
               <input type="radio" name="side" id="s-groom" value="เจ้าบ่าว (ประภาส)">
-              <label for="s-groom">🤵 ฝั่งเจ้าบ่าว</label>
+              <label for="s-groom"><span data-th="🤵 ฝั่งเจ้าบ่าว" data-en="🤵 Groom's side">🤵 ฝั่งเจ้าบ่าว</span></label>
             </div>
             <div class="pill">
               <input type="radio" name="side" id="s-bride" value="เจ้าสาว (ภัทรภร)">
-              <label for="s-bride">👰 ฝั่งเจ้าสาว</label>
+              <label for="s-bride"><span data-th="👰 ฝั่งเจ้าสาว" data-en="👰 Bride's side">👰 ฝั่งเจ้าสาว</span></label>
             </div>
           </div>
         </div>
         <div class="field">
-          <label class="label" for="frel">ความสัมพันธ์ <span class="req">*</span></label>
+          <label class="label" for="frel" data-th="ความสัมพันธ์" data-en="Relationship">ความสัมพันธ์ <span class="req">*</span></label>
           <select id="frel" class="sel">
-            <option value="">— เลือกความสัมพันธ์ —</option>
-            <option value="ครอบครัว / ญาติ">👨‍👩‍👧 ครอบครัว / ญาติ</option>
-            <option value="เพื่อนที่ทำงาน">💼 เพื่อนที่ทำงาน</option>
-            <option value="เพื่อนสมัยเรียน">🎓 เพื่อนสมัยเรียน</option>
-            <option value="เพื่อนครอบครัว">🏡 เพื่อนครอบครัว</option>
-            <option value="อื่นๆ">✨ อื่นๆ</option>
+            <option value="" data-th="— เลือกความสัมพันธ์ —" data-en="— Select relationship —">— เลือกความสัมพันธ์ —</option>
+            <option value="ครอบครัว / ญาติ" data-th="👨‍👩‍👧 ครอบครัว / ญาติ" data-en="👨‍👩‍👧 Family / Relative">👨‍👩‍👧 ครอบครัว / ญาติ</option>
+            <option value="เพื่อนที่ทำงาน" data-th="💼 เพื่อนที่ทำงาน" data-en="💼 Colleague">💼 เพื่อนที่ทำงาน</option>
+            <option value="เพื่อนสมัยเรียน" data-th="🎓 เพื่อนสมัยเรียน" data-en="🎓 School / University friend">🎓 เพื่อนสมัยเรียน</option>
+            <option value="เพื่อนครอบครัว" data-th="🏡 เพื่อนครอบครัว" data-en="🏡 Family friend">🏡 เพื่อนครอบครัว</option>
+            <option value="อื่นๆ" data-th="✨ อื่นๆ" data-en="✨ Other">✨ อื่นๆ</option>
           </select>
         </div>
       </div>
@@ -459,15 +536,15 @@ body::before{
       <div class="card">
         <div class="card-head">
           <div class="card-icon">🌸</div>
-          <span class="card-title">จำนวนผู้ร่วมงาน</span>
+          <span class="card-title" data-th="จำนวนผู้ร่วมงาน" data-en="Number of Guests">จำนวนผู้ร่วมงาน</span>
         </div>
         <div class="field">
-          <label class="label">จะมาร่วมงานทั้งหมดกี่ท่าน <span class="req">*</span></label>
+          <label class="label" data-th="จะมาร่วมงานทั้งหมดกี่ท่าน" data-en="How many guests in total?">จะมาร่วมงานทั้งหมดกี่ท่าน <span class="req">*</span></label>
           <div class="stepper">
             <button type="button" class="step-btn" id="btnDec" onclick="stepGuest(-1)">−</button>
             <div class="step-mid">
               <span class="step-num" id="guestNum">1</span>
-              <span class="step-lbl">ท่าน</span>
+              <span class="step-lbl" data-th="ท่าน" data-en="guest(s)">ท่าน</span>
             </div>
             <button type="button" class="step-btn" id="btnInc" onclick="stepGuest(1)">+</button>
           </div>
@@ -479,34 +556,34 @@ body::before{
       <div class="card">
         <div class="card-head">
           <div class="card-icon">🍽️</div>
-          <span class="card-title">ข้อจำกัดด้านอาหาร</span>
+          <span class="card-title" data-th="ข้อจำกัดด้านอาหาร" data-en="Dietary Requirements">ข้อจำกัดด้านอาหาร</span>
         </div>
         <div class="field">
-          <label class="label">โปรดเลือกที่ตรงกับท่าน (เลือกได้หลายข้อ)</label>
+          <label class="label" data-th="โปรดเลือกที่ตรงกับท่าน (เลือกได้หลายข้อ)" data-en="Select all that apply">โปรดเลือกที่ตรงกับท่าน (เลือกได้หลายข้อ)</label>
           <div class="chips">
             <div class="chip">
               <input type="checkbox" id="d-norm" value="ทานได้ทุกอย่าง" checked>
-              <label for="d-norm">🍽️ ทานได้ทุกอย่าง</label>
+              <label for="d-norm"><span data-th="🍽️ ทานได้ทุกอย่าง" data-en="🍽️ No restrictions">🍽️ ทานได้ทุกอย่าง</span></label>
             </div>
             <div class="chip">
               <input type="checkbox" id="d-veg" value="มังสวิรัติ">
-              <label for="d-veg">🥦 มังสวิรัติ</label>
+              <label for="d-veg"><span data-th="🥦 มังสวิรัติ" data-en="🥦 Vegetarian">🥦 มังสวิรัติ</span></label>
             </div>
             <div class="chip">
               <input type="checkbox" id="d-vegan" value="วีแกน">
-              <label for="d-vegan">🌱 วีแกน</label>
+              <label for="d-vegan"><span data-th="🌱 วีแกน" data-en="🌱 Vegan">🌱 วีแกน</span></label>
             </div>
             <div class="chip">
               <input type="checkbox" id="d-halal" value="ฮาลาล">
-              <label for="d-halal">☪️ ฮาลาล</label>
+              <label for="d-halal"><span data-th="☪️ ฮาลาล" data-en="☪️ Halal">☪️ ฮาลาล</span></label>
             </div>
             <div class="chip">
               <input type="checkbox" id="d-allergy" value="แพ้อาหาร" onchange="toggleAllergy(this)">
-              <label for="d-allergy">⚠️ แพ้อาหาร</label>
+              <label for="d-allergy"><span data-th="⚠️ แพ้อาหาร" data-en="⚠️ Food Allergy">⚠️ แพ้อาหาร</span></label>
             </div>
           </div>
           <div class="allergy-wrap" id="allergyWrap">
-            <input type="text" id="allergyTxt" class="inp" placeholder="ระบุสิ่งที่แพ้ เช่น กุ้ง ถั่ว นม...">
+            <input type="text" id="allergyTxt" class="inp" placeholder="ระบุสิ่งที่แพ้ เช่น กุ้ง ถั่ว นม... / e.g. shrimp, nuts, milk...">
           </div>
         </div>
       </div>
@@ -515,10 +592,10 @@ body::before{
       <div class="card">
         <div class="card-head">
           <div class="card-icon">💌</div>
-          <span class="card-title">ฝากข้อความ (ไม่บังคับ)</span>
+          <span class="card-title" data-th="ฝากข้อความ (ไม่บังคับ)" data-en="Message (Optional)">ฝากข้อความ (ไม่บังคับ)</span>
         </div>
         <div class="field">
-          <textarea id="fmsg" class="ta" placeholder="ฝากคำอวยพรหรือข้อความถึงคู่บ่าวสาวได้เลยค่ะ 🌸"></textarea>
+          <textarea id="fmsg" class="ta" data-th-placeholder="ฝากคำอวยพรหรือข้อความถึงคู่บ่าวสาวได้เลยค่ะ 🌸" data-en-placeholder="Leave a message or well-wishes for the couple 🌸" placeholder="ฝากคำอวยพรหรือข้อความถึงคู่บ่าวสาวได้เลยค่ะ 🌸"></textarea>
         </div>
       </div>
 
@@ -526,7 +603,7 @@ body::before{
 
     <div class="sub-area">
       <button type="submit" class="sub-btn" id="subBtn">
-        ✉️&nbsp;&nbsp;ยืนยันการเข้าร่วมงาน
+        <span data-th="✉️&nbsp;&nbsp;ยืนยันการเข้าร่วมงาน" data-en="✉️&nbsp;&nbsp;Confirm Attendance">✉️&nbsp;&nbsp;ยืนยันการเข้าร่วมงาน</span>
       </button>
     </div>
   </form>
@@ -601,8 +678,7 @@ body::before{
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwcoli2EosQS7L8vfLySmwG6fLrHBW-glaFo16jgtB1iK6_Q7v6JSxzo0b86T07iy58Iw/exec';
 const LIFF_ID   = '2006674119-opWzXpla';
 let lineUserId       = '';
-let lineDisplayName  = '';
-let linePictureUrl   = '';
+let currentLang      = 'th';
 
 // ══════════════════════════════════════
 //  CHECK ALREADY SUBMITTED
@@ -662,14 +738,17 @@ function toast(msg){
 //  VALIDATION
 // ══════════════════════════════════════
 function validate(){
-  const name=document.getElementById('fname').value.trim();
+  const fn  = document.getElementById('ffirstname').value.trim();
+  const ln  = document.getElementById('flastname').value.trim();
   const phone=document.getElementById('fphone').value.trim();
   const side=document.querySelector('input[name=side]:checked');
   const rel=document.getElementById('frel').value;
-  if(!name){toast('⚠️ กรุณากรอกชื่อ-นามสกุล');document.getElementById('fname').focus();return false}
-  if(!phone){toast('⚠️ กรุณากรอกเบอร์โทรศัพท์');document.getElementById('fphone').focus();return false}
-  if(!side){toast('⚠️ กรุณาเลือกฝั่งของท่าน');return false}
-  if(!rel){toast('⚠️ กรุณาเลือกความสัมพันธ์');return false}
+  const en  = currentLang==='en';
+  if(!fn){toast(en?'⚠️ Please enter your first name':'⚠️ กรุณากรอกชื่อจริง');document.getElementById('ffirstname').focus();return false}
+  if(!ln){toast(en?'⚠️ Please enter your last name':'⚠️ กรุณากรอกนามสกุล');document.getElementById('flastname').focus();return false}
+  if(!phone){toast(en?'⚠️ Please enter your phone number':'⚠️ กรุณากรอกเบอร์โทรศัพท์');document.getElementById('fphone').focus();return false}
+  if(!side){toast(en?'⚠️ Please select a side':'⚠️ กรุณาเลือกฝั่งของท่าน');return false}
+  if(!rel){toast(en?'⚠️ Please select your relationship':'⚠️ กรุณาเลือกความสัมพันธ์');return false}
   return true;
 }
 
@@ -680,13 +759,15 @@ function collect(){
   const diets=[...document.querySelectorAll('.chip input:checked')].map(c=>c.value);
   const allergy=document.getElementById('allergyTxt').value.trim();
   if(allergy) diets.push('แพ้: '+allergy);
+  const fn = document.getElementById('ffirstname').value.trim();
+  const ln = document.getElementById('flastname').value.trim();
   return{
     action:'submit',
     timestamp:new Date().toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}),
     lineUserId:lineUserId,
-    lineDisplayName:lineDisplayName,
-    linePictureUrl:linePictureUrl,
-    name:document.getElementById('fname').value.trim(),
+    firstName:fn,
+    lastName:ln,
+    name:fn + ' ' + ln,
     phone:document.getElementById('fphone').value.trim(),
     side:document.querySelector('input[name=side]:checked')?.value||'',
     relationship:document.getElementById('frel').selectedOptions[0]?.text||'',
@@ -706,7 +787,7 @@ function showSuccess(d){
   document.getElementById('summaryCard').innerHTML=`
     <div class="sc-row">
       <span class="sc-icon">👤</span>
-      <span class="sc-val"><strong>${d.name}</strong></span>
+      <span class="sc-val"><strong>${d.firstName} ${d.lastName}</strong></span>
     </div>
     <div class="sc-row">
       <span class="sc-icon">🌸</span>
@@ -731,7 +812,7 @@ document.getElementById('rsvpForm').addEventListener('submit',async function(e){
   const data=collect();
   const btn=document.getElementById('subBtn');
   btn.disabled=true;
-  btn.innerHTML='<span class="spin"></span>กำลังส่งข้อมูล...';
+  btn.innerHTML='<span class="spin"></span>' + (currentLang==='en' ? 'Sending...' : 'กำลังส่งข้อมูล...');
   try{
     if(SHEET_URL!=='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
       await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(data)});
@@ -748,19 +829,13 @@ liff.init({ liffId: LIFF_ID })
   .then(async () => {
     if(!liff.isLoggedIn()){ liff.login(); return; }
     const profile = await liff.getProfile();
-    lineUserId      = profile.userId;
-    lineDisplayName = profile.displayName;
-    linePictureUrl  = profile.pictureUrl || '';
-    // pre-fill name
-    if(!document.getElementById('fname').value){
-      document.getElementById('fname').value = lineDisplayName;
-    }
-    // track visitor (fire and forget)
+    lineUserId = profile.userId;
+    // track visitor (fire and forget) — no profile data stored
     fetch(SHEET_URL,{method:'POST',mode:'no-cors',
       headers:{'Content-Type':'text/plain;charset=UTF-8'},
       body:JSON.stringify({
         action:'visit',
-        lineUserId,lineDisplayName,linePictureUrl,
+        lineUserId,
         timestamp:new Date().toLocaleString('th-TH',{timeZone:'Asia/Bangkok'})
       })
     }).catch(()=>{});
@@ -769,6 +844,56 @@ liff.init({ liffId: LIFF_ID })
     if(check.submitted){ showAlready(check.data); }
   })
   .catch(err => console.error('LIFF init error', err));
+
+// ══════════════════════════════════════
+//  LANGUAGE SWITCH
+// ══════════════════════════════════════
+function toggleLang(){
+  currentLang = currentLang === 'th' ? 'en' : 'th';
+  applyLang();
+}
+
+function applyLang(){
+  const en = currentLang === 'en';
+  // toggle button label
+  document.getElementById('langBtn').textContent = en ? 'ภาษาไทย' : 'EN';
+
+  // swap all data-th / data-en text content
+  document.querySelectorAll('[data-th]').forEach(el => {
+    const val = en ? el.dataset.en : el.dataset.th;
+    if(val !== undefined) el.innerHTML = val;
+  });
+
+  // swap select options
+  document.querySelectorAll('option[data-th]').forEach(opt => {
+    opt.textContent = en ? opt.dataset.en : opt.dataset.th;
+  });
+
+  // swap textarea placeholder
+  const ta = document.getElementById('fmsg');
+  if(ta){
+    ta.placeholder = en ? ta.dataset.enPlaceholder : ta.dataset.thPlaceholder;
+  }
+
+  // swap step label inside label spans
+  document.querySelectorAll('label span[data-th]').forEach(el => {
+    el.textContent = en ? el.dataset.en : el.dataset.th;
+  });
+
+  // success/already views
+  const dateStr = en ? '3 July 2026 · Chatrium Riverside' : '3 กรกฎาคม 2569 · Chatrium Riverside';
+  document.querySelectorAll('.sc-icon + .sc-val span').forEach(el => {
+    if(el.textContent.includes('กรกฎาคม') || el.textContent.includes('July')) el.textContent = dateStr;
+  });
+
+  // submit button in already / success
+  const subBtn = document.getElementById('subBtn');
+  if(subBtn && !subBtn.disabled){
+    const sp = subBtn.querySelector('span[data-th]');
+    if(sp) sp.innerHTML = en ? '✉️&nbsp;&nbsp;Confirm Attendance' : '✉️&nbsp;&nbsp;ยืนยันการเข้าร่วมงาน';
+  }
+}
+
 </script>
 </body>
 </html>
