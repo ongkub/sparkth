@@ -1504,21 +1504,6 @@ function renderSendArea(){
   const area = document.getElementById('sendArea');
   if(!area) return;
 
-  if(!isInLINE){
-    // Not inside LINE app — show deep link to open in LINE
-    const currentUrl = encodeURIComponent(location.href);
-    area.innerHTML = `
-      <div class="desktop-warn">
-        <p>📱 <strong>กรุณาเปิดใน LINE app</strong><br>
-        <span style="font-size:12px;color:var(--muted)">Share Target Picker ใช้งานได้เฉพาะใน LINE app เท่านั้น</span></p>
-        <a class="send-btn" style="display:block;text-align:center;text-decoration:none"
-           href="https://liff.line.me/${ADMIN_LIFF}">
-          เปิดใน LINE app
-        </a>
-      </div>`;
-    return;
-  }
-
   if(liff.isLoggedIn()){
     area.innerHTML = `
       <button class="send-btn" id="sendBtn" onclick="sendInvite()">
