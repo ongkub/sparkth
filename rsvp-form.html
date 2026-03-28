@@ -44,14 +44,26 @@ body::before{
 }
 .wrap{position:relative;z-index:1;max-width:480px;margin:0 auto}
 
-/* ─── BOTANICAL HEADER SVG ─── */
-.hero-svg{width:100%;display:block;margin-bottom:-8px}
-
-/* ─── HEADER TEXT ─── */
-.hero-text{
-  text-align:center;
-  padding:0 24px 28px;
-  position:relative;
+/* ─── HERO HEADER ─── */
+.hero-header{
+  position:relative;overflow:hidden;
+  background:linear-gradient(160deg,var(--cream) 0%,var(--ivory) 100%);
+}
+.hero-bg{
+  position:absolute;top:0;left:0;
+  width:100%;height:100%;pointer-events:none;
+}
+.lang-btn-abs{
+  position:absolute;top:14px;right:14px;z-index:1;
+  background:transparent;border:1.5px solid var(--border);
+  border-radius:50px;padding:5px 14px;
+  font-family:inherit;font-size:11px;font-weight:600;
+  color:var(--muted);cursor:pointer;letter-spacing:.5px;
+  transition:all .2s;
+}
+.hero-body{
+  position:relative;text-align:center;
+  padding:36px 24px 22px;
 }
 .eyebrow{
   display:block;
@@ -296,11 +308,11 @@ body::before{
 
 /* ─── PP MONOGRAM LOGO ─── */
 .pp-logo-wrap{
-  display:flex;justify-content:center;margin-bottom:4px;
+  display:flex;justify-content:center;margin-bottom:14px;
 }
 .pp-logo{
-  width:110px;height:auto;
-  filter:drop-shadow(0 2px 12px rgba(245,156,154,.25));
+  width:140px;height:auto;
+  filter:drop-shadow(0 4px 18px rgba(245,156,154,.38));
   animation:rise .6s ease;
 }
 /* ─── FADE IN ─── */
@@ -365,8 +377,9 @@ function applyLang(){
 <!-- ═══ MAIN FORM VIEW ═══ -->
 <div class="wrap" id="formView">
 
-  <!-- Botanical SVG Header -->
-  <svg class="hero-svg" viewBox="0 0 480 160" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <!-- Hero Header -->
+  <div class="hero-header">
+  <svg class="hero-bg" viewBox="0 0 480 160" xmlns="http://www.w3.org/2000/svg" fill="none">
     <defs>
       <linearGradient id="hg" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stop-color="#FEF0EE" stop-opacity=".75"/>
@@ -427,25 +440,17 @@ function applyLang(){
     <path d="M120 155 Q240 140 360 155" stroke="#F5C8C4" stroke-width=".8" opacity=".22"/>
   </svg>
 
-  <!-- Header -->
-  <div class="hero-text">
+  <button onclick="toggleLang()" id="langBtn" class="lang-btn-abs">EN</button>
+  <div class="hero-body">
     <div class="pp-logo-wrap">
       <img src="img/weddinglogo.png" alt="PP Monogram" class="pp-logo">
     </div>
-    <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-      <button onclick="toggleLang()" id="langBtn" style="
-        background:transparent;border:1.5px solid var(--border);
-        border-radius:50px;padding:5px 14px;font-family:inherit;
-        font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;
-        letter-spacing:.5px;transition:all .2s">
-        EN
-      </button>
-    </div>
     <span class="eyebrow">✦ Wedding Invitation ✦</span>
     <span class="couple-name">Praphat <span class="amp">&amp;</span><br>Pattaraporn</span>
-    <span class="event-date">III · VII · MMXXVI</span>
+    <span class="event-date">03/07/2026</span>
     <span class="event-venue">Chatrium Riverside, Bangkok</span>
   </div>
+  </div><!-- end hero-header -->
 
   <!-- Divider -->
   <div class="divider">
