@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <title>Admin — Praphat &amp; Pattaraporn Wedding</title>
 <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Noto+Sans+Thai:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -970,6 +971,7 @@ tr:hover td{background:rgba(254,240,238,.4)}
 // ══════════════════════════════════════
 const SHEET_URL   = 'https://script.google.com/macros/s/AKfycbwcoli2EosQS7L8vfLySmwG6fLrHBW-glaFo16jgtB1iK6_Q7v6JSxzo0b86T07iy58Iw/exec';
 const ADMIN_LIFF  = localStorage.getItem('weddingAdminLiffId') || '2006674119-kldPE7YA';
+const ADMIN_UIDS  = ['U4abc134b530c083a2a88255c5ff56292'];
 
 let adminUserId   = '';
 let adminName     = '';
@@ -1488,6 +1490,18 @@ async function initAdminLIFF(){
     isInLINE = liff.isInClient();
     if(liff.isLoggedIn()){
       const p = await liff.getProfile();
+      if(!ADMIN_UIDS.includes(p.userId)){
+        document.body.innerHTML = `
+          <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;
+            background:#FEFCFB;font-family:'Noto Sans Thai',sans-serif;text-align:center;padding:40px">
+            <div>
+              <div style="font-size:48px;margin-bottom:16px">🔒</div>
+              <div style="font-size:18px;font-weight:600;color:#3A2E2C;margin-bottom:8px">ไม่มีสิทธิ์เข้าถึง</div>
+              <div style="font-size:14px;color:#A08880">หน้านี้สำหรับผู้ดูแลระบบเท่านั้น</div>
+            </div>
+          </div>`;
+        return;
+      }
       adminUserId = p.userId;
       adminName   = p.displayName;
       adminPic    = p.pictureUrl || '';
