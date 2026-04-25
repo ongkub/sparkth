@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>RSVP — Praphat &amp; Pattaraporn</title>
+<title>RSVP — Pattaraporn &amp; Praphat</title>
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -337,6 +337,59 @@ body::before{
 .color-name{font-size:9.5px;color:var(--muted);text-align:center;line-height:1.3;max-width:42px}
 .dresscode-note{font-size:12px;font-weight:300;color:var(--muted);line-height:1.7;margin-top:2px}
 
+/* ─── EVENT SUMMARY ─── */
+.event-summary-card{
+  margin-top:14px;background:var(--white);
+  border-radius:16px;padding:16px;
+  border:1px solid var(--border);width:100%;max-width:300px;
+  text-align:left;
+}
+.event-summary-title{
+  font-size:12px;font-weight:600;letter-spacing:2px;
+  text-transform:uppercase;color:var(--olive);margin-bottom:10px;
+}
+.event-tab-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;
+}
+.event-tab{
+  border:1.5px solid var(--border);border-radius:10px;
+  background:var(--ivory);color:var(--muted);
+  font-family:inherit;font-size:12px;font-weight:500;
+  padding:8px 6px;cursor:pointer;
+}
+.event-tab.active{
+  border-color:var(--rose);
+  background:rgba(245,156,154,.12);
+  color:var(--text);
+}
+.event-pane{display:none}
+.event-pane.active{display:block}
+.event-pane-head{
+  font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;
+}
+.event-list{display:flex;flex-direction:column;gap:6px}
+.event-item{
+  display:grid;grid-template-columns:62px 1fr;gap:8px;align-items:start;
+}
+.event-time{font-size:12px;font-weight:600;color:var(--peach)}
+.event-text{font-size:12px;color:var(--muted);line-height:1.5}
+.map-btn{
+  display:block;margin-top:12px;
+  border:1.5px solid var(--border);border-radius:10px;
+  text-decoration:none;color:var(--text);
+  background:var(--ivory);padding:8px 10px;
+  font-size:12px;font-weight:500;text-align:center;
+}
+.photo-placeholders{
+  display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px;
+}
+.photo-placeholder{
+  border:1px dashed #B8B8B8;background:#E3E3E3;color:#5F5F5F;
+  border-radius:10px;min-height:72px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;text-align:center;padding:8px;line-height:1.45;
+}
+
 /* ─── EDIT BUTTON ─── */
 .edit-btn{
   margin-top:14px;padding:10px 24px;
@@ -491,7 +544,7 @@ function applyLang(){
       <img src="img/weddinglogo.png" alt="PP Monogram" class="pp-logo">
     </div>
     <span class="eyebrow">✦ Wedding Invitation ✦</span>
-    <span class="couple-name">Praphat <span class="amp">&amp;</span><br>Pattaraporn</span>
+    <span class="couple-name">Pattaraporn <span class="amp">&amp;</span><br>Praphat</span>
     <span class="event-date">03/07/2026</span>
     <span class="event-venue">Chatrium Riverside, Bangkok</span>
   </div>
@@ -574,15 +627,15 @@ function applyLang(){
           <label class="label" data-th="ช่วงเวลาที่สะดวกมาร่วมงาน" data-en="Attendance &amp; Session">ช่วงเวลาที่สะดวกมาร่วมงาน <span class="req">*</span></label>
           <div class="pills pills-3">
             <div class="pill">
-              <input type="radio" name="session" id="sess-morning" value="ช่วงเช้า (08:00 น.)">
-              <label for="sess-morning"><span data-th="🌅 พิธีเช้า เริ่ม 08.00 น." data-en="🌅 Morning Ceremony starts at 8:00 AM">🌅 พิธีเช้า เริ่ม 08.00 น.</span></label>
+              <input type="radio" name="session" id="sess-morning" value="ช่วงเช้า (07:00 น.)">
+              <label for="sess-morning"><span data-th="🌅 พิธีเช้า เริ่ม 07.00 น." data-en="🌅 Morning Ceremony starts at 7:00 AM">🌅 พิธีเช้า เริ่ม 07.00 น.</span></label>
             </div>
             <div class="pill">
               <input type="radio" name="session" id="sess-evening" value="ช่วงเย็น (18:00 น.)">
               <label for="sess-evening"><span data-th="🌙 งานเลี้ยงเย็น เริ่ม 18.00 น." data-en="🌙 Evening Reception starts at 6:00 PM">🌙 งานเลี้ยงเย็น เริ่ม 18.00 น.</span></label>
             </div>
             <div class="pill">
-              <input type="radio" name="session" id="sess-both" value="มาทั้งสองช่วง (08:00 และ 18:00 น.)">
+              <input type="radio" name="session" id="sess-both" value="มาทั้งสองช่วง (07:00 และ 18:00 น.)">
               <label for="sess-both"><span data-th="🌟 มาทั้งสองช่วง" data-en="🌟 Both Sessions">🌟 มาทั้งสองช่วง</span></label>
             </div>
             <div class="pill">
@@ -714,7 +767,35 @@ function applyLang(){
       <div class="color-chip"><div class="color-circle" style="background:#9ECCF0"></div><div class="color-name">ฟ้า<br>อ่อน</div></div>
       <div class="color-chip"><div class="color-circle" style="background:#FFBE98"></div><div class="color-name">พีช</div></div>
     </div>
-    <p class="dresscode-note">แนะนำชุดโทนพาสเทลหรือเอิร์ธโทน<br>แต่ไม่จำเป็นต้องตามธีมนะคะ<br>ขอแค่มาร่วมงานด้วยกันก็ดีใจมากแล้วค่ะ 💕</p>
+    <p class="dresscode-note">Dress code: สีพาสเทลตาม Color Palette ในหน้า Wedding CI ยกเว้นสีดำ<br>หรือสีอะไรก็ได้ที่ท่านใส่แล้วสวยหล่อมั่นใจ</p>
+  </div>
+  <div class="event-summary-card">
+    <div class="event-summary-title">กำหนดการงาน</div>
+    <div class="event-tab-row">
+      <button class="event-tab active" type="button" onclick="switchEventTab(this,'morning')">พิธีเช้า</button>
+      <button class="event-tab" type="button" onclick="switchEventTab(this,'evening')">พิธีเย็น</button>
+    </div>
+    <div class="event-pane active" data-pane="morning">
+      <div class="event-pane-head">พิธีเช้า: 07.00-12.00</div>
+      <div class="event-list">
+        <div class="event-item"><div class="event-time">08.09</div><div class="event-text">แห่ขันหมาก</div></div>
+        <div class="event-item"><div class="event-time">09.09</div><div class="event-text">หมั้น</div></div>
+        <div class="event-item"><div class="event-time">10.09</div><div class="event-text">ส่งตัว</div></div>
+        <div class="event-item"><div class="event-time">10.29</div><div class="event-text">ยกน้ำชา</div></div>
+      </div>
+    </div>
+    <div class="event-pane" data-pane="evening">
+      <div class="event-pane-head">พิธีเย็น: 18.00-21.00</div>
+      <div class="event-list">
+        <div class="event-item"><div class="event-time">18.00</div><div class="event-text">เริ่มร่วมถ่ายภาพ</div></div>
+        <div class="event-item"><div class="event-time">19.00+</div><div class="event-text">ร่วมรับประทานอาหาร</div></div>
+      </div>
+    </div>
+    <a class="map-btn" href="https://maps.app.goo.gl/1bEwcjvUzahesYQt5" target="_blank" rel="noopener noreferrer">📍 Google Map: Chatrium Riverside</a>
+    <div class="photo-placeholders">
+      <div class="photo-placeholder">พื้นที่รูป: บรรยากาศพิธีเช้า (แนวตั้ง 4:5)</div>
+      <div class="photo-placeholder">พื้นที่รูป: บรรยากาศงานเย็น / คู่บ่าวสาวกับแขก (แนวนอน 16:9)</div>
+    </div>
   </div>
   <button class="edit-btn" onclick="editForm()">✏️ แก้ไขข้อมูล</button>
 </div>
@@ -753,7 +834,35 @@ function applyLang(){
     <div class="dresscode-title">ธีมการแต่งกาย</div>
     <div class="dresscode-theme">🌿 Garden Romance</div>
     <div class="color-row" id="colorRow"></div>
-    <p class="dresscode-note">แนะนำชุดโทนพาสเทลหรือเอิร์ธโทน<br>แต่ไม่จำเป็นต้องตามธีมนะคะ<br>ขอแค่มาร่วมงานด้วยกันก็ดีใจมากแล้วค่ะ 💕</p>
+    <p class="dresscode-note">Dress code: สีพาสเทลตาม Color Palette ในหน้า Wedding CI ยกเว้นสีดำ<br>หรือสีอะไรก็ได้ที่ท่านใส่แล้วสวยหล่อมั่นใจ</p>
+  </div>
+  <div class="event-summary-card">
+    <div class="event-summary-title">กำหนดการงาน</div>
+    <div class="event-tab-row">
+      <button class="event-tab active" type="button" onclick="switchEventTab(this,'morning')">พิธีเช้า</button>
+      <button class="event-tab" type="button" onclick="switchEventTab(this,'evening')">พิธีเย็น</button>
+    </div>
+    <div class="event-pane active" data-pane="morning">
+      <div class="event-pane-head">พิธีเช้า: 07.00-12.00</div>
+      <div class="event-list">
+        <div class="event-item"><div class="event-time">08.09</div><div class="event-text">แห่ขันหมาก</div></div>
+        <div class="event-item"><div class="event-time">09.09</div><div class="event-text">หมั้น</div></div>
+        <div class="event-item"><div class="event-time">10.09</div><div class="event-text">ส่งตัว</div></div>
+        <div class="event-item"><div class="event-time">10.29</div><div class="event-text">ยกน้ำชา</div></div>
+      </div>
+    </div>
+    <div class="event-pane" data-pane="evening">
+      <div class="event-pane-head">พิธีเย็น: 18.00-21.00</div>
+      <div class="event-list">
+        <div class="event-item"><div class="event-time">18.00</div><div class="event-text">เริ่มร่วมถ่ายภาพ</div></div>
+        <div class="event-item"><div class="event-time">19.00+</div><div class="event-text">ร่วมรับประทานอาหาร</div></div>
+      </div>
+    </div>
+    <a class="map-btn" href="https://maps.app.goo.gl/1bEwcjvUzahesYQt5" target="_blank" rel="noopener noreferrer">📍 Google Map: Chatrium Riverside</a>
+    <div class="photo-placeholders">
+      <div class="photo-placeholder">พื้นที่รูป: บรรยากาศพิธีเช้า (แนวตั้ง 4:5)</div>
+      <div class="photo-placeholder">พื้นที่รูป: บรรยากาศงานเย็น / คู่บ่าวสาวกับแขก (แนวนอน 16:9)</div>
+    </div>
   </div>
   <button class="edit-btn" id="editBtn" style="display:none" onclick="editForm()">✏️ แก้ไขข้อมูล</button>
 </div>
@@ -763,7 +872,8 @@ function applyLang(){
 // ══════════════════════════════════════
 //  CONFIG
 // ══════════════════════════════════════
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwcoli2EosQS7L8vfLySmwG6fLrHBW-glaFo16jgtB1iK6_Q7v6JSxzo0b86T07iy58Iw/exec';
+const SHEET_URL = (localStorage.getItem('weddingApiUrl')
+  || 'https://script.google.com/macros/s/AKfycbwcoli2EosQS7L8vfLySmwG6fLrHBW-glaFo16jgtB1iK6_Q7v6JSxzo0b86T07iy58Iw/exec').trim();
 const LIFF_ID   = '2006674119-opWzXpla';
 let lineUserId       = '';
 let lineUserPic      = '';
@@ -878,9 +988,11 @@ function collect(){
 //  SHOW SUCCESS
 // ══════════════════════════════════════
 const SESSION_LABEL = {
-  'ช่วงเช้า (08:00 น.)':                '🌅 พิธีเช้า · 03/07/2026 เวลา 08:00 น.',
+  'ช่วงเช้า (07:00 น.)':                '🌅 พิธีเช้า · 03/07/2026 เวลา 07:00 น.',
+  'ช่วงเช้า (08:00 น.)':                '🌅 พิธีเช้า · 03/07/2026 เวลา 07:00 น.',
   'ช่วงเย็น (18:00 น.)':                '🌙 งานเลี้ยงเย็น · 03/07/2026 เวลา 18:00 น.',
-  'มาทั้งสองช่วง (08:00 และ 18:00 น.)': '🌟 ทั้งสองช่วง · 08:00 น. และ 18:00 น.',
+  'มาทั้งสองช่วง (07:00 และ 18:00 น.)': '🌟 ทั้งสองช่วง · 07:00 น. และ 18:00 น.',
+  'มาทั้งสองช่วง (08:00 และ 18:00 น.)': '🌟 ทั้งสองช่วง · 07:00 น. และ 18:00 น.',
   'ไม่สะดวกมาร่วมงาน':                  '🙏 ไม่สะดวกมาร่วมงาน'
 };
 const DRESS_COLORS = [
@@ -926,6 +1038,16 @@ function showSuccess(d){
     </div>`).join('');
   document.getElementById('dresscodeCard').style.display='block';
   document.getElementById('editBtn').style.display='inline-block';
+}
+
+function switchEventTab(button, tabName){
+  const card = button.closest('.event-summary-card');
+  if(!card) return;
+  card.querySelectorAll('.event-tab').forEach((el)=>el.classList.remove('active'));
+  button.classList.add('active');
+  card.querySelectorAll('.event-pane').forEach((el)=>{
+    el.classList.toggle('active', el.dataset.pane === tabName);
+  });
 }
 
 function editForm(){
@@ -998,7 +1120,7 @@ document.getElementById('rsvpForm').addEventListener('submit',async function(e){
     });
     clearTimeout(t);
     const json = await resp.json().catch(()=>({}));
-    if(json.success === false) console.warn('GAS error:', json.error);
+    if(json.success === false) console.warn('API error:', json.error);
   }catch(err){
     console.error('Sheet submit:', err.name==='AbortError'?'timeout':err);
   }
