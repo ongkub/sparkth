@@ -53,13 +53,17 @@ body::before{
   position:absolute;top:0;left:0;
   width:100%;height:100%;pointer-events:none;
 }
-.lang-btn-abs{
+.lang-toggle-btn{
   position:absolute;top:14px;right:14px;z-index:1;
   background:transparent;border:1.5px solid var(--border);
   border-radius:50px;padding:5px 14px;
   font-family:inherit;font-size:11px;font-weight:600;
   color:var(--muted);cursor:pointer;letter-spacing:.5px;
   transition:all .2s;
+}
+.summary-lang-btn{
+  position:fixed;top:14px;right:14px;z-index:10;
+  background:var(--white);
 }
 .hero-body{
   position:relative;text-align:center;
@@ -422,57 +426,6 @@ option{
 .wrap{animation:rise .45s ease}
 </style>
 <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
-<script>
-// ══════════════════════════════════════
-//  LANGUAGE SWITCH
-// ══════════════════════════════════════
-function toggleLang(){
-  currentLang = currentLang === 'th' ? 'en' : 'th';
-  applyLang();
-}
-
-function applyLang(){
-  const en = currentLang === 'en';
-  // toggle button label
-  document.getElementById('langBtn').textContent = en ? 'ภาษาไทย' : 'EN';
-
-  // swap all data-th / data-en text content
-  document.querySelectorAll('[data-th]').forEach(el => {
-    const val = en ? el.dataset.en : el.dataset.th;
-    if(val !== undefined) el.innerHTML = val;
-  });
-
-  // swap select options
-  document.querySelectorAll('option[data-th]').forEach(opt => {
-    opt.textContent = en ? opt.dataset.en : opt.dataset.th;
-  });
-
-  // swap textarea placeholder
-  const ta = document.getElementById('fmsg');
-  if(ta){
-    ta.placeholder = en ? ta.dataset.enPlaceholder : ta.dataset.thPlaceholder;
-  }
-
-  // swap step label inside label spans
-  document.querySelectorAll('label span[data-th]').forEach(el => {
-    el.textContent = en ? el.dataset.en : el.dataset.th;
-  });
-
-  // success/already views
-  const dateStr = en ? '3 July 2026 · Chatrium Riverside' : '3 กรกฎาคม 2569 · Chatrium Riverside';
-  document.querySelectorAll('.sc-icon + .sc-val span').forEach(el => {
-    if(el.textContent.includes('กรกฎาคม') || el.textContent.includes('July')) el.textContent = dateStr;
-  });
-
-  // submit button in already / success
-  const subBtn = document.getElementById('subBtn');
-  if(subBtn && !subBtn.disabled){
-    const sp = subBtn.querySelector('span[data-th]');
-    if(sp) sp.innerHTML = en ? '✉️&nbsp;&nbsp;Confirm Attendance' : '✉️&nbsp;&nbsp;ยืนยันการเข้าร่วมงาน';
-  }
-}
-
-</script>
 </head>
 <body>
 <div id="loadingScreen" class="loading-screen">
@@ -547,7 +500,7 @@ function applyLang(){
     <path d="M120 155 Q240 140 360 155" stroke="#F5C8C4" stroke-width=".8" opacity=".22"/>
   </svg>
 
-  <button onclick="toggleLang()" id="langBtn" class="lang-btn-abs">EN</button>
+  <button onclick="toggleLang()" class="lang-toggle-btn">EN</button>
   <div class="hero-body">
     <div class="pp-logo-wrap">
       <img src="img/weddinglogo.png" alt="PP Monogram" class="pp-logo">
@@ -623,12 +576,12 @@ function applyLang(){
           <label class="label" data-th="ท่านเป็นแขกฝั่งใด" data-en="Whose side are you on?">ท่านเป็นแขกฝั่งใด <span class="req">*</span></label>
           <div class="pills">
             <div class="pill">
-              <input type="radio" name="side" id="s-groom" value="เจ้าบ่าว (ประภาส)">
-              <label for="s-groom"><span data-th="🤵 ฝั่งเจ้าบ่าว" data-en="🤵 Groom's side">🤵 ฝั่งเจ้าบ่าว</span></label>
+              <input type="radio" name="side" id="s-groom" value="เจ้าบ่าว (ประภาส - อ๋อง)">
+              <label for="s-groom"><span data-th="🤵 ฝั่งเจ้าบ่าว (ประภาส - อ๋อง)" data-en="🤵 Groom's side (Praphat - Ong)">🤵 ฝั่งเจ้าบ่าว (ประภาส - อ๋อง)</span></label>
             </div>
             <div class="pill">
-              <input type="radio" name="side" id="s-bride" value="เจ้าสาว (ภัทรภร)">
-              <label for="s-bride"><span data-th="👰 ฝั่งเจ้าสาว" data-en="👰 Bride's side">👰 ฝั่งเจ้าสาว</span></label>
+              <input type="radio" name="side" id="s-bride" value="เจ้าสาว (ภัทรภร - อันอัน)">
+              <label for="s-bride"><span data-th="👰 ฝั่งเจ้าสาว (ภัทรภร - อันอัน)" data-en="👰 Bride's side (Pattaraporn - Anan)">👰 ฝั่งเจ้าสาว (ภัทรภร - อันอัน)</span></label>
             </div>
           </div>
         </div>
@@ -636,15 +589,15 @@ function applyLang(){
           <label class="label" data-th="ช่วงเวลาที่สะดวกมาร่วมงาน" data-en="Attendance &amp; Session">ช่วงเวลาที่สะดวกมาร่วมงาน <span class="req">*</span></label>
           <div class="pills pills-3">
             <div class="pill">
-              <input type="radio" name="session" id="sess-morning" value="ช่วงเช้า (07:00 น.)">
-              <label for="sess-morning"><span data-th="🌅 พิธีเช้า เริ่ม 07.00 น." data-en="🌅 Morning Ceremony starts at 7:00 AM">🌅 พิธีเช้า เริ่ม 07.00 น.</span></label>
+              <input type="radio" name="session" id="sess-morning" value="ช่วงเช้า (07:00-12:00 น.)">
+              <label for="sess-morning"><span data-th="🌅 พิธีเช้า 07.00-12.00 น." data-en="🌅 Morning Ceremony 7:00 AM-12:00 PM">🌅 พิธีเช้า 07.00-12.00 น.</span></label>
             </div>
             <div class="pill">
-              <input type="radio" name="session" id="sess-evening" value="ช่วงเย็น (18:00 น.)">
-              <label for="sess-evening"><span data-th="🌙 งานเลี้ยงเย็น เริ่ม 18.00 น." data-en="🌙 Evening Reception starts at 6:00 PM">🌙 งานเลี้ยงเย็น เริ่ม 18.00 น.</span></label>
+              <input type="radio" name="session" id="sess-evening" value="ช่วงเย็น (18:00-21:00 น.)">
+              <label for="sess-evening"><span data-th="🌙 งานเลี้ยงเย็น 18.00-21.00 น." data-en="🌙 Evening Reception 6:00 PM-9:00 PM">🌙 งานเลี้ยงเย็น 18.00-21.00 น.</span></label>
             </div>
             <div class="pill">
-              <input type="radio" name="session" id="sess-both" value="มาทั้งสองช่วง (07:00 และ 18:00 น.)">
+              <input type="radio" name="session" id="sess-both" value="มาทั้งสองช่วง (07:00-12:00 และ 18:00-21:00 น.)">
               <label for="sess-both"><span data-th="🌟 มาทั้งสองช่วง" data-en="🌟 Both Sessions">🌟 มาทั้งสองช่วง</span></label>
             </div>
             <div class="pill">
@@ -743,6 +696,7 @@ function applyLang(){
 
 <!-- ═══ ALREADY SUBMITTED VIEW ═══ -->
 <div class="success" id="alreadyView">
+  <button onclick="toggleLang()" class="lang-toggle-btn summary-lang-btn">EN</button>
   <svg class="success-ring" viewBox="0 0 148 148" xmlns="http://www.w3.org/2000/svg" fill="none">
     <circle cx="74" cy="74" r="65" stroke="#FEF0EE" stroke-width="2"/>
     <circle cx="74" cy="74" r="52" stroke="#9ECCF0" stroke-width="1" stroke-dasharray="5 5"/>
@@ -779,34 +733,35 @@ function applyLang(){
     <p class="dresscode-note">หรือสีอะไรก็ได้ที่ท่านใส่แล้วสวยหล่อมั่นใจ</p>
   </div>
   <div class="event-summary-card">
-    <div class="event-summary-title">กำหนดการงาน</div>
+    <div class="event-summary-title" data-th="กำหนดการงาน" data-en="Event Schedule">กำหนดการงาน</div>
     <div class="event-tab-row">
-      <button class="event-tab active" type="button" onclick="switchEventTab(this,'morning')">พิธีเช้า</button>
-      <button class="event-tab" type="button" onclick="switchEventTab(this,'evening')">พิธีเย็น</button>
+      <button class="event-tab active" type="button" onclick="switchEventTab(this,'morning')" data-th="พิธีเช้า" data-en="Morning">พิธีเช้า</button>
+      <button class="event-tab" type="button" onclick="switchEventTab(this,'evening')" data-th="พิธีเย็น" data-en="Evening">พิธีเย็น</button>
     </div>
     <div class="event-pane active" data-pane="morning">
-      <div class="event-pane-head">พิธีเช้า: 07.00-12.00</div>
+      <div class="event-pane-head" data-th="พิธีเช้า: 07.00-12.00" data-en="Morning: 7:00 AM-12:00 PM">พิธีเช้า: 07.00-12.00</div>
       <div class="event-list">
-        <div class="event-item"><div class="event-time">08.09</div><div class="event-text">แห่ขันหมาก</div></div>
-        <div class="event-item"><div class="event-time">09.09</div><div class="event-text">หมั้น</div></div>
-        <div class="event-item"><div class="event-time">10.09</div><div class="event-text">ส่งตัว</div></div>
-        <div class="event-item"><div class="event-time">10.29</div><div class="event-text">ยกน้ำชา</div></div>
+        <div class="event-item"><div class="event-time">08.09</div><div class="event-text" data-th="แห่ขันหมาก" data-en="Khan Maak procession">แห่ขันหมาก</div></div>
+        <div class="event-item"><div class="event-time">09.09</div><div class="event-text" data-th="หมั้น" data-en="Engagement ceremony">หมั้น</div></div>
+        <div class="event-item"><div class="event-time">10.09</div><div class="event-text" data-th="ส่งตัว" data-en="Bridal handover">ส่งตัว</div></div>
+        <div class="event-item"><div class="event-time">10.29</div><div class="event-text" data-th="ยกน้ำชา" data-en="Tea ceremony">ยกน้ำชา</div></div>
       </div>
     </div>
     <div class="event-pane" data-pane="evening">
-      <div class="event-pane-head">พิธีเย็น: 18.00-21.00</div>
+      <div class="event-pane-head" data-th="พิธีเย็น: 18.00-21.00" data-en="Evening: 6:00 PM-9:00 PM">พิธีเย็น: 18.00-21.00</div>
       <div class="event-list">
-        <div class="event-item"><div class="event-time">18.00</div><div class="event-text">เริ่มร่วมถ่ายภาพ</div></div>
-        <div class="event-item"><div class="event-time">19.00+</div><div class="event-text">ร่วมรับประทานอาหาร</div></div>
+        <div class="event-item"><div class="event-time">18.00</div><div class="event-text" data-th="เริ่มร่วมถ่ายภาพ" data-en="Photo session starts">เริ่มร่วมถ่ายภาพ</div></div>
+        <div class="event-item"><div class="event-time">19.00+</div><div class="event-text" data-th="ร่วมรับประทานอาหาร" data-en="Dinner reception">ร่วมรับประทานอาหาร</div></div>
       </div>
     </div>
-    <a class="map-btn" href="https://maps.app.goo.gl/1bEwcjvUzahesYQt5" target="_blank" rel="noopener noreferrer">📍 Google Map: Chatrium Riverside</a>
+    <a class="map-btn" href="https://maps.app.goo.gl/1bEwcjvUzahesYQt5" target="_blank" rel="noopener noreferrer" data-th="📍 Google Map: Chatrium Riverside" data-en="📍 Google Map: Chatrium Riverside">📍 Google Map: Chatrium Riverside</a>
   </div>
   <button class="edit-btn" onclick="editForm()">✏️ แก้ไขข้อมูล</button>
 </div>
 
 <!-- ═══ SUCCESS VIEW ═══ -->
 <div class="success" id="successView">
+  <button onclick="toggleLang()" class="lang-toggle-btn summary-lang-btn">EN</button>
   <!-- Decorative ring -->
   <svg class="success-ring" viewBox="0 0 148 148" xmlns="http://www.w3.org/2000/svg" fill="none">
     <circle cx="74" cy="74" r="65" stroke="#FEF0EE" stroke-width="2"/>
@@ -831,9 +786,8 @@ function applyLang(){
     <!-- Center emoji rendered as text -->
     <text x="74" y="84" text-anchor="middle" font-size="34" font-family="sans-serif">💐</text>
   </svg>
-  <div class="success-script">ขอบคุณที่ตอบรับนะคะ</div>
-  <div class="success-sub">ยินดีที่จะได้พบกัน! 🌸</div>
-  <p class="success-msg">เราได้รับการยืนยันของท่านแล้ว<br>ตั้งตารอต้อนรับอย่างอบอุ่นค่ะ</p>
+  <div class="success-script" data-th="ขอบคุณที่ตอบรับค่ะ" data-en="Thank You for Your RSVP">ขอบคุณที่ตอบรับค่ะ</div>
+  <div class="success-sub" data-th="แล้วเจอกันในวันงานนะคะ😊" data-en="See you on our wedding day 😊">แล้วเจอกันในวันงานนะคะ😊</div>
   <div class="success-card" id="summaryCard"></div>
   <div class="dresscode-card" id="dresscodeCard" style="display:none">
     <div class="dresscode-title">ธีมการแต่งกาย</div>
@@ -842,28 +796,28 @@ function applyLang(){
     <p class="dresscode-note">หรือสีอะไรก็ได้ที่ท่านใส่แล้วสวยหล่อมั่นใจ</p>
   </div>
   <div class="event-summary-card">
-    <div class="event-summary-title">กำหนดการงาน</div>
+    <div class="event-summary-title" data-th="กำหนดการงาน" data-en="Event Schedule">กำหนดการงาน</div>
     <div class="event-tab-row">
-      <button class="event-tab active" type="button" onclick="switchEventTab(this,'morning')">พิธีเช้า</button>
-      <button class="event-tab" type="button" onclick="switchEventTab(this,'evening')">พิธีเย็น</button>
+      <button class="event-tab active" type="button" onclick="switchEventTab(this,'morning')" data-th="พิธีเช้า" data-en="Morning">พิธีเช้า</button>
+      <button class="event-tab" type="button" onclick="switchEventTab(this,'evening')" data-th="พิธีเย็น" data-en="Evening">พิธีเย็น</button>
     </div>
     <div class="event-pane active" data-pane="morning">
-      <div class="event-pane-head">พิธีเช้า: 07.00-12.00</div>
+      <div class="event-pane-head" data-th="พิธีเช้า: 07.00-12.00" data-en="Morning: 7:00 AM-12:00 PM">พิธีเช้า: 07.00-12.00</div>
       <div class="event-list">
-        <div class="event-item"><div class="event-time">08.09</div><div class="event-text">แห่ขันหมาก</div></div>
-        <div class="event-item"><div class="event-time">09.09</div><div class="event-text">หมั้น</div></div>
-        <div class="event-item"><div class="event-time">10.09</div><div class="event-text">ส่งตัว</div></div>
-        <div class="event-item"><div class="event-time">10.29</div><div class="event-text">ยกน้ำชา</div></div>
+        <div class="event-item"><div class="event-time">08.09</div><div class="event-text" data-th="แห่ขันหมาก" data-en="Khan Maak procession">แห่ขันหมาก</div></div>
+        <div class="event-item"><div class="event-time">09.09</div><div class="event-text" data-th="หมั้น" data-en="Engagement ceremony">หมั้น</div></div>
+        <div class="event-item"><div class="event-time">10.09</div><div class="event-text" data-th="ส่งตัว" data-en="Bridal handover">ส่งตัว</div></div>
+        <div class="event-item"><div class="event-time">10.29</div><div class="event-text" data-th="ยกน้ำชา" data-en="Tea ceremony">ยกน้ำชา</div></div>
       </div>
     </div>
     <div class="event-pane" data-pane="evening">
-      <div class="event-pane-head">พิธีเย็น: 18.00-21.00</div>
+      <div class="event-pane-head" data-th="พิธีเย็น: 18.00-21.00" data-en="Evening: 6:00 PM-9:00 PM">พิธีเย็น: 18.00-21.00</div>
       <div class="event-list">
-        <div class="event-item"><div class="event-time">18.00</div><div class="event-text">เริ่มร่วมถ่ายภาพ</div></div>
-        <div class="event-item"><div class="event-time">19.00+</div><div class="event-text">ร่วมรับประทานอาหาร</div></div>
+        <div class="event-item"><div class="event-time">18.00</div><div class="event-text" data-th="เริ่มร่วมถ่ายภาพ" data-en="Photo session starts">เริ่มร่วมถ่ายภาพ</div></div>
+        <div class="event-item"><div class="event-time">19.00+</div><div class="event-text" data-th="ร่วมรับประทานอาหาร" data-en="Dinner reception">ร่วมรับประทานอาหาร</div></div>
       </div>
     </div>
-    <a class="map-btn" href="https://maps.app.goo.gl/1bEwcjvUzahesYQt5" target="_blank" rel="noopener noreferrer">📍 Google Map: Chatrium Riverside</a>
+    <a class="map-btn" href="https://maps.app.goo.gl/1bEwcjvUzahesYQt5" target="_blank" rel="noopener noreferrer" data-th="📍 Google Map: Chatrium Riverside" data-en="📍 Google Map: Chatrium Riverside">📍 Google Map: Chatrium Riverside</a>
   </div>
   <button class="edit-btn" id="editBtn" style="display:none" onclick="editForm()">✏️ แก้ไขข้อมูล</button>
 </div>
@@ -882,6 +836,37 @@ let currentLang      = 'th';
 let isEditing        = false;
 let lastData         = null;
 
+function normalizeSideLabel(side){
+  if(side === 'เจ้าบ่าว (ประภาส)') return 'เจ้าบ่าว (ประภาส - อ๋อง)';
+  if(side === 'เจ้าสาว (ภัทรภร)') return 'เจ้าสาว (ภัทรภร - อันอัน)';
+  return side || '';
+}
+
+function sideLabelForDisplay(side){
+  const normalized = normalizeSideLabel(side);
+  if(currentLang !== 'en') return normalized;
+  if(normalized === 'เจ้าบ่าว (ประภาส - อ๋อง)') return "Groom's side (Praphat - Ong)";
+  if(normalized === 'เจ้าสาว (ภัทรภร - อันอัน)') return "Bride's side (Pattaraporn - Anan)";
+  return normalized;
+}
+
+function normalizeSessionLabel(session){
+  if(session === 'ช่วงเช้า (08:00 น.)') return 'ช่วงเช้า (07:00-12:00 น.)';
+  if(session === 'ช่วงเช้า (07:00 น.)') return 'ช่วงเช้า (07:00-12:00 น.)';
+  if(session === 'ช่วงเย็น (18:00 น.)') return 'ช่วงเย็น (18:00-21:00 น.)';
+  if(session === 'มาทั้งสองช่วง (08:00 และ 18:00 น.)') return 'มาทั้งสองช่วง (07:00-12:00 และ 18:00-21:00 น.)';
+  if(session === 'มาทั้งสองช่วง (07:00 และ 18:00 น.)') return 'มาทั้งสองช่วง (07:00-12:00 และ 18:00-21:00 น.)';
+  return session || '';
+}
+
+function sessionLabelForDisplay(session){
+  const normalized = normalizeSessionLabel(session);
+  if(currentLang === 'en'){
+    return SESSION_LABEL_EN[normalized] || normalized;
+  }
+  return SESSION_LABEL[normalized] || normalized;
+}
+
 // ══════════════════════════════════════
 //  CHECK ALREADY SUBMITTED
 // ══════════════════════════════════════
@@ -898,12 +883,14 @@ function showAlready(d){
   document.getElementById('formView').style.display='none';
   document.getElementById('alreadyView').classList.add('on');
   if(d){
+    const guestUnit = currentLang === 'en' ? 'guest(s)' : 'ท่าน';
+    const dateLabel = currentLang === 'en' ? '3 July 2026 · Chatrium Riverside' : '3 กรกฎาคม 2569 · Chatrium Riverside';
     document.getElementById('alreadyCard').innerHTML=`
       <div class="sc-row"><span class="sc-icon">👤</span><span class="sc-val"><strong>${d.name||'-'}</strong></span></div>
-      <div class="sc-row"><span class="sc-icon">🕐</span><span class="sc-val">${SESSION_LABEL[d.session]||d.session||'-'}</span></div>
-      <div class="sc-row"><span class="sc-icon">🌸</span><span class="sc-val">${d.guests||1} ท่าน &nbsp;·&nbsp; ${d.side||''}</span></div>
+      <div class="sc-row"><span class="sc-icon">🕐</span><span class="sc-val">${sessionLabelForDisplay(d.session)||'-'}</span></div>
+      <div class="sc-row"><span class="sc-icon">🌸</span><span class="sc-val">${d.guests||1} ${guestUnit} &nbsp;·&nbsp; ${sideLabelForDisplay(d.side)||''}</span></div>
       <div class="sc-row"><span class="sc-icon">🍽️</span><span class="sc-val">${d.dietary||'-'}</span></div>
-      <div class="sc-row"><span class="sc-icon">📅</span><span class="sc-val">3 กรกฎาคม 2569 · Chatrium Riverside</span></div>`;
+      <div class="sc-row"><span class="sc-icon">📅</span><span class="sc-val">${dateLabel}</span></div>`;
   }
 }
 
@@ -976,8 +963,8 @@ function collect(){
     lastName:ln,
     name:fn + ' ' + ln,
     phone:document.getElementById('fphone').value.trim(),
-    side:document.querySelector('input[name=side]:checked')?.value||'',
-    session:document.querySelector('input[name=session]:checked')?.value||'',
+    side:normalizeSideLabel(document.querySelector('input[name=side]:checked')?.value||''),
+    session:normalizeSessionLabel(document.querySelector('input[name=session]:checked')?.value||''),
     relationship:document.getElementById('frel').selectedOptions[0]?.text||'',
     guests:guestCount,
     dietary:diets.join(', ')||'ทานได้ทุกอย่าง',
@@ -989,12 +976,16 @@ function collect(){
 //  SHOW SUCCESS
 // ══════════════════════════════════════
 const SESSION_LABEL = {
-  'ช่วงเช้า (07:00 น.)':                '🌅 พิธีเช้า · 03/07/2026 เวลา 07:00 น.',
-  'ช่วงเช้า (08:00 น.)':                '🌅 พิธีเช้า · 03/07/2026 เวลา 07:00 น.',
-  'ช่วงเย็น (18:00 น.)':                '🌙 งานเลี้ยงเย็น · 03/07/2026 เวลา 18:00 น.',
-  'มาทั้งสองช่วง (07:00 และ 18:00 น.)': '🌟 ทั้งสองช่วง · 07:00 น. และ 18:00 น.',
-  'มาทั้งสองช่วง (08:00 และ 18:00 น.)': '🌟 ทั้งสองช่วง · 07:00 น. และ 18:00 น.',
+  'ช่วงเช้า (07:00-12:00 น.)':                '🌅 พิธีเช้า · 03/07/2026 เวลา 07:00-12:00 น.',
+  'ช่วงเย็น (18:00-21:00 น.)':                '🌙 งานเลี้ยงเย็น · 03/07/2026 เวลา 18:00-21:00 น.',
+  'มาทั้งสองช่วง (07:00-12:00 และ 18:00-21:00 น.)': '🌟 ทั้งสองช่วง · 07:00-12:00 น. และ 18:00-21:00 น.',
   'ไม่สะดวกมาร่วมงาน':                  '🙏 ไม่สะดวกมาร่วมงาน'
+};
+const SESSION_LABEL_EN = {
+  'ช่วงเช้า (07:00-12:00 น.)':                '🌅 Morning ceremony · 03/07/2026 at 7:00 AM-12:00 PM',
+  'ช่วงเย็น (18:00-21:00 น.)':                '🌙 Evening reception · 03/07/2026 at 6:00 PM-9:00 PM',
+  'มาทั้งสองช่วง (07:00-12:00 และ 18:00-21:00 น.)': '🌟 Both sessions · 7:00 AM-12:00 PM and 6:00 PM-9:00 PM',
+  'ไม่สะดวกมาร่วมงาน':                  '🙏 Unable to attend'
 };
 const DRESS_COLORS = [
   {bg:'#FEFCFB',border:'#E8D8D0',name:'ครีม'},
@@ -1009,6 +1000,10 @@ function showSuccess(d){
   isEditing = false;
   document.getElementById('formView').style.display='none';
   document.getElementById('successView').classList.add('on');
+  const guestUnit = currentLang === 'en' ? 'guest(s)' : 'ท่าน';
+  const dateLabel = currentLang === 'en'
+    ? 'Thursday, 3 July 2026<br><small style="color:var(--muted)">Chatrium Riverside, Bangkok</small>'
+    : 'วันพฤหัสบดีที่ 3 กรกฎาคม 2569<br><small style="color:var(--muted)">Chatrium Riverside, Bangkok</small>';
 
   document.getElementById('summaryCard').innerHTML=`
     <div class="sc-row">
@@ -1017,15 +1012,15 @@ function showSuccess(d){
     </div>
     <div class="sc-row">
       <span class="sc-icon">🕐</span>
-      <span class="sc-val">${SESSION_LABEL[d.session]||d.session}</span>
+      <span class="sc-val">${sessionLabelForDisplay(d.session)}</span>
     </div>
     <div class="sc-row">
       <span class="sc-icon">📅</span>
-      <span class="sc-val">วันพฤหัสบดีที่ 3 กรกฎาคม 2569<br><small style="color:var(--muted)">Chatrium Riverside, Bangkok</small></span>
+      <span class="sc-val">${dateLabel}</span>
     </div>
     <div class="sc-row">
       <span class="sc-icon">🌸</span>
-      <span class="sc-val">${d.guests} ท่าน &nbsp;·&nbsp; ${d.side}</span>
+      <span class="sc-val">${d.guests} ${guestUnit} &nbsp;·&nbsp; ${sideLabelForDisplay(d.side)}</span>
     </div>
     <div class="sc-row">
       <span class="sc-icon">🍽️</span>
@@ -1066,11 +1061,13 @@ function populateForm(d){
   if(d.lastName)  document.getElementById('flastname').value  = d.lastName;
   if(d.phone)     document.getElementById('fphone').value     = d.phone;
   if(d.side){
-    const sideEl = document.querySelector(`input[name=side][value="${d.side}"]`);
+    const normalizedSide = normalizeSideLabel(d.side);
+    const sideEl = document.querySelector(`input[name=side][value="${normalizedSide}"]`);
     if(sideEl) sideEl.checked = true;
   }
   if(d.session){
-    const sessEl = document.querySelector(`input[name=session][value="${d.session}"]`);
+    const normalizedSession = normalizeSessionLabel(d.session);
+    const sessEl = document.querySelector(`input[name=session][value="${normalizedSession}"]`);
     if(sessEl) sessEl.checked = true;
   }
   if(d.guests){
@@ -1175,8 +1172,10 @@ function toggleLang(){
 
 function applyLang(){
   const en = currentLang === 'en';
-  // toggle button label
-  document.getElementById('langBtn').textContent = en ? 'ภาษาไทย' : 'EN';
+  // toggle button labels in all views
+  document.querySelectorAll('.lang-toggle-btn').forEach((btn)=>{
+    btn.textContent = en ? 'ภาษาไทย' : 'EN';
+  });
 
   // swap all data-th / data-en text content
   document.querySelectorAll('[data-th]').forEach(el => {
@@ -1211,6 +1210,13 @@ function applyLang(){
   if(subBtn && !subBtn.disabled){
     const sp = subBtn.querySelector('span[data-th]');
     if(sp) sp.innerHTML = en ? '✉️&nbsp;&nbsp;Confirm Attendance' : '✉️&nbsp;&nbsp;ยืนยันการเข้าร่วมงาน';
+  }
+
+  // rerender dynamic summary rows in selected language
+  if(lastData && document.getElementById('successView').classList.contains('on')){
+    showSuccess(lastData);
+  } else if(lastData && document.getElementById('alreadyView').classList.contains('on')){
+    showAlready(lastData);
   }
 }
 
