@@ -711,13 +711,6 @@ tr:hover td{background:rgba(254,240,238,.4)}
             <input type="text" id="cfgSheet" class="config-inp"
               placeholder="https://your-app.up.railway.app/rsvp">
           </div>
-          <div class="config-field">
-            <label class="config-label">Report Link (optional)
-              <span>— ลิ้งค์ dashboard/report ที่อยากเปิดจากหน้าแอดมิน</span>
-            </label>
-            <input type="text" id="cfgSheetView" class="config-inp"
-              placeholder="https://...">
-          </div>
         </div>
 
         <div class="card">
@@ -772,11 +765,6 @@ tr:hover td{background:rgba(254,240,238,.4)}
       <div class="card" style="margin-top:18px">
         <div class="card-h">📊 Quick Links</div>
         <div style="display:flex;flex-wrap:wrap;gap:10px">
-          <a id="linkSheet" href="#" target="_blank"
-             style="padding:8px 16px;background:var(--cream);border:1px solid var(--border);
-                    border-radius:9px;font-size:13px;text-decoration:none;color:var(--text)">
-            📋 เปิด Report Link
-          </a>
           <a href="https://developers.line.biz/console/" target="_blank"
              style="padding:8px 16px;background:var(--cream);border:1px solid var(--border);
                     border-radius:9px;font-size:13px;text-decoration:none;color:var(--text)">
@@ -1449,14 +1437,12 @@ function copyCode(elId, btn){
 // ══════════════════════════════════════
 function saveConfig(){
   const apiUrl     = document.getElementById('cfgSheet').value.trim();
-  const sheetView  = document.getElementById('cfgSheetView').value.trim();
   const liff       = document.getElementById('cfgLiff').value.trim();
   const adminLiff  = document.getElementById('cfgAdminLiff').value.trim();
   if(liff)      document.getElementById('cfgLiffUrl').value = 'https://liff.line.me/'+liff;
-  if(sheetView) document.getElementById('linkSheet').href = sheetView;
   localStorage.setItem('weddingApiUrl',        apiUrl);
   localStorage.setItem('weddingSheetUrl',      apiUrl); // backward compatibility
-  localStorage.setItem('weddingSheetView',     sheetView);
+  localStorage.removeItem('weddingSheetView');
   localStorage.setItem('weddingLiffId',        liff);
   localStorage.setItem('weddingAdminLiffId',   adminLiff);
   // re-init LIFF if admin LIFF changed
@@ -1466,11 +1452,9 @@ function saveConfig(){
 
 function loadConfig(){
   const apiUrl    = localStorage.getItem('weddingApiUrl') || localStorage.getItem('weddingSheetUrl') || '';
-  const sheetView = localStorage.getItem('weddingSheetView')||'';
   const liff      = localStorage.getItem('weddingLiffId')||'2006674119-opWzXpla';
   const adminLiff = localStorage.getItem('weddingAdminLiffId')||'';
   if(apiUrl)    document.getElementById('cfgSheet').value = apiUrl;
-  if(sheetView){ document.getElementById('cfgSheetView').value = sheetView; document.getElementById('linkSheet').href=sheetView; }
   if(liff){ document.getElementById('cfgLiff').value = liff; document.getElementById('cfgLiffUrl').value='https://liff.line.me/'+liff; }
   if(adminLiff) document.getElementById('cfgAdminLiff').value = adminLiff;
 }
