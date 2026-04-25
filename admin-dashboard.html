@@ -703,20 +703,20 @@ tr:hover td{background:rgba(254,240,238,.4)}
 
       <div class="grid-2">
         <div class="card">
-          <div class="card-h">📋 Google Sheets</div>
+          <div class="card-h">🗄️ RSVP API</div>
           <div class="config-field">
-            <label class="config-label">Google Apps Script Web App URL
+            <label class="config-label">Railway API URL
               <span>— endpoint รับข้อมูล RSVP</span>
             </label>
             <input type="text" id="cfgSheet" class="config-inp"
-              placeholder="https://script.google.com/macros/s/AKfyc.../exec">
+              placeholder="https://your-app.up.railway.app/rsvp">
           </div>
           <div class="config-field">
-            <label class="config-label">Google Sheet Link
-              <span>— ลิ้งค์เปิด sheet โดยตรง</span>
+            <label class="config-label">Report Link (optional)
+              <span>— ลิ้งค์ dashboard/report ที่อยากเปิดจากหน้าแอดมิน</span>
             </label>
             <input type="text" id="cfgSheetView" class="config-inp"
-              placeholder="https://docs.google.com/spreadsheets/d/...">
+              placeholder="https://...">
           </div>
         </div>
 
@@ -756,13 +756,13 @@ tr:hover td{background:rgba(254,240,238,.4)}
       <div class="card" style="margin-bottom:0">
         <div class="card-h">🔑 LINE Channel Access Token</div>
         <div class="info-box" style="margin:0">
-          <p>Token ถูกเก็บไว้ใน <strong>GAS Script Properties</strong> (server-side) เพื่อความปลอดภัย — browser ไม่เห็น token<br>
+          <p>Token ถูกเก็บไว้ฝั่ง server (Railway Environment Variables) เพื่อความปลอดภัย — browser ไม่เห็น token<br>
           ตั้งค่าครั้งเดียวด้วยขั้นตอนด้านล่าง:</p>
           <ol style="margin:8px 0 0 16px;padding:0;font-size:12px;line-height:1.8">
-            <li>เปิด Apps Script → ไปที่เมนู <strong>Project Settings</strong> (ไอคอนรูปเฟือง)</li>
-            <li>เลื่อนลงหา <strong>Script Properties</strong> → กด <em>Add script property</em></li>
-            <li>Property: <code>LINE_CHANNEL_TOKEN</code> · Value: ใส่ token ของคุณ</li>
-            <li>กด Save → Re-deploy GAS เวอร์ชันใหม่</li>
+            <li>เปิดโปรเจกต์บน Railway</li>
+            <li>เข้าเมนู <strong>Variables</strong></li>
+            <li>เพิ่มค่า <code>LINE_CHANNEL_TOKEN</code> และบันทึก</li>
+            <li>Deploy ใหม่ 1 ครั้ง แล้วกด Validate อีกครั้ง</li>
           </ol>
         </div>
       </div>
@@ -775,7 +775,7 @@ tr:hover td{background:rgba(254,240,238,.4)}
           <a id="linkSheet" href="#" target="_blank"
              style="padding:8px 16px;background:var(--cream);border:1px solid var(--border);
                     border-radius:9px;font-size:13px;text-decoration:none;color:var(--text)">
-            📋 เปิด Google Sheet
+            📋 เปิด Report Link
           </a>
           <a href="https://developers.line.biz/console/" target="_blank"
              style="padding:8px 16px;background:var(--cream);border:1px solid var(--border);
@@ -803,17 +803,18 @@ tr:hover td{background:rgba(254,240,238,.4)}
         <div class="step">
           <div class="step-num">1</div>
           <div class="step-content">
-            <h4>สร้าง Google Sheet สำหรับเก็บข้อมูล RSVP</h4>
-            <p>ไปที่ <a href="https://sheets.google.com" target="_blank" style="color:#C4642A">sheets.google.com</a> → สร้าง Sheet ใหม่ → ตั้งชื่อว่า "Wedding RSVP 2026"<br>
-            ใน Row 1 พิมพ์ header: <code>Timestamp | ชื่อ-นามสกุล | เบอร์โทร | ฝั่ง | ความสัมพันธ์ | จำนวนคน | อาหาร | ข้อความ</code></p>
+            <h4>สร้างฐานข้อมูลบน Railway (Postgres)</h4>
+            <p>สร้าง Postgres service ใน Railway แล้วรัน schema ครั้งแรกจากไฟล์ <code>railway-api/sql/init.sql</code><br>
+            จากนั้นเตรียมค่า <code>DATABASE_URL</code> และ <code>LINE_CHANNEL_TOKEN</code> ใน Variables</p>
           </div>
         </div>
 
         <div class="step">
           <div class="step-num">2</div>
           <div class="step-content">
-            <h4>Deploy Google Apps Script เป็น Web App</h4>
-            <p>ใน Google Sheet → Extensions → Apps Script → วาง code จาก Tab "Apps Script" → Deploy → New Deployment → Web App → Anyone can access → Copy URL → ใส่ใน Config Tab</p>
+            <h4>Deploy RSVP API ขึ้น Railway</h4>
+            <p>Deploy โฟลเดอร์ <code>railway-api</code> ขึ้น Railway → ตรวจสอบว่า <code>/health</code> ตอบ <code>{ "ok": true }</code><br>
+            แล้วคัดลอก URL ของ service มาต่อท้าย <code>/rsvp</code> และใส่ใน Config Tab</p>
           </div>
         </div>
 
@@ -832,10 +833,9 @@ tr:hover td{background:rgba(254,240,238,.4)}
         <div class="step">
           <div class="step-num">4</div>
           <div class="step-content">
-            <h4>ใส่ค่าใน rsvp-form.html</h4>
-            <p>เปิดไฟล์ <code>rsvp-form.html</code> → หาส่วน CONFIG → แทนที่:<br>
-            <code>SHEET_URL</code> ด้วย Apps Script URL<br>
-            <code>LIFF_ID</code> ด้วย LIFF ID จาก Console → uncomment โค้ด liff.init()</p>
+            <h4>ตั้งค่า API URL ในหน้าแอดมิน</h4>
+            <p>เปิดหน้า <code>admin-dashboard.html</code> → แท็บ Config → ใส่ <code>Railway API URL</code> เป็น <code>https://your-app.up.railway.app/rsvp</code><br>
+            กดบันทึกแล้ว reload หน้า เพื่อให้ทั้ง admin และ rsvp-form ใช้ endpoint เดียวกัน</p>
           </div>
         </div>
 
@@ -861,11 +861,11 @@ tr:hover td{background:rgba(254,240,238,.4)}
 
     <!-- ═══ SECTION: APPS SCRIPT ═══ -->
     <div class="section" id="sec-script">
-      <div class="sec-title">Google Apps Script</div>
-      <div class="sec-sub">วาง code นี้ใน Apps Script ของ Google Sheet แล้ว Deploy เป็น Web App</div>
+      <div class="sec-title">Legacy Apps Script</div>
+      <div class="sec-sub">ส่วนนี้เก็บไว้สำหรับระบบเดิมเท่านั้น (ถ้าย้ายไป Railway แล้ว ไม่จำเป็นต้องใช้)</div>
 
       <div class="card">
-        <div class="card-h">📋 Apps Script Code (doPost)</div>
+        <div class="card-h">📋 Apps Script Code (Legacy)</div>
         <div class="info-box">
           <p>
             1. เปิด Google Sheet → <strong>Extensions → Apps Script</strong><br>
@@ -881,7 +881,7 @@ tr:hover td{background:rgba(254,240,238,.4)}
       </div>
 
       <div class="card">
-        <div class="card-h">📋 Column Headers สำหรับ Row 1 ใน Google Sheet</div>
+        <div class="card-h">📋 Column Headers (Legacy)</div>
         <div class="code-wrap">
           <button class="copy-btn" id="copy3" onclick="copyCode('sheetHeaders',this)">Copy</button>
           <div class="code-box" id="sheetHeaders">Timestamp	LINE UID	First Name	Last Name	Full Name	Phone	Side	Relationship	Guests	Dietary	Message	Session	Picture URL</div>
@@ -969,9 +969,14 @@ tr:hover td{background:rgba(254,240,238,.4)}
 // ══════════════════════════════════════
 //  CONFIG
 // ══════════════════════════════════════
-const SHEET_URL   = 'https://script.google.com/macros/s/AKfycbwcoli2EosQS7L8vfLySmwG6fLrHBW-glaFo16jgtB1iK6_Q7v6JSxzo0b86T07iy58Iw/exec';
+const SHEET_URL   = (localStorage.getItem('weddingApiUrl')
+  || localStorage.getItem('weddingSheetUrl')
+  || 'https://script.google.com/macros/s/AKfycbwcoli2EosQS7L8vfLySmwG6fLrHBW-glaFo16jgtB1iK6_Q7v6JSxzo0b86T07iy58Iw/exec').trim();
 const ADMIN_LIFF  = localStorage.getItem('weddingAdminLiffId') || '2006674119-kldPE7YA';
-const ADMIN_UIDS  = ['U4abc134b530c083a2a88255c5ff56292'];
+const ADMIN_UIDS  = [
+  'U4abc134b530c083a2a88255c5ff56292',
+  'U46a626e7a112ce8d4abe5c68da3b680c'
+];
 
 let adminUserId   = '';
 let adminName     = '';
@@ -1145,7 +1150,7 @@ async function validateFlex(){
       r.textContent = '✅ Flex Message ถูกต้อง — ผ่านการตรวจสอบจาก LINE API';
       r.className = 'validate-result ok';
     } else if(data.error === 'no_token'){
-      r.textContent = '⚠️ ยังไม่ได้ตั้งค่า LINE_CHANNEL_TOKEN ใน GAS Script Properties';
+      r.textContent = '⚠️ ยังไม่ได้ตั้งค่า LINE_CHANNEL_TOKEN ใน Railway Variables';
       r.className = 'validate-result err';
     } else {
       r.textContent = `❌ ไม่ผ่าน — ${data.message||JSON.stringify(data)}`;
@@ -1153,7 +1158,7 @@ async function validateFlex(){
     }
     r.style.display='block';
   }catch(e){
-    r.textContent = '❌ เรียก GAS ไม่ได้ — ตรวจสอบ SHEET_URL';
+    r.textContent = '❌ เรียก API ไม่ได้ — ตรวจสอบ Railway API URL';
     r.className = 'validate-result err'; r.style.display='block';
   }
   btn.disabled=false; btn.textContent='✅ Validate ด้วย LINE API';
@@ -1443,13 +1448,14 @@ function copyCode(elId, btn){
 //  SAVE CONFIG
 // ══════════════════════════════════════
 function saveConfig(){
-  const sheet      = document.getElementById('cfgSheet').value.trim();
+  const apiUrl     = document.getElementById('cfgSheet').value.trim();
   const sheetView  = document.getElementById('cfgSheetView').value.trim();
   const liff       = document.getElementById('cfgLiff').value.trim();
   const adminLiff  = document.getElementById('cfgAdminLiff').value.trim();
   if(liff)      document.getElementById('cfgLiffUrl').value = 'https://liff.line.me/'+liff;
   if(sheetView) document.getElementById('linkSheet').href = sheetView;
-  localStorage.setItem('weddingSheetUrl',      sheet);
+  localStorage.setItem('weddingApiUrl',        apiUrl);
+  localStorage.setItem('weddingSheetUrl',      apiUrl); // backward compatibility
   localStorage.setItem('weddingSheetView',     sheetView);
   localStorage.setItem('weddingLiffId',        liff);
   localStorage.setItem('weddingAdminLiffId',   adminLiff);
@@ -1459,11 +1465,11 @@ function saveConfig(){
 }
 
 function loadConfig(){
-  const sheet     = localStorage.getItem('weddingSheetUrl')||'';
+  const apiUrl    = localStorage.getItem('weddingApiUrl') || localStorage.getItem('weddingSheetUrl') || '';
   const sheetView = localStorage.getItem('weddingSheetView')||'';
   const liff      = localStorage.getItem('weddingLiffId')||'2006674119-opWzXpla';
   const adminLiff = localStorage.getItem('weddingAdminLiffId')||'';
-  if(sheet)     document.getElementById('cfgSheet').value = sheet;
+  if(apiUrl)    document.getElementById('cfgSheet').value = apiUrl;
   if(sheetView){ document.getElementById('cfgSheetView').value = sheetView; document.getElementById('linkSheet').href=sheetView; }
   if(liff){ document.getElementById('cfgLiff').value = liff; document.getElementById('cfgLiffUrl').value='https://liff.line.me/'+liff; }
   if(adminLiff) document.getElementById('cfgAdminLiff').value = adminLiff;
@@ -1604,7 +1610,7 @@ async function loadRSVP(){
     renderTable(allRsvpData);
   }catch(e){
     document.getElementById('rsvpTableWrap').innerHTML =
-      '<div class="empty-state">⚠️ โหลดข้อมูลไม่ได้ — ตรวจสอบ SHEET_URL ใน Config</div>';
+      '<div class="empty-state">⚠️ โหลดข้อมูลไม่ได้ — ตรวจสอบ Railway API URL ใน Config</div>';
   }
   if(icon) icon.textContent = '🔄';
 }
@@ -1728,7 +1734,7 @@ async function loadDashboard(){
     document.getElementById('timelineWrap').innerHTML = tlHtml;
   }catch(e){
     document.getElementById('timelineWrap').innerHTML =
-      '<div class="empty-state">⚠️ โหลดไม่ได้ — ตรวจสอบ SHEET_URL</div>';
+      '<div class="empty-state">⚠️ โหลดไม่ได้ — ตรวจสอบ Railway API URL</div>';
   }
 }
 
