@@ -422,6 +422,23 @@ option{
   filter:drop-shadow(0 4px 18px rgba(245,156,154,.38));
   animation:rise .6s ease;
 }
+.hero-photo-wrap{
+  margin:10px auto 16px;
+  width:min(86%, 320px);
+  aspect-ratio:3/4;
+  border-radius:18px;
+  overflow:hidden;
+  border:1.5px solid var(--border);
+  box-shadow:0 10px 30px rgba(58,46,44,.12);
+  background:#f2f2f2;
+}
+.hero-photo{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center 28%;
+  display:block;
+}
 /* ─── FADE IN ─── */
 .wrap{animation:rise .45s ease}
 </style>
@@ -506,6 +523,9 @@ option{
       <img src="img/weddinglogo.png" alt="PP Monogram" class="pp-logo">
     </div>
     <span class="eyebrow">✦ Wedding Invitation ✦</span>
+    <div class="hero-photo-wrap">
+      <img src="img/prewedding.png" alt="Prewedding" class="hero-photo">
+    </div>
     <span class="couple-name">Pattaraporn <span class="amp">&amp;</span><br>Praphat</span>
     <span class="event-date">03/07/2026</span>
     <span class="event-venue">Chatrium Riverside, Bangkok</span>
