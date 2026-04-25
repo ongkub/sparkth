@@ -319,6 +319,23 @@ option{
   overflow-wrap:anywhere;
   color:var(--peach);margin-bottom:18px;
 }
+.thankyou-photo-wrap{
+  width:min(86%, 320px);
+  aspect-ratio:3/4;
+  border-radius:16px;
+  overflow:hidden;
+  border:1.5px solid var(--border);
+  box-shadow:0 8px 24px rgba(58,46,44,.12);
+  margin:0 auto 18px;
+  background:#f2f2f2;
+}
+.thankyou-photo{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center 30%;
+  display:block;
+}
 .success-msg{
   font-size:14px;font-weight:300;color:var(--muted);
   line-height:1.8;max-width:260px;
@@ -808,6 +825,9 @@ option{
   </svg>
   <div class="success-script" data-th="ขอบคุณที่ตอบรับค่ะ" data-en="Thank You for Your RSVP">ขอบคุณที่ตอบรับค่ะ</div>
   <div class="success-sub" data-th="แล้วเจอกันในวันงานนะคะ😊" data-en="See you on our wedding day 😊">แล้วเจอกันในวันงานนะคะ😊</div>
+  <div class="thankyou-photo-wrap">
+    <img src="img/thankyou-prewedding.png" alt="Thank you prewedding" class="thankyou-photo">
+  </div>
   <div class="success-card" id="summaryCard"></div>
   <div class="dresscode-card" id="dresscodeCard" style="display:none">
     <div class="dresscode-title">ธีมการแต่งกาย</div>
