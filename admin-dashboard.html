@@ -157,6 +157,7 @@ body{
 .fc-thai{font-size:11px;color:#C4642A;margin-bottom:2px}
 .fc-family{font-size:9px;color:#5A8040;letter-spacing:1px}
 .fc-sep{height:2px;background:var(--rose);opacity:.5}
+.fc-image{width:100%;aspect-ratio:16/10;object-fit:cover;display:block}
 .fc-body{background:white;padding:12px}
 .fc-row{
   display:flex;gap:8px;margin-bottom:8px;
@@ -610,11 +611,12 @@ tr:hover td{background:rgba(254,240,238,.4)}
                     <div class="fc-eyebrow">✦  WEDDING INVITATION  ✦</div>
                     <div class="fc-name">Pattaraporn &amp; Praphat</div>
                     <div style="display:flex;justify-content:center;gap:8px;margin-top:4px">
-                      <div style="text-align:right"><div class="fc-thai">ประภาส</div><div class="fc-family">ศรีสุมะ</div></div>
+                      <div style="text-align:right"><div class="fc-thai">ภัทรภร ธีรคันธมาทน์</div></div>
                       <div style="color:#3A2E2C;font-size:13px">&amp;</div>
-                      <div style="text-align:left"><div class="fc-thai">ภัทรภร</div><div class="fc-family">ธีรคันธมาทน์</div></div>
+                      <div style="text-align:left"><div class="fc-thai">ประภาส ศรีสุมะ</div></div>
                     </div>
                   </div>
+                  <img class="fc-image" src="img/thankyou-prewedding.jpg" alt="Prewedding preview">
                   <div class="fc-sep"></div>
                   <div class="fc-body">
                     <div class="fc-row">
@@ -633,11 +635,12 @@ tr:hover td{background:rgba(254,240,238,.4)}
                     <div class="fc-sep2"></div>
                     <div class="fc-venue">
                       <div class="fc-lbl">📍  สถานที่</div>
-                      <div class="fc-val" style="margin-top:3px">Chatrium Riverside</div>
-                      <div class="fc-sub">28 Charoenkrung 28, Bang Rak, Bangkok</div>
+                      <div class="fc-val" style="margin-top:3px">Chatrium Riverside Bangkok</div>
+                      <div class="fc-sub">28 Charoenkrung 28 Alley, Bang Rak, Bangkok</div>
                     </div>
                     <div class="fc-cta-box">
                       <div class="fc-cta-txt">🌸 เราตั้งตารอต้อนรับท่านในวันพิเศษนี้</div>
+                      <div class="fc-sub" style="margin-top:3px">ในวันแห่งความสุขและความรักของเรา</div>
                     </div>
                   </div>
                   <div class="fc-footer">
@@ -1001,98 +1004,286 @@ function closeSidebar(){
 // ══════════════════════════════════════
 const liffId = localStorage.getItem('weddingLiffId')||'2006674119-opWzXpla';
 const flexJson = {
-  type:"flex",
-  altText:"🌸 คุณได้รับการ์ดเชิญงานแต่งงาน Pattaraporn & Praphat · 3 กรกฎาคม 2569",
-  contents:{
-    type:"bubble",size:"giga",
-    body:{
-      type:"box",layout:"vertical",paddingAll:"0px",
-      contents:[
+  type: "flex",
+  altText: "🌸 คุณได้รับการ์ดเชิญงานแต่งงาน Pattaraporn & Praphat · 3 กรกฎาคม 2569",
+  contents: {
+    type: "bubble",
+    size: "giga",
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "0px",
+      contents: [
         {
-          type:"box",layout:"vertical",
-          backgroundColor:"#FEF0EE",
-          paddingAll:"28px",paddingTop:"36px",paddingBottom:"24px",
-          contents:[
-            {type:"image",url:"https://page.sparkth.io/img/weddinglogo.png",margin:"0px"},
-            {type:"text",text:"✦  WEDDING INVITATION  ✦",size:"xxs",color:"#5A8040",align:"center",weight:"bold"},
-            {type:"text",text:"Pattaraporn & Praphat",size:"xxl",color:"#3A2E2C",align:"center",weight:"bold",margin:"md"},
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#FEF0EE",
+          paddingAll: "28px",
+          paddingTop: "xs",
+          paddingBottom: "lg",
+          contents: [
             {
-              type:"box",layout:"horizontal",
-              contents:[
-                {type:"box",layout:"vertical",flex:3,contents:[
-                  {type:"text",text:"ประภาส",size:"sm",color:"#F59C9A",align:"end",margin:"xs"},
-                  {type:"text",text:"ศรีสุมะ",size:"xxs",color:"#5A8040",align:"end",margin:"xs"}
-                ]},
-                {type:"box",layout:"vertical",flex:1,contents:[
-                  {type:"text",text:"&",align:"center"}
-                ]},
-                {type:"box",layout:"vertical",flex:3,contents:[
-                  {type:"text",text:"ภัทรภร",size:"sm",color:"#F59C9A",align:"start",margin:"xs"},
-                  {type:"text",text:"ธีรคันธมาทน์",size:"xxs",color:"#5A8040",align:"start",margin:"xs"}
-                ]}
+              type: "image",
+              url: "https://page.sparkth.io/img/weddinglogo.png",
+              margin: "0px",
+              aspectMode: "fit",
+              size: "sm"
+            },
+            {
+              type: "text",
+              text: "✦  WEDDING INVITATION  ✦",
+              size: "xxs",
+              color: "#5A8040",
+              align: "center",
+              weight: "bold"
+            },
+            {
+              type: "text",
+              text: "Pattaraporn & Praphat",
+              size: "xxl",
+              color: "#3A2E2C",
+              align: "center",
+              weight: "bold",
+              margin: "md"
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                {
+                  type: "box",
+                  layout: "vertical",
+                  flex: 3,
+                  contents: [
+                    {
+                      type: "text",
+                      text: "ภัทรภร ธีรคันธมาทน์",
+                      size: "sm",
+                      color: "#F59C9A",
+                      align: "end",
+                      margin: "xs"
+                    }
+                  ]
+                },
+                {
+                  type: "box",
+                  layout: "vertical",
+                  flex: 1,
+                  contents: [
+                    {
+                      type: "text",
+                      text: "&",
+                      align: "center"
+                    }
+                  ]
+                },
+                {
+                  type: "box",
+                  layout: "vertical",
+                  flex: 3,
+                  contents: [
+                    {
+                      type: "text",
+                      text: "ประภาส ศรีสุมะ",
+                      size: "sm",
+                      color: "#F59C9A",
+                      align: "start",
+                      margin: "xs"
+                    }
+                  ]
+                }
               ]
             }
           ]
         },
-        {type:"separator",color:"#F5C8C4",margin:"none"},
         {
-          type:"box",layout:"vertical",
-          backgroundColor:"#FEFCFB",
-          paddingAll:"20px",spacing:"md",
-          contents:[
+          type: "box",
+          layout: "vertical",
+          contents: [
             {
-              type:"box",layout:"horizontal",spacing:"md",
-              contents:[
-                {type:"box",layout:"vertical",flex:1,contents:[
-                  {type:"text",text:"📅  วันที่",size:"xxs",color:"#5A8040",weight:"bold"},
-                  {type:"text",text:"3 กรกฎาคม 2569",size:"sm",color:"#3A2E2C",margin:"xs"},
-                  {type:"text",text:"วันศุกร์",size:"xxs",color:"#A08880"}
-                ]},
-                {type:"separator",color:"#F5D8D4"},
-                {type:"box",layout:"vertical",flex:1,contents:[
-                  {type:"text",text:"🕕  เวลา",size:"xxs",color:"#5A8040",weight:"bold"},
-                  {type:"text",text:"งานเช้าเริ่ม 7:00น.",size:"sm",color:"#3A2E2C",margin:"xs"},
-                  {type:"text",text:"งานเย็นเริ่ม 18:00น.",size:"sm",color:"#3A2E2C"}
-                ]}
-              ]
-            },
-            {type:"separator",color:"#F5D8D4"},
-            {
-              type:"box",layout:"vertical",
-              contents:[
-                {type:"text",text:"📍  สถานที่",size:"xxs",color:"#5A8040",weight:"bold"},
-                {type:"text",text:"Chatrium Riverside Bangkok",size:"md",color:"#3A2E2C",weight:"bold",margin:"xs"},
-                {type:"text",text:"28 Charoenkrung 28 Alley, Bang Rak, Bangkok",size:"xxs",color:"#A08880",wrap:true,margin:"xs"}
-              ]
-            },
-            {type:"separator",color:"#F5D8D4"},
-            {
-              type:"box",layout:"vertical",
-              backgroundColor:"#FFF3EE",
-              cornerRadius:"8px",paddingAll:"12px",
-              contents:[
-                {type:"text",text:"🌸  เราตั้งตารอต้อนรับท่านในวันพิเศษนี้",size:"sm",color:"#C4642A",align:"center",weight:"bold"},
-                {type:"text",text:"ในวันแห่งความสุขและความรักของเรา",size:"xxs",color:"#A08880",align:"center",margin:"xs"}
-              ]
+              type: "image",
+              url: "https://page.sparkth.io/img/thankyou-prewedding.jpg",
+              aspectMode: "cover",
+              size: "full",
+              aspectRatio: "16:10"
             }
           ]
+        },
+        {
+          type: "separator",
+          color: "#F5C8C4",
+          margin: "none"
+        },
+        {
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#FEFCFB",
+          spacing: "md",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              spacing: "md",
+              contents: [
+                {
+                  type: "box",
+                  layout: "vertical",
+                  flex: 1,
+                  contents: [
+                    {
+                      type: "text",
+                      text: "📅  วันที่",
+                      size: "xxs",
+                      color: "#5A8040",
+                      weight: "bold"
+                    },
+                    {
+                      type: "text",
+                      text: "3 กรกฎาคม 2569",
+                      size: "sm",
+                      color: "#3A2E2C",
+                      margin: "xs"
+                    },
+                    {
+                      type: "text",
+                      text: "วันศุกร์",
+                      size: "xxs",
+                      color: "#A08880"
+                    }
+                  ],
+                  paddingAll: "md"
+                },
+                {
+                  type: "separator",
+                  color: "#F5D8D4"
+                },
+                {
+                  type: "box",
+                  layout: "vertical",
+                  flex: 1,
+                  contents: [
+                    {
+                      type: "text",
+                      text: "🕕  เวลา",
+                      size: "xxs",
+                      color: "#5A8040",
+                      weight: "bold"
+                    },
+                    {
+                      type: "text",
+                      text: "งานเช้าเริ่ม 7:00น.",
+                      size: "sm",
+                      color: "#3A2E2C",
+                      margin: "xs"
+                    },
+                    {
+                      type: "text",
+                      text: "งานเย็นเริ่ม 18:00น.",
+                      size: "sm",
+                      color: "#3A2E2C"
+                    }
+                  ],
+                  paddingAll: "md"
+                }
+              ]
+            },
+            {
+              type: "separator",
+              color: "#F5D8D4"
+            },
+            {
+              type: "box",
+              layout: "vertical",
+              contents: [
+                {
+                  type: "text",
+                  text: "📍  สถานที่",
+                  size: "xxs",
+                  color: "#5A8040",
+                  weight: "bold"
+                },
+                {
+                  type: "text",
+                  text: "Chatrium Riverside Bangkok",
+                  size: "md",
+                  color: "#3A2E2C",
+                  weight: "bold",
+                  margin: "xs"
+                },
+                {
+                  type: "text",
+                  text: "28 Charoenkrung 28 Alley, Bang Rak, Bangkok",
+                  size: "xxs",
+                  color: "#A08880",
+                  wrap: true,
+                  margin: "xs"
+                }
+              ],
+              paddingAll: "md"
+            },
+            {
+              type: "separator",
+              color: "#F5D8D4"
+            },
+            {
+              type: "box",
+              layout: "vertical",
+              backgroundColor: "#FFF3EE",
+              cornerRadius: "8px",
+              paddingAll: "lg",
+              contents: [
+                {
+                  type: "text",
+                  text: "🌸  เราตั้งตารอต้อนรับท่านในวันพิเศษนี้",
+                  size: "sm",
+                  color: "#C4642A",
+                  align: "center",
+                  weight: "bold"
+                },
+                {
+                  type: "text",
+                  text: "ในวันแห่งความสุขและความรักของเรา",
+                  size: "xxs",
+                  color: "#A08880",
+                  align: "center",
+                  margin: "xs"
+                }
+              ]
+            }
+          ],
+          paddingAll: "lg",
+          paddingBottom: "none"
         }
       ]
     },
-    footer:{
-      type:"box",layout:"vertical",spacing:"sm",
-      paddingAll:"16px",paddingBottom:"20px",
-      backgroundColor:"#FEFCFB",
-      contents:[
+    footer: {
+      type: "box",
+      layout: "vertical",
+      spacing: "sm",
+      paddingAll: "lg",
+      paddingBottom: "20px",
+      backgroundColor: "#FEFCFB",
+      contents: [
         {
-          type:"button",
-          action:{type:"uri",label:"✉️  ยืนยันการเข้าร่วมงาน (RSVP)",uri:"https://liff.line.me/"+liffId},
-          style:"primary",color:"#F59C9A",height:"sm"
+          type: "button",
+          action: {
+            type: "uri",
+            label: "✉️  ยืนยันการเข้าร่วมงาน (RSVP)",
+            uri: "https://liff.line.me/" + liffId
+          },
+          style: "primary",
+          color: "#F59C9A",
+          height: "sm"
         },
         {
-          type:"button",
-          action:{type:"uri",label:"📍  ดูแผนที่ Chatrium Riverside",uri:"https://maps.app.goo.gl/1bEwcjvUzahesYQt5"},
-          style:"secondary",height:"sm"
+          type: "button",
+          action: {
+            type: "uri",
+            label: "📍  ดูแผนที่ Chatrium Riverside",
+            uri: "https://www.google.com/maps/search/?api=1&query=Chatrium+Riverside+Bangkok"
+          },
+          style: "secondary",
+          height: "sm"
         }
       ]
     }
