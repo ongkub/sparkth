@@ -127,7 +127,7 @@ body{
 
 .line-phone{
   background:#E5E5EA;border-radius:20px;overflow:hidden;
-  max-width:320px;margin:0 auto;
+  max-width:390px;margin:0 auto;
 }
 .line-phone-bar{
   background:#00B900;padding:10px 14px;
@@ -136,7 +136,7 @@ body{
 .line-phone-bar span{
   font-size:13px;font-weight:600;color:white;
 }
-.line-chat{padding:12px;background:#E5E5EA}
+.line-chat{padding:16px;background:#E5E5EA}
 .bubble-wrap{display:flex;gap:8px;align-items:flex-end;margin-bottom:8px}
 .avatar{
   width:32px;height:32px;border-radius:50%;
@@ -146,15 +146,16 @@ body{
 }
 .flex-card{
   background:white;border-radius:16px;overflow:hidden;
-  max-width:260px;flex:1;
+  max-width:315px;flex:1;
   box-shadow:0 2px 12px rgba(0,0,0,.12);
 }
 .fc-header{
-  background:var(--cream);padding:16px;text-align:center;
+  background:var(--cream);padding:10px 16px 12px;text-align:center;
 }
+.fc-logo{width:78px;height:auto;display:block;margin:0 auto 8px}
 .fc-eyebrow{font-size:9px;letter-spacing:2px;color:#5A8040;font-weight:700;margin-bottom:8px}
-.fc-name{font-family:'Georgia',serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
-.fc-thai{font-size:11px;color:#C4642A;margin-bottom:2px}
+.fc-name{font-family:'Georgia',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px}
+.fc-thai{font-size:11px;color:#C4642A;margin-bottom:2px;white-space:nowrap}
 .fc-family{font-size:9px;color:#5A8040;letter-spacing:1px}
 .fc-sep{height:2px;background:var(--rose);opacity:.5}
 .fc-image{width:100%;aspect-ratio:16/10;object-fit:cover;display:block}
@@ -607,7 +608,7 @@ tr:hover td{background:rgba(254,240,238,.4)}
                 <div class="avatar">💍</div>
                 <div class="flex-card">
                   <div class="fc-header">
-                    <img src="img/weddinglogo.png" style="max-width:100%;margin-bottom:4px" onerror="this.style.display='none'">
+                    <img class="fc-logo" src="img/weddinglogo.png" onerror="this.style.display='none'" alt="PP Monogram">
                     <div class="fc-eyebrow">✦  WEDDING INVITATION  ✦</div>
                     <div class="fc-name">Pattaraporn &amp; Praphat</div>
                     <div style="display:flex;justify-content:center;gap:8px;margin-top:4px">
