@@ -874,8 +874,10 @@ option{
 // ══════════════════════════════════════
 //  CONFIG
 // ══════════════════════════════════════
-const SHEET_URL = (localStorage.getItem('weddingApiUrl')
-  || 'https://sparkth-production.up.railway.app/rsvp').trim();
+const SAVED_API_URL = (localStorage.getItem('weddingApiUrl') || '').trim();
+const SHEET_URL = (SAVED_API_URL && !SAVED_API_URL.includes('script.google.com')
+  ? SAVED_API_URL
+  : 'https://sparkth-production.up.railway.app/rsvp').trim();
 const LIFF_ID   = '2006674119-opWzXpla';
 let lineUserId       = '';
 let lineUserPic      = '';

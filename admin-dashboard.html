@@ -957,9 +957,10 @@ tr:hover td{background:rgba(254,240,238,.4)}
 // ══════════════════════════════════════
 //  CONFIG
 // ══════════════════════════════════════
-const SHEET_URL   = (localStorage.getItem('weddingApiUrl')
-  || localStorage.getItem('weddingSheetUrl')
-  || 'https://sparkth-production.up.railway.app/rsvp').trim();
+const SAVED_API_URL = (localStorage.getItem('weddingApiUrl') || localStorage.getItem('weddingSheetUrl') || '').trim();
+const SHEET_URL = (SAVED_API_URL && !SAVED_API_URL.includes('script.google.com')
+  ? SAVED_API_URL
+  : 'https://sparkth-production.up.railway.app/rsvp').trim();
 const ADMIN_LIFF  = localStorage.getItem('weddingAdminLiffId') || '2006674119-kldPE7YA';
 const ADMIN_UIDS  = [
   'U4abc134b530c083a2a88255c5ff56292',
