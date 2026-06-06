@@ -1,0 +1,5 @@
+.DS_Store
+node_modules/
+*.ai
+railway-api/node_modules/
+railway-api/.env
