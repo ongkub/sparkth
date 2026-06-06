@@ -4,10 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Admin — Pattaraporn &amp; Praphat Wedding</title>
+<title>Admin — Anan &amp; Ong Wedding</title>
 <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Noto+Sans+Thai:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+@font-face{
+  font-family:'Corinthia';
+  src:url('Wedding%20Card/Fonts/Corinthia-Regular.ttf') format('truetype');
+  font-weight:400;font-style:normal;font-display:swap;
+}
+@font-face{
+  font-family:'BodoniModa';
+  src:url('Wedding%20Card/Fonts/BodoniModa_9pt-Medium.ttf') format('truetype');
+  font-weight:500;font-style:normal;font-display:swap;
+}
+@font-face{
+  font-family:'BodoniModa';
+  src:url('Wedding%20Card/Fonts/BodoniModa_9pt-SemiBold.ttf') format('truetype');
+  font-weight:600;font-style:normal;font-display:swap;
+}
+@font-face{
+  font-family:'ElmsSans';
+  src:url('Wedding%20Card/Fonts/ElmsSans-Regular.ttf') format('truetype');
+  font-weight:400;font-style:normal;font-display:swap;
+}
 :root{
   --ivory:#FEFCFB;--cream:#FEF0EE;--golden:#FFE7AB;
   --olive:#C5DBA9;--rose:#F59C9A;--peach:#FFBE98;
@@ -38,7 +58,7 @@ body{
   display:flex;align-items:center;justify-content:center;font-size:16px;
 }
 .topbar-name{
-  font-family:'Great Vibes',cursive;font-size:22px;color:var(--text);
+  font-family:'Corinthia',cursive;font-size:28px;color:var(--text);
   line-height:1;
 }
 .topbar-sub{font-size:11px;color:var(--muted);font-weight:300;margin-top:1px}
@@ -426,9 +446,9 @@ tr:hover td{background:rgba(254,240,238,.4)}
     <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
-    <img src="img/weddinglogo.png" alt="PP" style="width:38px;height:38px;object-fit:contain;border-radius:8px;background:#1A1A1A;padding:2px">
+    <img src="img/Wedding_Logo.png" alt="An-an & Ong" style="width:38px;height:38px;object-fit:contain;border-radius:8px;background:#1A1A1A;padding:2px">
     <div>
-      <div class="topbar-name">Pattaraporn &amp; Praphat</div>
+      <div class="topbar-name">Anan &amp; Ong</div>
       <div class="topbar-sub">Wedding Admin · 3 July 2026</div>
     </div>
   </div>
@@ -458,6 +478,9 @@ tr:hover td{background:rgba(254,240,238,.4)}
     <div class="nav-item" onclick="nav('dashboard')">
       <span class="nav-icon">📊</span>Dashboard
     </div>
+    <div class="nav-item" onclick="nav('slip')">
+      <span class="nav-icon">💸</span>สลิปโอนเงิน
+    </div>
     <div class="nav-item" onclick="nav('setup')">
       <span class="nav-icon">🔧</span>Setup Guide
     </div>
@@ -472,7 +495,7 @@ tr:hover td{background:rgba(254,240,238,.4)}
     <!-- ═══ SECTION: CI ═══ -->
     <div class="section active" id="sec-ci">
       <div class="sec-title">Wedding CI &amp; Design System</div>
-      <div class="sec-sub">ระบบสีและฟอนต์สำหรับงาน Pattaraporn &amp; Praphat · Garden Romance Theme</div>
+      <div class="sec-sub">ระบบสีและฟอนต์สำหรับงาน Anan &amp; Ong · Garden Romance Theme</div>
 
       <!-- Color Palette -->
       <div class="card">
@@ -527,18 +550,18 @@ tr:hover td{background:rgba(254,240,238,.4)}
         <div class="type-row">
           <div class="type-meta">
             <strong>Display Script</strong>
-            Great Vibes · 54px<br>สำหรับชื่อคู่บ่าวสาว
+            Corinthia · 54px<br>สำหรับชื่อคู่บ่าวสาว
           </div>
-          <div style="font-family:'Great Vibes',cursive;font-size:38px;color:var(--text)">Pattaraporn &amp; Praphat</div>
+          <div style="font-family:'Corinthia',cursive;font-size:54px;line-height:1;color:var(--text)">Anan &amp; Ong</div>
         </div>
         <div class="type-row">
           <div class="type-meta">
             <strong>Heading Serif</strong>
-            Cormorant Garamond · 24px<br>สำหรับหัวข้อสำคัญ
+            BodoniModa · 500–600<br>สำหรับหัวข้อสำคัญ
           </div>
           <div>
-            <div style="font-family:'Noto Sans Thai','Sarabun',sans-serif;font-size:24px;font-weight:400;color:var(--text)">ยืนยันการเข้าร่วมงาน</div>
-            <div style="font-family:'Noto Sans Thai','Sarabun',sans-serif;font-size:18px;font-style:italic;color:var(--muted)">Chatrium Riverside, Bangkok</div>
+            <div style="font-family:'BodoniModa',serif;font-size:20px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--text)">Wedding Admin</div>
+            <div style="font-family:'BodoniModa',serif;font-size:15px;font-weight:500;letter-spacing:1.5px;color:var(--muted)">Chatrium Riverside, Bangkok</div>
           </div>
         </div>
         <div class="type-row">
@@ -554,9 +577,9 @@ tr:hover td{background:rgba(254,240,238,.4)}
         <div class="type-row">
           <div class="type-meta">
             <strong>Label</strong>
-            Sarabun 600 · 10px · ALL CAPS<br>สำหรับ section title
+            ElmsSans · 10px · ALL CAPS<br>สำหรับ section title
           </div>
-          <div style="font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--olive)">WEDDING INVITATION · RSVP</div>
+          <div style="font-family:'ElmsSans',sans-serif;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--olive)">WEDDING INVITATION · RSVP</div>
         </div>
       </div>
 
@@ -601,16 +624,16 @@ tr:hover td{background:rgba(254,240,238,.4)}
           <div class="line-phone">
             <div class="line-phone-bar">
               <div style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:12px">🌸</div>
-              <span>Pattaraporn &amp; Praphat</span>
+              <span>Anan &amp; Ong</span>
             </div>
             <div class="line-chat">
               <div class="bubble-wrap">
                 <div class="avatar">💍</div>
                 <div class="flex-card">
                   <div class="fc-header">
-                    <img class="fc-logo" src="img/weddinglogo.png" onerror="this.style.display='none'" alt="PP Monogram">
+                    <img class="fc-logo" src="img/Wedding_Logo.png" onerror="this.style.display='none'" alt="An-an & Ong">
                     <div class="fc-eyebrow">✦  WEDDING INVITATION  ✦</div>
-                    <div class="fc-name">Pattaraporn &amp; Praphat</div>
+                    <div class="fc-name">Anan &amp; Ong</div>
                     <div style="display:flex;justify-content:center;gap:8px;margin-top:4px">
                       <div style="text-align:right"><div class="fc-thai">ภัทรภร ธีรคันธมาทน์</div></div>
                       <div style="color:#3A2E2C;font-size:13px">&amp;</div>
@@ -953,8 +976,52 @@ tr:hover td{background:rgba(254,240,238,.4)}
       </div>
     </div>
 
+    <!-- ═══ SECTION: SLIP ═══ -->
+    <div class="section" id="sec-slip">
+      <div class="sec-title">สลิปโอนเงิน</div>
+      <div class="sec-sub">รายการแจ้งโอนเงินของแขกทั้งหมด</div>
+
+      <!-- Summary stats -->
+      <div class="dash-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
+        <div class="card" style="text-align:center;margin-bottom:0">
+          <div class="card-h">💸 รวมทั้งหมด</div>
+          <div id="slipTotal" style="font-size:32px;font-weight:600;color:var(--text)">—</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">สลิป</div>
+        </div>
+        <div class="card" style="text-align:center;margin-bottom:0">
+          <div class="card-h">💍 ฝ่ายเจ้าสาว</div>
+          <div id="slipBride" style="font-size:32px;font-weight:600;color:var(--rose)">—</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">คน</div>
+        </div>
+        <div class="card" style="text-align:center;margin-bottom:0">
+          <div class="card-h">🤵 ฝ่ายเจ้าบ่าว</div>
+          <div id="slipGroom" style="font-size:32px;font-weight:600;color:var(--mint)">—</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">คน</div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <div class="card-h" style="margin-bottom:14px">
+          📋 รายการโอนเงิน
+          <button class="refresh-btn" onclick="loadSlips()" style="float:right;font-size:11px;padding:5px 10px"><span>🔄</span> รีเฟรช</button>
+        </div>
+        <div id="slipTableWrap">
+          <div class="loading-overlay">⏳ กำลังโหลด...</div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /page -->
+
+<!-- SLIP IMAGE MODAL -->
+<div id="slipModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.55);align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:20px;padding:24px;max-width:480px;width:90%;position:relative;max-height:90vh;overflow-y:auto">
+    <button onclick="closeSlipModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)">✕</button>
+    <div id="slipModalContent" style="text-align:center"></div>
+  </div>
+</div>
 
 
 <script>
@@ -989,6 +1056,7 @@ function nav(id){
   event.currentTarget.classList.add('active');
   if(id==='rsvp') loadRSVP();
   if(id==='dashboard') loadDashboard();
+  if(id==='slip') loadSlips();
   if(window.innerWidth <= 768) closeSidebar();
 }
 
@@ -1007,7 +1075,7 @@ function closeSidebar(){
 const liffId = localStorage.getItem('weddingLiffId')||'2006674119-opWzXpla';
 const flexJson = {
   type: "flex",
-  altText: "🌸 คุณได้รับการ์ดเชิญงานแต่งงาน Pattaraporn & Praphat · 3 กรกฎาคม 2569",
+  altText: "🌸 คุณได้รับการ์ดเชิญงานแต่งงาน Anan & Ong · 3 กรกฎาคม 2569",
   contents: {
     type: "bubble",
     size: "giga",
@@ -1026,7 +1094,7 @@ const flexJson = {
           contents: [
             {
               type: "image",
-              url: "https://page.sparkth.io/img/weddinglogo.png",
+              url: "https://page.sparkth.io/img/Wedding_Logo.png",
               margin: "0px",
               aspectMode: "fit",
               size: "sm"
@@ -1041,7 +1109,7 @@ const flexJson = {
             },
             {
               type: "text",
-              text: "Pattaraporn & Praphat",
+              text: "Anan & Ong",
               size: "xxl",
               color: "#3A2E2C",
               align: "center",
@@ -1920,6 +1988,105 @@ async function loadDashboard(){
 
 // ── Init on load ──
 initAdminLIFF();
+
+// ══════════════════════════════════════
+//  SLIP SUBMISSIONS
+// ══════════════════════════════════════
+const SLIP_API = 'https://sparkth-production.up.railway.app/slip';
+
+async function loadSlips(){
+  const wrap = document.getElementById('slipTableWrap');
+  wrap.innerHTML = '<div class="loading-overlay">⏳ กำลังโหลด...</div>';
+  try{
+    const res = await fetch(SLIP_API);
+    const json = await res.json();
+    const slips = json.slips || [];
+
+    // Update summary
+    const bride = slips.filter(s=>s.side==='bride').length;
+    const groom = slips.filter(s=>s.side==='groom').length;
+    document.getElementById('slipTotal').textContent = slips.length;
+    document.getElementById('slipBride').textContent = bride;
+    document.getElementById('slipGroom').textContent = groom;
+
+    if(!slips.length){
+      wrap.innerHTML='<div class="empty-state">ยังไม่มีการแจ้งโอนเงิน</div>';
+      return;
+    }
+
+    const rows = slips.map(s=>{
+      const dt = new Date(s.submitted_at);
+      const dateStr = dt.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'2-digit'})
+        +' '+dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+      const sideBadge = s.side==='bride'
+        ? '<span style="background:rgba(245,156,154,.15);color:var(--deep);border:1px solid rgba(245,156,154,.4);border-radius:6px;font-size:11px;padding:2px 8px;font-weight:600">💍 เจ้าสาว</span>'
+        : s.side==='groom'
+        ? '<span style="background:rgba(158,204,240,.15);color:#2C6A9A;border:1px solid rgba(158,204,240,.4);border-radius:6px;font-size:11px;padding:2px 8px;font-weight:600">🤵 เจ้าบ่าว</span>'
+        : '<span style="color:var(--muted);font-size:11px">—</span>';
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 12px;font-size:13px;font-weight:500">${escHtml(s.nickname)}</td>
+        <td style="padding:10px 12px">${sideBadge}</td>
+        <td style="padding:10px 12px;font-size:11px;color:var(--muted)">${dateStr}</td>
+        <td style="padding:10px 12px;text-align:right">
+          <button onclick="viewSlip(${s.id},'${escHtml(s.nickname)}')"
+            style="background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--text)">
+            🖼 ดูสลิป
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    wrap.innerHTML=`<table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border)">
+          <th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase">ชื่อ</th>
+          <th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase">ฝ่าย</th>
+          <th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase">เวลา</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }catch(e){
+    wrap.innerHTML='<div class="empty-state">⚠️ โหลดไม่ได้ — ตรวจสอบ API</div>';
+  }
+}
+
+async function viewSlip(id, nickname){
+  const modal = document.getElementById('slipModal');
+  const content = document.getElementById('slipModalContent');
+  content.innerHTML='<div style="padding:32px;color:var(--muted)">⏳ กำลังโหลด...</div>';
+  modal.style.display='flex';
+  try{
+    const res = await fetch(`${SLIP_API}/${id}`);
+    const json = await res.json();
+    const s = json.slip;
+    content.innerHTML=`
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">${escHtml(nickname)}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
+        ${s.side==='bride'?'💍 ฝ่ายเจ้าสาว':s.side==='groom'?'🤵 ฝ่ายเจ้าบ่าว':'—'}
+      </div>
+      <img src="data:${escHtml(s.slip_mime)};base64,${s.slip_data}"
+        style="max-width:100%;border-radius:12px;border:1px solid var(--border)"
+        alt="slip">`;
+  }catch(e){
+    content.innerHTML='<div style="padding:20px;color:var(--muted)">⚠️ โหลดสลิปไม่ได้</div>';
+  }
+}
+
+function closeSlipModal(){
+  document.getElementById('slipModal').style.display='none';
+  document.getElementById('slipModalContent').innerHTML='';
+}
+document.getElementById('slipModal').addEventListener('click',function(e){
+  if(e.target===this) closeSlipModal();
+});
+
+function escHtml(s){
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 </script>
 </body>

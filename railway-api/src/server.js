@@ -379,11 +379,33 @@ function safeGuests(value) {
 app.get('/slip', async (_req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, nickname, slip_mime, submitted_at
+      `SELECT id, nickname, side, slip_mime, submitted_at
        FROM slip_submissions
        ORDER BY submitted_at DESC`
     );
     res.json({ slips: result.rows });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/slip/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isFinite(id)) {
+    res.status(400).json({ success: false, error: 'invalid id' });
+    return;
+  }
+  try {
+    const result = await pool.query(
+      `SELECT id, nickname, side, slip_mime, slip_data, submitted_at
+       FROM slip_submissions WHERE id = $1`,
+      [id]
+    );
+    if (result.rowCount === 0) {
+      res.status(404).json({ success: false, error: 'not found' });
+      return;
+    }
+    res.json({ slip: result.rows[0] });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
