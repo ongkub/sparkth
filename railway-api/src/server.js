@@ -41,8 +41,8 @@ async function ensureSchema() {
   );
 }
 
-app.use(express.json({ limit: '1mb' }));
-app.use(express.text({ type: 'text/plain', limit: '1mb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.text({ type: 'text/plain', limit: '10mb' }));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
