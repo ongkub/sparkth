@@ -91,6 +91,7 @@ app.get('/welcome/recent', async (req, res) => {
     const result = await pool.query(
       `SELECT id, line_user_id, display_name, nickname, picture_url, source, beacon_type, checked_in_at
        FROM checkins
+       WHERE source <> 'codex-smoke'
        ORDER BY checked_in_at DESC
        LIMIT $1`,
       [limit]
