@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome Wall - Pattaraporn & Praphat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FEFCFB;
+  --blush:#FEF0EE;
+  --rose:#F59C9A;
+  --peach:#FFBE98;
+  --sage:#C5DBA9;
+  --sky:#9ECCF0;
+  --text:#3A2E2C;
+  --muted:#A08880;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{
+  font-family:'Noto Sans Thai',sans-serif;
+  color:var(--cream);
+  background:
+    radial-gradient(circle at 20% 18%, rgba(245,156,154,.26), transparent 30%),
+    radial-gradient(circle at 84% 72%, rgba(158,204,240,.24), transparent 32%),
+    linear-gradient(135deg,#2f2928,#5a4641 42%,#2f3b34);
+}
+.bg-video{
+  position:fixed;inset:0;width:100%;height:100%;
+  object-fit:cover;z-index:0;opacity:.92;
+}
+.bg-video:not([src]){display:none}
+.shade{
+  position:fixed;inset:0;z-index:1;
+  background:
+    radial-gradient(circle at center, rgba(0,0,0,.05), rgba(0,0,0,.42)),
+    linear-gradient(180deg,rgba(0,0,0,.24),rgba(0,0,0,.08) 42%,rgba(0,0,0,.36));
+  pointer-events:none;
+}
+.stage{position:fixed;inset:0;z-index:2;overflow:hidden}
+.title{
+  position:fixed;left:50%;top:42px;z-index:4;
+  transform:translateX(-50%);
+  text-align:center;text-shadow:0 8px 28px rgba(0,0,0,.42);
+  pointer-events:none;
+}
+.eyebrow{
+  display:block;font-size:13px;letter-spacing:3px;text-transform:uppercase;
+  color:rgba(254,252,251,.82);font-weight:700;
+}
+.couple{
+  display:block;font-family:'Playfair Display',serif;font-size:clamp(34px,5vw,70px);
+  line-height:1.05;font-weight:700;margin-top:5px;
+}
+.subtitle{
+  display:block;font-size:clamp(16px,2vw,26px);font-weight:300;margin-top:8px;
+  color:rgba(254,252,251,.92);
+}
+.spotlight{
+  position:fixed;left:50%;bottom:54px;z-index:4;
+  transform:translateX(-50%);
+  min-width:min(760px,78vw);
+  padding:18px 30px;border-radius:999px;
+  text-align:center;background:rgba(254,252,251,.16);
+  border:1px solid rgba(254,252,251,.26);
+  backdrop-filter:blur(16px);
+  box-shadow:0 18px 70px rgba(0,0,0,.24);
+  opacity:0;transition:opacity .35s ease, transform .35s ease;
+  pointer-events:none;
+}
+.spotlight.on{opacity:1;transform:translateX(-50%) translateY(-6px)}
+.spotlight-name{font-size:clamp(24px,3.2vw,46px);font-weight:700;line-height:1.15}
+.spotlight-msg{font-size:clamp(13px,1.45vw,20px);font-weight:300;color:rgba(254,252,251,.9);margin-top:4px}
+.bubble{
+  position:absolute;left:0;top:0;
+  width:120px;height:145px;border-radius:999px;
+  transform:translate3d(0,0,0);
+  filter:drop-shadow(0 16px 26px rgba(0,0,0,.24));
+  will-change:transform;
+}
+.bubble-inner{
+  position:relative;width:100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;
+}
+.avatar-ring{
+  width:108px;height:108px;border-radius:50%;
+  padding:5px;
+  background:linear-gradient(135deg,var(--blush),var(--rose),var(--sky),var(--sage));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);
+}
+.avatar-img,.avatar-fallback{
+  width:100%;height:100%;border-radius:50%;
+  object-fit:cover;border:3px solid rgba(254,252,251,.92);
+  background:rgba(254,252,251,.9);
+}
+.avatar-fallback{
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text);font-size:34px;font-weight:700;
+}
+.bubble-label{
+  max-width:160px;margin-top:7px;padding:6px 11px;border-radius:999px;
+  color:var(--text);background:rgba(254,252,251,.9);
+  border:1px solid rgba(245,200,196,.7);
+  font-size:14px;font-weight:700;line-height:1.25;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
+.bubble.new .avatar-ring{animation:pop .85s cubic-bezier(.2,1.4,.35,1)}
+.bubble.new .bubble-label{animation:labelPop .9s cubic-bezier(.2,1.4,.35,1)}
+@keyframes pop{
+  0%{transform:scale(.2);opacity:0}
+  60%{transform:scale(1.15);opacity:1}
+  100%{transform:scale(1)}
+}
+@keyframes labelPop{
+  0%,25%{transform:translateY(8px);opacity:0}
+  100%{transform:translateY(0);opacity:1}
+}
+.controls{
+  position:fixed;right:20px;top:18px;z-index:10;
+  display:flex;gap:8px;align-items:center;
+}
+.control-btn{
+  appearance:none;border:1px solid rgba(254,252,251,.35);
+  background:rgba(254,252,251,.16);color:white;
+  border-radius:999px;padding:9px 14px;
+  font-family:inherit;font-size:13px;font-weight:700;
+  cursor:pointer;backdrop-filter:blur(14px);
+}
+.status{
+  position:fixed;left:20px;bottom:18px;z-index:10;
+  color:rgba(254,252,251,.76);font-size:12px;
+  background:rgba(0,0,0,.18);border-radius:999px;
+  padding:8px 12px;backdrop-filter:blur(10px);
+}
+@media(max-width:720px){
+  .title{top:28px}.spotlight{bottom:30px;min-width:88vw}
+  .bubble{width:94px;height:120px}.avatar-ring{width:86px;height:86px}
+  .bubble-label{font-size:12px;max-width:120px}
+}
+</style>
+</head>
+<body>
+<video class="bg-video" id="bgVideo" autoplay muted loop playsinline>
+  <source src="img/welcome-bg.mp4" type="video/mp4">
+</video>
+<div class="shade"></div>
+<main class="stage" id="stage" aria-live="polite">
+  <header class="title">
+    <span class="eyebrow">Wedding Welcome</span>
+    <span class="couple">Pattaraporn &amp; Praphat</span>
+    <span class="subtitle">3 July 2026 · Chatrium Riverside Bangkok</span>
+  </header>
+  <section class="spotlight" id="spotlight">
+    <div class="spotlight-name" id="spotlightName">Welcome</div>
+    <div class="spotlight-msg" id="spotlightMsg">สู่งานแต่งงานของอันอันและอ๋องครับ</div>
+  </section>
+</main>
+<div class="controls">
+  <button class="control-btn" id="soundBtn" type="button">เปิดเสียง</button>
+  <button class="control-btn" id="testBtn" type="button">Test</button>
+</div>
+<div class="status" id="status">Connecting...</div>
+
+<script>
+const API_URL = (localStorage.getItem('weddingApiUrl') || 'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/, '');
+const stage = document.getElementById('stage');
+const statusEl = document.getElementById('status');
+const spotlight = document.getElementById('spotlight');
+const spotlightName = document.getElementById('spotlightName');
+const spotlightMsg = document.getElementById('spotlightMsg');
+const bubbles = new Map();
+let soundEnabled = false;
+let spotlightTimer = null;
+
+document.getElementById('soundBtn').addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  document.getElementById('soundBtn').textContent = soundEnabled ? 'ปิดเสียง' : 'เปิดเสียง';
+  if(soundEnabled) speak('ระบบเสียงพร้อมแล้วครับ');
+});
+
+document.getElementById('testBtn').addEventListener('click', async () => {
+  const samples = [
+    { displayName:'พงพงศ์', nickname:'พงพงศ์' },
+    { displayName:'อันอัน', nickname:'อันอัน' },
+    { displayName:'อ๋อง', nickname:'อ๋อง' },
+    { displayName:'Guest', nickname:'Guest' }
+  ];
+  const sample = samples[Math.floor(Math.random() * samples.length)];
+  await fetch(`${API_URL}/welcome-checkin`, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=UTF-8'},
+    body:JSON.stringify({
+      ...sample,
+      lineUserId:`test_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+      source:'screen-test'
+    })
+  }).catch(() => {});
+});
+
+function displayNameOf(data){
+  return (data.nickName || data.nickname || data.displayName || 'Guest').trim();
+}
+
+function initials(name){
+  return (name || 'G').trim().slice(0,2).toUpperCase();
+}
+
+function makeBubble(data, isNew=false){
+  const id = data.lineUserId || `guest_${data.id || Date.now()}`;
+  const name = displayNameOf(data);
+  if(bubbles.has(id)){
+    const existing = bubbles.get(id);
+    existing.vx += (Math.random() - .5) * 1.2;
+    existing.vy += (Math.random() - .5) * 1.2;
+    showSpotlight(name);
+    return;
+  }
+
+  const el = document.createElement('div');
+  el.className = `bubble${isNew ? ' new' : ''}`;
+  const picture = data.pictureUrl || data.photo || '';
+  el.innerHTML = `
+    <div class="bubble-inner">
+      <div class="avatar-ring">
+        ${picture
+          ? `<img class="avatar-img" src="${picture}" alt="${escapeHtml(name)}" onerror="this.replaceWith(fallbackAvatar('${escapeHtml(initials(name))}'))">`
+          : `<div class="avatar-fallback">${escapeHtml(initials(name))}</div>`}
+      </div>
+      <div class="bubble-label">${escapeHtml(name)}</div>
+    </div>`;
+  stage.appendChild(el);
+
+  const rect = stage.getBoundingClientRect();
+  const size = window.innerWidth <= 720 ? 94 : 120;
+  const bubble = {
+    id, el, size,
+    x: rect.width * (.38 + Math.random() * .24),
+    y: rect.height * (.34 + Math.random() * .2),
+    vx: (Math.random() > .5 ? 1 : -1) * (0.45 + Math.random() * 0.9),
+    vy: (Math.random() > .5 ? 1 : -1) * (0.35 + Math.random() * 0.75)
+  };
+  bubbles.set(id, bubble);
+
+  if(bubbles.size > 80){
+    const first = bubbles.values().next().value;
+    first.el.remove();
+    bubbles.delete(first.id);
+  }
+
+  if(isNew){
+    showSpotlight(name);
+    speak(`ยินดีต้อนรับคุณ${name} สู่งานแต่งงานของอันอันและอ๋องครับ`);
+    setTimeout(() => el.classList.remove('new'), 1100);
+  }
+}
+
+function fallbackAvatar(text){
+  const div = document.createElement('div');
+  div.className = 'avatar-fallback';
+  div.textContent = text;
+  return div;
+}
+
+function showSpotlight(name){
+  spotlightName.textContent = `ยินดีต้อนรับคุณ${name}`;
+  spotlightMsg.textContent = 'สู่งานแต่งงานของอันอันและอ๋องครับ';
+  spotlight.classList.add('on');
+  clearTimeout(spotlightTimer);
+  spotlightTimer = setTimeout(() => spotlight.classList.remove('on'), 6500);
+}
+
+function speak(text){
+  if(!soundEnabled || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'th-TH';
+  utterance.rate = 0.86;
+  utterance.pitch = 1.04;
+  window.speechSynthesis.speak(utterance);
+}
+
+function escapeHtml(text){
+  return String(text).replace(/[&<>"']/g, (ch) => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[ch]);
+}
+
+async function loadRecent(){
+  try{
+    const res = await fetch(`${API_URL}/welcome/recent?limit=34`);
+    const data = await res.json();
+    (data.checkins || []).forEach((item) => makeBubble(item, false));
+  }catch(_error){}
+}
+
+function connectStream(){
+  const stream = new EventSource(`${API_URL}/welcome-stream`);
+  stream.addEventListener('open', () => { statusEl.textContent = 'Live'; });
+  stream.addEventListener('ready', () => { statusEl.textContent = 'Live'; });
+  stream.addEventListener('checkin', (event) => {
+    try{ makeBubble(JSON.parse(event.data), true); }catch(_error){}
+  });
+  stream.addEventListener('error', () => {
+    statusEl.textContent = 'Reconnecting...';
+  });
+}
+
+function animate(){
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  for(const bubble of bubbles.values()){
+    bubble.x += bubble.vx;
+    bubble.y += bubble.vy;
+    const maxX = width - bubble.size;
+    const maxY = height - bubble.size - 35;
+    if(bubble.x < 8 || bubble.x > maxX){
+      bubble.vx *= -1;
+      bubble.x = Math.max(8, Math.min(maxX, bubble.x));
+    }
+    if(bubble.y < 112 || bubble.y > maxY){
+      bubble.vy *= -1;
+      bubble.y = Math.max(112, Math.min(maxY, bubble.y));
+    }
+    bubble.el.style.transform = `translate3d(${bubble.x}px, ${bubble.y}px, 0)`;
+  }
+  requestAnimationFrame(animate);
+}
+
+document.getElementById('bgVideo').addEventListener('error', () => {
+  document.getElementById('bgVideo').style.display = 'none';
+});
+
+loadRecent();
+connectStream();
+animate();
+</script>
+</body>
+</html>

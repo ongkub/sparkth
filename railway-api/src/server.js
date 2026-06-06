@@ -21,6 +21,9 @@ const pool = new Pool({
   ssl: isLocalDb ? false : { rejectUnauthorized: false }
 });
 
+const welcomeClients = new Set();
+const checkinCooldownMs = Number(process.env.CHECKIN_COOLDOWN_MS || 5 * 60 * 1000);
+
 async function ensureSchema() {
   await pool.query(
     `ALTER TABLE rsvp_submissions
@@ -38,6 +41,24 @@ async function ensureSchema() {
   );
   await pool.query(
     `ALTER TABLE slip_submissions ADD COLUMN IF NOT EXISTS side TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS checkins (
+       id BIGSERIAL PRIMARY KEY,
+       line_user_id TEXT NOT NULL DEFAULT '',
+       display_name TEXT NOT NULL DEFAULT '',
+       nickname TEXT NOT NULL DEFAULT '',
+       picture_url TEXT NOT NULL DEFAULT '',
+       source TEXT NOT NULL DEFAULT '',
+       beacon_type TEXT NOT NULL DEFAULT '',
+       checked_in_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     )`
+  );
+  await pool.query(
+    `CREATE INDEX IF NOT EXISTS idx_checkins_checked_in_at ON checkins (checked_in_at DESC)`
+  );
+  await pool.query(
+    `CREATE INDEX IF NOT EXISTS idx_checkins_line_user_id ON checkins (line_user_id)`
   );
 }
 
@@ -61,6 +82,78 @@ app.get('/health', async (_req, res) => {
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.get('/welcome/recent', async (req, res) => {
+  const limit = Math.max(1, Math.min(80, Number(req.query.limit) || 40));
+  try {
+    const result = await pool.query(
+      `SELECT id, line_user_id, display_name, nickname, picture_url, source, beacon_type, checked_in_at
+       FROM checkins
+       ORDER BY checked_in_at DESC
+       LIMIT $1`,
+      [limit]
+    );
+    res.json({ checkins: result.rows.map(formatCheckin).reverse() });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/welcome-stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.write('event: ready\n');
+  res.write(`data: ${JSON.stringify({ ok: true, now: new Date().toISOString() })}\n\n`);
+
+  welcomeClients.add(res);
+  const heartbeat = setInterval(() => {
+    res.write('event: ping\n');
+    res.write(`data: ${JSON.stringify({ now: new Date().toISOString() })}\n\n`);
+  }, 25000);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    welcomeClients.delete(res);
+  });
+});
+
+app.post('/welcome-checkin', async (req, res) => {
+  const data = parseBody(req.body);
+  const lineUserId = safeText(data.lineUserId || data.userId);
+  try {
+    const checkin = await createCheckin({
+      lineUserId,
+      displayName: safeText(data.displayName || data.name),
+      nickname: safeText(data.nickName || data.nickname),
+      pictureUrl: safeText(data.pictureUrl || data.photo),
+      source: safeText(data.source) || 'manual',
+      beaconType: safeText(data.beaconType)
+    });
+    res.json({ success: true, checkin });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/webhook/line', async (req, res) => {
+  const data = parseBody(req.body);
+  const events = Array.isArray(data.events) ? data.events : [];
+  res.json({ success: true });
+
+  for (const event of events) {
+    if (event?.type !== 'beacon') continue;
+    const lineUserId = safeText(event.source?.userId);
+    if (!lineUserId) continue;
+    createCheckin({
+      lineUserId,
+      source: 'line-beacon',
+      beaconType: safeText(event.beacon?.type)
+    }).catch((error) => {
+      console.error('LINE beacon check-in failed', error);
+    });
   }
 });
 
@@ -374,6 +467,103 @@ function safeGuests(value) {
   const num = Number(value);
   if (!Number.isFinite(num)) return 1;
   return Math.max(1, Math.min(10, Math.round(num)));
+}
+
+function formatCheckin(row) {
+  return {
+    id: row.id,
+    lineUserId: row.line_user_id,
+    displayName: row.display_name,
+    nickName: row.nickname,
+    nickname: row.nickname,
+    pictureUrl: row.picture_url,
+    photo: row.picture_url,
+    source: row.source,
+    beaconType: row.beacon_type,
+    checkedInAt: row.checked_in_at?.toISOString?.() || row.checked_in_at || ''
+  };
+}
+
+function broadcastWelcome(checkin) {
+  const payload = JSON.stringify(checkin);
+  for (const client of welcomeClients) {
+    client.write('event: checkin\n');
+    client.write(`data: ${payload}\n\n`);
+  }
+}
+
+async function lookupRsvp(lineUserId) {
+  if (!lineUserId) return null;
+  const result = await pool.query(
+    `SELECT line_user_id, first_name, last_name, nickname, full_name, picture_url
+     FROM rsvp_submissions
+     WHERE line_user_id = $1`,
+    [lineUserId]
+  );
+  return result.rows[0] || null;
+}
+
+async function lookupLineProfile(lineUserId) {
+  if (!lineChannelToken || !lineUserId) return null;
+  try {
+    const response = await fetch(`https://api.line.me/v2/bot/profile/${encodeURIComponent(lineUserId)}`, {
+      headers: { Authorization: `Bearer ${lineChannelToken}` }
+    });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (_error) {
+    return null;
+  }
+}
+
+async function createCheckin({ lineUserId, displayName, nickname, pictureUrl, source, beaconType }) {
+  const rsvp = await lookupRsvp(lineUserId);
+  const profile = (!rsvp && lineUserId) ? await lookupLineProfile(lineUserId) : null;
+
+  const resolvedNickname = safeText(nickname) || safeText(rsvp?.nickname);
+  const resolvedDisplayName =
+    safeText(displayName) ||
+    resolvedNickname ||
+    safeText(rsvp?.full_name) ||
+    safeText(profile?.displayName) ||
+    'Guest';
+  const resolvedPictureUrl =
+    safeText(pictureUrl) ||
+    safeText(rsvp?.picture_url) ||
+    safeText(profile?.pictureUrl);
+
+  if (lineUserId) {
+    const recent = await pool.query(
+      `SELECT id, line_user_id, display_name, nickname, picture_url, source, beacon_type, checked_in_at
+       FROM checkins
+       WHERE line_user_id = $1
+         AND checked_in_at > NOW() - ($2::int * INTERVAL '1 millisecond')
+       ORDER BY checked_in_at DESC
+       LIMIT 1`,
+      [lineUserId, checkinCooldownMs]
+    );
+    if (recent.rowCount > 0) {
+      return formatCheckin(recent.rows[0]);
+    }
+  }
+
+  const result = await pool.query(
+    `INSERT INTO checkins (line_user_id, display_name, nickname, picture_url, source, beacon_type, checked_in_at)
+     VALUES ($1, $2, $3, $4, $5, $6, NOW())
+     RETURNING id, line_user_id, display_name, nickname, picture_url, source, beacon_type, checked_in_at`,
+    [
+      safeText(lineUserId),
+      resolvedDisplayName,
+      resolvedNickname,
+      resolvedPictureUrl,
+      safeText(source),
+      safeText(beaconType)
+    ]
+  );
+
+  const checkin = formatCheckin(result.rows[0]);
+  broadcastWelcome(checkin);
+  return checkin;
 }
 
 app.get('/slip', async (_req, res) => {

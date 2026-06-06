@@ -31,5 +31,18 @@ CREATE TABLE IF NOT EXISTS invites (
   sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS checkins (
+  id BIGSERIAL PRIMARY KEY,
+  line_user_id TEXT NOT NULL DEFAULT '',
+  display_name TEXT NOT NULL DEFAULT '',
+  nickname TEXT NOT NULL DEFAULT '',
+  picture_url TEXT NOT NULL DEFAULT '',
+  source TEXT NOT NULL DEFAULT '',
+  beacon_type TEXT NOT NULL DEFAULT '',
+  checked_in_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS idx_rsvp_submitted_at ON rsvp_submissions (submitted_at DESC);
 CREATE INDEX IF NOT EXISTS idx_invites_sent_at ON invites (sent_at DESC);
+CREATE INDEX IF NOT EXISTS idx_checkins_checked_in_at ON checkins (checked_in_at DESC);
+CREATE INDEX IF NOT EXISTS idx_checkins_line_user_id ON checkins (line_user_id);
