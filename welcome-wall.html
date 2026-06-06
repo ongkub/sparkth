@@ -175,6 +175,10 @@ const spotlightMsg = document.getElementById('spotlightMsg');
 const bubbles = new Map();
 let soundEnabled = false;
 let spotlightTimer = null;
+const SPEECH_DELAY_MS = Number(localStorage.getItem('welcomeSpeechDelayMs') || 300000);
+const SPEECH_MAX_NAMES = Number(localStorage.getItem('welcomeSpeechMaxNames') || 6);
+const speechQueue = new Map();
+let speechTimer = null;
 
 document.getElementById('soundBtn').addEventListener('click', () => {
   soundEnabled = !soundEnabled;
@@ -253,7 +257,7 @@ function makeBubble(data, isNew=false){
 
   if(isNew){
     showSpotlight(name);
-    speak(`ยินดีต้อนรับคุณ${name} สู่งานแต่งงานของอันอันและอ๋องครับ`);
+    queueWelcomeSpeech(id, name);
     setTimeout(() => el.classList.remove('new'), 1100);
   }
 }
@@ -281,6 +285,41 @@ function speak(text){
   utterance.rate = 0.86;
   utterance.pitch = 1.04;
   window.speechSynthesis.speak(utterance);
+}
+
+function queueWelcomeSpeech(id, name){
+  if(!name || speechQueue.has(id)) return;
+  speechQueue.set(id, {
+    name,
+    queuedAt: Date.now()
+  });
+  scheduleSpeechFlush();
+}
+
+function scheduleSpeechFlush(){
+  clearTimeout(speechTimer);
+  if(!speechQueue.size) return;
+
+  const firstQueuedAt = Math.min(...Array.from(speechQueue.values(), (item) => item.queuedAt));
+  const flushAt = firstQueuedAt + SPEECH_DELAY_MS;
+  speechTimer = setTimeout(flushWelcomeSpeech, Math.max(0, flushAt - Date.now()));
+}
+
+function flushWelcomeSpeech(){
+  if(!speechQueue.size) return;
+  const ready = Array.from(speechQueue.entries(), ([id, item]) => ({ id, ...item }));
+  speechQueue.clear();
+  const names = Array.from(new Set(ready.map((item) => item.name))).filter(Boolean);
+  if(names.length === 1){
+    speak(`ยินดีต้อนรับคุณ${names[0]} สู่งานแต่งงานของอันอันและอ๋องครับ`);
+  }else if(names.length <= SPEECH_MAX_NAMES){
+    speak(`ขอขอบคุณ${names.map((name) => `คุณ${name}`).join(' ')} ที่มาร่วมงานแต่งงานของอันอันและอ๋องครับ`);
+  }else{
+    const shownNames = names.slice(0, SPEECH_MAX_NAMES).map((name) => `คุณ${name}`).join(' ');
+    speak(`ขอขอบคุณ${shownNames} และแขกทุกท่าน ที่มาร่วมงานแต่งงานของอันอันและอ๋องครับ`);
+  }
+
+  scheduleSpeechFlush();
 }
 
 function escapeHtml(text){
