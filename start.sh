@@ -1,2 +1,4 @@
 #!/bin/sh
-cd railway-api && node src/server.js
+set -e
+
+exec npm --prefix railway-api run start

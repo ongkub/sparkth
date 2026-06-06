@@ -1,0 +1,12 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "railpack",
+    "buildCommand": "npm ci --prefix railway-api"
+  },
+  "deploy": {
+    "startCommand": "npm --prefix railway-api run start",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 100
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "sparkth-deploy-root",
+  "private": true,
+  "scripts": {
+    "build": "npm ci --prefix railway-api",
+    "start": "npm --prefix railway-api run start"
+  }
+}
