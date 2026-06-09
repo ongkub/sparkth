@@ -144,8 +144,8 @@ body{
 </style>
 </head>
 <body>
-<video class="bg-video" id="bgVideo" autoplay muted loop playsinline>
-  <source src="weddingBg/scene1.mp4" type="video/mp4">
+<video class="bg-video" id="bgVideo" autoplay muted loop playsinline preload="auto">
+  <source src="weddingBg/scene1-bg.mp4" type="video/mp4">
 </video>
 <div class="shade"></div>
 <main class="stage" id="stage" aria-live="polite">
@@ -170,6 +170,7 @@ body{
 const API_URL = (localStorage.getItem('weddingApiUrl') || 'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/, '');
 const stage = document.getElementById('stage');
 const statusEl = document.getElementById('status');
+const bgVideo = document.getElementById('bgVideo');
 const spotlight = document.getElementById('spotlight');
 const spotlightName = document.getElementById('spotlightName');
 const spotlightMsg = document.getElementById('spotlightMsg');
@@ -180,6 +181,24 @@ const SPEECH_DELAY_MS = Number(localStorage.getItem('welcomeSpeechDelayMs') || 1
 const SPEECH_MAX_NAMES = Number(localStorage.getItem('welcomeSpeechMaxNames') || 6);
 const speechQueue = new Map();
 let speechTimer = null;
+
+function playBackgroundVideo(){
+  if(!bgVideo) return;
+  bgVideo.muted = true;
+  bgVideo.loop = true;
+  bgVideo.playsInline = true;
+  const playAttempt = bgVideo.play();
+  if(playAttempt && typeof playAttempt.catch === 'function'){
+    playAttempt.catch(() => setTimeout(playBackgroundVideo, 1200));
+  }
+}
+
+bgVideo.addEventListener('loadeddata', playBackgroundVideo);
+bgVideo.addEventListener('canplay', playBackgroundVideo);
+document.addEventListener('visibilitychange', () => {
+  if(!document.hidden) playBackgroundVideo();
+});
+playBackgroundVideo();
 
 document.getElementById('soundBtn').addEventListener('click', () => {
   soundEnabled = !soundEnabled;
