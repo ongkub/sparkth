@@ -162,6 +162,7 @@ body{
 <div class="controls">
   <button class="control-btn" id="soundBtn" type="button">เปิดเสียง</button>
   <button class="control-btn" id="testBtn" type="button">Test</button>
+  <button class="control-btn" id="resetBtn" type="button" style="background:rgba(255,100,80,.22);border-color:rgba(255,120,100,.45)">Reset</button>
 </div>
 <div class="status" id="status">Connecting...</div>
 
@@ -175,7 +176,7 @@ const spotlightMsg = document.getElementById('spotlightMsg');
 const bubbles = new Map();
 let soundEnabled = false;
 let spotlightTimer = null;
-const SPEECH_DELAY_MS = Number(localStorage.getItem('welcomeSpeechDelayMs') || 300000);
+const SPEECH_DELAY_MS = Number(localStorage.getItem('welcomeSpeechDelayMs') || 1500);
 const SPEECH_MAX_NAMES = Number(localStorage.getItem('welcomeSpeechMaxNames') || 6);
 const speechQueue = new Map();
 let speechTimer = null;
@@ -184,6 +185,17 @@ document.getElementById('soundBtn').addEventListener('click', () => {
   soundEnabled = !soundEnabled;
   document.getElementById('soundBtn').textContent = soundEnabled ? 'ปิดเสียง' : 'เปิดเสียง';
   if(soundEnabled) speak('ระบบเสียงพร้อมแล้วครับ');
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  for(const bubble of bubbles.values()) bubble.el.remove();
+  bubbles.clear();
+  speechQueue.clear();
+  clearTimeout(speechTimer);
+  spotlight.classList.remove('on');
+  clearTimeout(spotlightTimer);
+  statusEl.textContent = 'Cleared';
+  setTimeout(() => { statusEl.textContent = 'Live'; }, 2000);
 });
 
 document.getElementById('testBtn').addEventListener('click', async () => {

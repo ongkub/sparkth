@@ -89,10 +89,14 @@ app.get('/welcome/recent', async (req, res) => {
   const limit = Math.max(1, Math.min(80, Number(req.query.limit) || 40));
   try {
     const result = await pool.query(
-      `SELECT id, line_user_id, display_name, nickname, picture_url, source, beacon_type, checked_in_at
-       FROM checkins
-       WHERE source <> 'codex-smoke'
-       ORDER BY checked_in_at DESC
+      `SELECT
+         c.id, c.line_user_id, c.display_name, c.nickname,
+         COALESCE(NULLIF(c.picture_url,''), r.picture_url, '') AS picture_url,
+         c.source, c.beacon_type, c.checked_in_at
+       FROM checkins c
+       LEFT JOIN rsvp_submissions r ON r.line_user_id = c.line_user_id
+       WHERE c.source <> 'codex-smoke'
+       ORDER BY c.checked_in_at DESC
        LIMIT $1`,
       [limit]
     );
@@ -519,7 +523,10 @@ async function lookupLineProfile(lineUserId) {
 
 async function createCheckin({ lineUserId, displayName, nickname, pictureUrl, source, beaconType }) {
   const rsvp = await lookupRsvp(lineUserId);
-  const profile = (!rsvp && lineUserId) ? await lookupLineProfile(lineUserId) : null;
+  const rsvpPicture = safeText(rsvp?.picture_url);
+  // Fetch LINE profile if we still need a picture (rsvp missing or no picture)
+  const needsLineLookup = lineUserId && (!rsvp || !rsvpPicture);
+  const profile = needsLineLookup ? await lookupLineProfile(lineUserId) : null;
 
   const resolvedNickname = safeText(nickname) || safeText(rsvp?.nickname);
   const resolvedDisplayName =
@@ -530,7 +537,7 @@ async function createCheckin({ lineUserId, displayName, nickname, pictureUrl, so
     'Guest';
   const resolvedPictureUrl =
     safeText(pictureUrl) ||
-    safeText(rsvp?.picture_url) ||
+    rsvpPicture ||
     safeText(profile?.pictureUrl);
 
   if (lineUserId) {
