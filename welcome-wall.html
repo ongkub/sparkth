@@ -216,14 +216,37 @@ document.getElementById('resetBtn').addEventListener('click', () => {
   setTimeout(() => { statusEl.textContent = 'Live'; }, 2000);
 });
 
+let _rsvpCache = null;
+async function getRsvpSamples(){
+  if(_rsvpCache) return _rsvpCache;
+  try{
+    const res = await fetch(`${API_URL}/rsvp?action=list`);
+    const data = await res.json();
+    const all = [...(data.submitted||[]), ...(data.visited||[])].filter(r => r.photo || r.pictureUrl);
+    _rsvpCache = all.length ? all : null;
+  }catch(_){}
+  return _rsvpCache;
+}
+
 document.getElementById('testBtn').addEventListener('click', async () => {
-  const samples = [
-    { displayName:'พงพงศ์', nickname:'พงพงศ์' },
-    { displayName:'อันอัน', nickname:'อันอัน' },
-    { displayName:'อ๋อง', nickname:'อ๋อง' },
-    { displayName:'Guest', nickname:'Guest' }
-  ];
-  const sample = samples[Math.floor(Math.random() * samples.length)];
+  const samples = await getRsvpSamples();
+  let sample;
+  if(samples && samples.length){
+    const r = samples[Math.floor(Math.random() * samples.length)];
+    sample = {
+      displayName: r.nickName || r.nickname || r.name || 'Guest',
+      nickname: r.nickName || r.nickname || r.name || 'Guest',
+      pictureUrl: r.photo || r.pictureUrl || ''
+    };
+  } else {
+    const fallbacks = [
+      { displayName:'พงพงศ์', nickname:'พงพงศ์' },
+      { displayName:'อันอัน', nickname:'อันอัน' },
+      { displayName:'อ๋อง', nickname:'อ๋อง' },
+      { displayName:'Guest', nickname:'Guest' }
+    ];
+    sample = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+  }
   makeBubble({
     ...sample,
     lineUserId:`local_test_${Date.now()}_${Math.random().toString(16).slice(2)}`,
