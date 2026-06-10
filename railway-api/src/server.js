@@ -95,7 +95,7 @@ app.get('/welcome/recent', async (req, res) => {
          c.source, c.beacon_type, c.checked_in_at
        FROM checkins c
        LEFT JOIN rsvp_submissions r ON r.line_user_id = c.line_user_id
-       WHERE c.source <> 'codex-smoke'
+       WHERE c.source NOT IN ('codex-smoke', 'screen-test')
        ORDER BY c.checked_in_at DESC
        LIMIT $1`,
       [limit]

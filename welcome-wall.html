@@ -224,15 +224,11 @@ document.getElementById('testBtn').addEventListener('click', async () => {
     { displayName:'Guest', nickname:'Guest' }
   ];
   const sample = samples[Math.floor(Math.random() * samples.length)];
-  await fetch(`${API_URL}/welcome-checkin`, {
-    method:'POST',
-    headers:{'Content-Type':'text/plain;charset=UTF-8'},
-    body:JSON.stringify({
-      ...sample,
-      lineUserId:`test_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-      source:'screen-test'
-    })
-  }).catch(() => {});
+  makeBubble({
+    ...sample,
+    lineUserId:`local_test_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+    source:'screen-test'
+  }, true);
 });
 
 function displayNameOf(data){
