@@ -42,7 +42,20 @@ CREATE TABLE IF NOT EXISTS checkins (
   checked_in_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS line_webhook_events (
+  id BIGSERIAL PRIMARY KEY,
+  event_type TEXT NOT NULL DEFAULT '',
+  line_user_id TEXT NOT NULL DEFAULT '',
+  beacon_type TEXT NOT NULL DEFAULT '',
+  destination TEXT NOT NULL DEFAULT '',
+  event_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+  raw_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+  received_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS idx_rsvp_submitted_at ON rsvp_submissions (submitted_at DESC);
 CREATE INDEX IF NOT EXISTS idx_invites_sent_at ON invites (sent_at DESC);
 CREATE INDEX IF NOT EXISTS idx_checkins_checked_in_at ON checkins (checked_in_at DESC);
 CREATE INDEX IF NOT EXISTS idx_checkins_line_user_id ON checkins (line_user_id);
+CREATE INDEX IF NOT EXISTS idx_line_webhook_events_received_at ON line_webhook_events (received_at DESC);
+CREATE INDEX IF NOT EXISTS idx_line_webhook_events_line_user_id ON line_webhook_events (line_user_id);

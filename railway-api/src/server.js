@@ -60,6 +60,26 @@ async function ensureSchema() {
   await pool.query(
     `CREATE INDEX IF NOT EXISTS idx_checkins_line_user_id ON checkins (line_user_id)`
   );
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS line_webhook_events (
+       id BIGSERIAL PRIMARY KEY,
+       event_type TEXT NOT NULL DEFAULT '',
+       line_user_id TEXT NOT NULL DEFAULT '',
+       beacon_type TEXT NOT NULL DEFAULT '',
+       destination TEXT NOT NULL DEFAULT '',
+       event_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+       raw_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+       received_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     )`
+  );
+  await pool.query(
+    `CREATE INDEX IF NOT EXISTS idx_line_webhook_events_received_at
+     ON line_webhook_events (received_at DESC)`
+  );
+  await pool.query(
+    `CREATE INDEX IF NOT EXISTS idx_line_webhook_events_line_user_id
+     ON line_webhook_events (line_user_id)`
+  );
 }
 
 app.use(express.json({ limit: '10mb' }));
@@ -148,6 +168,10 @@ app.post('/webhook/line', async (req, res) => {
   const events = Array.isArray(data.events) ? data.events : [];
   res.json({ success: true });
 
+  recordLineWebhookEvents(data, events).catch((error) => {
+    console.error('LINE webhook debug log failed', error);
+  });
+
   for (const event of events) {
     if (event?.type !== 'beacon') continue;
     const lineUserId = safeText(event.source?.userId);
@@ -159,6 +183,57 @@ app.post('/webhook/line', async (req, res) => {
     }).catch((error) => {
       console.error('LINE beacon check-in failed', error);
     });
+  }
+});
+
+app.get('/debug/line-webhook', async (req, res) => {
+  const limit = Math.max(1, Math.min(200, Number(req.query.limit) || 50));
+  const userId = safeText(req.query.userId);
+  const eventType = safeText(req.query.type);
+  const beaconType = safeText(req.query.beaconType);
+  const conditions = [];
+  const params = [];
+
+  if (userId) {
+    params.push(userId);
+    conditions.push(`line_user_id = $${params.length}`);
+  }
+  if (eventType) {
+    params.push(eventType);
+    conditions.push(`event_type = $${params.length}`);
+  }
+  if (beaconType) {
+    params.push(beaconType);
+    conditions.push(`beacon_type = $${params.length}`);
+  }
+
+  params.push(limit);
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  try {
+    const result = await pool.query(
+      `SELECT id, event_type, line_user_id, beacon_type, destination,
+              event_payload, raw_payload, received_at
+       FROM line_webhook_events
+       ${where}
+       ORDER BY received_at DESC
+       LIMIT $${params.length}`,
+      params
+    );
+    res.json({
+      events: result.rows.map((row) => ({
+        id: row.id,
+        eventType: row.event_type,
+        lineUserId: row.line_user_id,
+        beaconType: row.beacon_type,
+        destination: row.destination,
+        receivedAt: row.received_at?.toISOString?.() || row.received_at || '',
+        receivedAtBkk: formatBkk(row.received_at),
+        event: row.event_payload,
+        raw: row.raw_payload
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
@@ -472,6 +547,45 @@ function safeGuests(value) {
   const num = Number(value);
   if (!Number.isFinite(num)) return 1;
   return Math.max(1, Math.min(10, Math.round(num)));
+}
+
+function formatBkk(value) {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleString('th-TH', {
+    timeZone: 'Asia/Bangkok',
+    hour12: false
+  });
+}
+
+async function recordLineWebhookEvents(data, events) {
+  const destination = safeText(data?.destination);
+  if (!events.length) {
+    await pool.query(
+      `INSERT INTO line_webhook_events
+         (event_type, line_user_id, beacon_type, destination, event_payload, raw_payload)
+       VALUES ($1, $2, $3, $4, $5::jsonb, $6::jsonb)`,
+      ['no-events', '', '', destination, '{}', JSON.stringify(data || {})]
+    );
+    return;
+  }
+
+  for (const event of events) {
+    await pool.query(
+      `INSERT INTO line_webhook_events
+         (event_type, line_user_id, beacon_type, destination, event_payload, raw_payload)
+       VALUES ($1, $2, $3, $4, $5::jsonb, $6::jsonb)`,
+      [
+        safeText(event?.type),
+        safeText(event?.source?.userId),
+        safeText(event?.beacon?.type),
+        destination,
+        JSON.stringify(event || {}),
+        JSON.stringify(data || {})
+      ]
+    );
+  }
 }
 
 function formatCheckin(row) {
