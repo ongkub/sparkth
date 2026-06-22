@@ -1887,7 +1887,7 @@ function renderTable(rows){
   }
   let html = `<table>
     <thead><tr>
-      <th>แขก</th><th>จำนวน</th><th>ฝั่ง</th><th>ความสัมพันธ์</th><th>อาหาร</th><th>เวลา</th><th>สถานะ</th>
+      <th>แขก</th><th>จำนวน</th><th>โต๊ะ</th><th>ฝั่ง</th><th>ความสัมพันธ์</th><th>อาหาร</th><th>เวลา</th><th>สถานะ</th><th>เช็กอิน</th>
     </tr></thead><tbody>`;
   filtered.forEach(r=>{
     const pic = r.photo
@@ -1897,6 +1897,11 @@ function renderTable(rows){
     const badge = r.status==='submitted'
       ? '<span class="status-badge status-submitted">✅ กรอกแล้ว</span>'
       : '<span class="status-badge status-visited">👁️ เปิดแล้ว</span>';
+    const checkinBadge = r.checkedInAt
+      ? `<span class="status-badge status-submitted">เช็กอินแล้ว</span><div class="cell-sub" style="font-size:10px">${String(r.checkedInAt).slice(0,16)}</div>`
+      : (r.status === 'submitted' && r.lineUid
+        ? `<button onclick="manualCheckin('${escHtml(r.lineUid)}')" style="border:1px solid var(--rose);background:white;color:var(--text);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">Staff check-in</button>`
+        : '<span class="cell-sub">-</span>');
     const sessText = r.session ? `<div class="cell-sub" style="font-size:10px">${r.session}</div>` : '';
     const nickname = r.nickName || r.nickname || '';
     const nameText = nickname ? `${r.name||'-'} (${nickname})` : (r.name||'-');
@@ -1907,11 +1912,13 @@ function renderTable(rows){
         ${sessText}
       </div></div></td>
       <td>${r.guests||'-'}</td>
+      <td style="font-weight:700;color:var(--gold)">${r.tableName||'-'}</td>
       <td>${r.side||'-'}</td>
       <td>${r.relationship||'-'}</td>
       <td style="max-width:140px;font-size:11px">${r.dietary||'-'}</td>
       <td style="font-size:11px;white-space:nowrap">${String(r.timestamp).slice(0,16)}</td>
       <td>${badge}</td>
+      <td>${checkinBadge}</td>
     </tr>`;
   });
   html += '</tbody></table>';
@@ -1926,6 +1933,30 @@ function setFilter(f, el){
 }
 
 function filterRSVP(){ renderTable(allRsvpData); }
+
+async function manualCheckin(lineUid){
+  const guest = allRsvpData.find(r => r.lineUid === lineUid) || {};
+  try{
+    const apiBase = SHEET_URL.replace(/\/rsvp$/, '');
+    const res = await fetch(apiBase + '/checkin/manual', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        lineUserId: lineUid,
+        name: guest.name || '',
+        nickName: guest.nickName || guest.nickname || '',
+        pictureUrl: guest.photo || '',
+        tableName: guest.tableName || '',
+        source:'staff'
+      })
+    });
+    const data = await res.json();
+    if(!res.ok || !data.success) throw new Error(data.error || 'check-in failed');
+    await loadRSVP();
+  }catch(error){
+    alert('เช็กอินไม่สำเร็จ: ' + (error.message || error));
+  }
+}
 
 // ══════════════════════════════════════
 //  DASHBOARD

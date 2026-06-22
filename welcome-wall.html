@@ -90,6 +90,10 @@ body{
   background:linear-gradient(135deg,var(--blush),var(--rose),var(--sky),var(--sage));
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);
 }
+.bubble.single .avatar-ring{
+  background:linear-gradient(135deg,#FDE8EC,#D97E88,#B8965A,#E8B4BC);
+  box-shadow:0 0 0 4px rgba(255,255,255,.22),0 0 34px rgba(217,126,136,.38);
+}
 .avatar-img,.avatar-fallback{
   width:100%;height:100%;border-radius:50%;
   object-fit:cover;border:3px solid rgba(254,252,251,.92);
@@ -106,6 +110,19 @@ body{
   font-size:14px;font-weight:700;line-height:1.25;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
+.single-badge{
+  position:absolute;right:2px;top:76px;
+  border-radius:999px;padding:4px 7px;
+  background:rgba(184,150,90,.94);color:white;
+  border:1px solid rgba(255,255,255,.7);
+  font-size:10px;font-weight:800;letter-spacing:.2px;
+  box-shadow:0 8px 18px rgba(0,0,0,.18);
+}
+.bubble-ig{
+  max-width:150px;margin-top:4px;padding:3px 8px;border-radius:999px;
+  color:white;background:rgba(61,36,40,.62);border:1px solid rgba(255,255,255,.18);
+  font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .bubble.new .avatar-ring{animation:pop .85s cubic-bezier(.2,1.4,.35,1)}
 .bubble.new .bubble-label{animation:labelPop .9s cubic-bezier(.2,1.4,.35,1)}
@@ -265,6 +282,9 @@ function initials(name){
 function makeBubble(data, isNew=false){
   const id = data.lineUserId || `guest_${data.id || Date.now()}`;
   const name = displayNameOf(data);
+  const isSingle = Boolean(data.isSingle || data.is_single);
+  const instagram = (data.instagram || '').trim().replace(/^@+/, '');
+  const showIg = Boolean(data.showSocialOnWall || data.show_social_on_wall) && instagram;
   if(bubbles.has(id)){
     const existing = bubbles.get(id);
     existing.vx += (Math.random() - .5) * 1.2;
@@ -274,7 +294,7 @@ function makeBubble(data, isNew=false){
   }
 
   const el = document.createElement('div');
-  el.className = `bubble${isNew ? ' new' : ''}`;
+  el.className = `bubble${isNew ? ' new' : ''}${isSingle ? ' single' : ''}`;
   const picture = data.pictureUrl || data.photo || '';
   el.innerHTML = `
     <div class="bubble-inner">
@@ -283,7 +303,9 @@ function makeBubble(data, isNew=false){
           ? `<img class="avatar-img" src="${picture}" alt="${escapeHtml(name)}" onerror="this.replaceWith(fallbackAvatar('${escapeHtml(initials(name))}'))">`
           : `<div class="avatar-fallback">${escapeHtml(initials(name))}</div>`}
       </div>
+      ${isSingle ? '<div class="single-badge">โสด</div>' : ''}
       <div class="bubble-label">${escapeHtml(name)}</div>
+      ${showIg ? `<div class="bubble-ig">@${escapeHtml(instagram)}</div>` : ''}
     </div>`;
   stage.appendChild(el);
 

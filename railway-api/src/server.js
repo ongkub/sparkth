@@ -7,6 +7,7 @@ const app = express();
 const port = Number(process.env.PORT || 3000);
 const databaseUrl = process.env.DATABASE_URL;
 const lineChannelToken = process.env.LINE_CHANNEL_TOKEN || '';
+const checkinLiffUrl = process.env.CHECKIN_LIFF_URL || 'https://page.sparkth.io/checkin.html';
 
 if (!databaseUrl) {
   console.error('Missing DATABASE_URL');
@@ -28,6 +29,34 @@ async function ensureSchema() {
   await pool.query(
     `ALTER TABLE rsvp_submissions
      ADD COLUMN IF NOT EXISTS nickname TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `ALTER TABLE rsvp_submissions
+     ADD COLUMN IF NOT EXISTS table_name TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `ALTER TABLE rsvp_submissions
+     ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMPTZ`
+  );
+  await pool.query(
+    `ALTER TABLE rsvp_submissions
+     ADD COLUMN IF NOT EXISTS checkin_source TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `ALTER TABLE rsvp_submissions
+     ADD COLUMN IF NOT EXISTS is_single BOOLEAN NOT NULL DEFAULT false`
+  );
+  await pool.query(
+    `ALTER TABLE rsvp_submissions
+     ADD COLUMN IF NOT EXISTS instagram TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `ALTER TABLE rsvp_submissions
+     ADD COLUMN IF NOT EXISTS show_social_on_wall BOOLEAN NOT NULL DEFAULT false`
+  );
+  await pool.query(
+    `ALTER TABLE rsvp_submissions
+     ADD COLUMN IF NOT EXISTS welcome_announced_at TIMESTAMPTZ`
   );
   await pool.query(
     `CREATE TABLE IF NOT EXISTS slip_submissions (
@@ -59,6 +88,22 @@ async function ensureSchema() {
   );
   await pool.query(
     `CREATE INDEX IF NOT EXISTS idx_checkins_line_user_id ON checkins (line_user_id)`
+  );
+  await pool.query(
+    `ALTER TABLE checkins
+     ADD COLUMN IF NOT EXISTS table_name TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `ALTER TABLE checkins
+     ADD COLUMN IF NOT EXISTS is_single BOOLEAN NOT NULL DEFAULT false`
+  );
+  await pool.query(
+    `ALTER TABLE checkins
+     ADD COLUMN IF NOT EXISTS instagram TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `ALTER TABLE checkins
+     ADD COLUMN IF NOT EXISTS show_social_on_wall BOOLEAN NOT NULL DEFAULT false`
   );
   await pool.query(
     `CREATE TABLE IF NOT EXISTS line_webhook_events (
@@ -112,10 +157,14 @@ app.get('/welcome/recent', async (req, res) => {
       `SELECT
          c.id, c.line_user_id, c.display_name, c.nickname,
          COALESCE(NULLIF(c.picture_url,''), r.picture_url, '') AS picture_url,
-         c.source, c.beacon_type, c.checked_in_at
+         c.source, c.beacon_type, c.checked_in_at,
+         COALESCE(NULLIF(c.table_name,''), r.table_name, '') AS table_name,
+         COALESCE(c.is_single, r.is_single, false) AS is_single,
+         COALESCE(NULLIF(c.instagram,''), r.instagram, '') AS instagram,
+         COALESCE(c.show_social_on_wall, r.show_social_on_wall, false) AS show_social_on_wall
        FROM checkins c
        LEFT JOIN rsvp_submissions r ON r.line_user_id = c.line_user_id
-       WHERE c.source NOT IN ('codex-smoke', 'screen-test')
+       WHERE c.source NOT IN ('codex-smoke', 'screen-test', 'line-beacon')
        ORDER BY c.checked_in_at DESC
        LIMIT $1`,
       [limit]
@@ -176,13 +225,178 @@ app.post('/webhook/line', async (req, res) => {
     if (event?.type !== 'beacon') continue;
     const lineUserId = safeText(event.source?.userId);
     if (!lineUserId) continue;
-    createCheckin({
-      lineUserId,
-      source: 'line-beacon',
-      beaconType: safeText(event.beacon?.type)
-    }).catch((error) => {
-      console.error('LINE beacon check-in failed', error);
+    sendCheckinLink(event).catch((error) => {
+      console.error('LINE beacon check-in link failed', error);
     });
+  }
+});
+
+app.get('/checkin', async (req, res) => {
+  const userId = safeText(req.query.userId);
+  if (!userId) {
+    res.status(400).json({ success: false, error: 'userId required' });
+    return;
+  }
+
+  try {
+    const rsvp = await getCheckinRsvp(userId);
+    if (!rsvp) {
+      res.json({ success: true, submitted: false, checkedIn: false });
+      return;
+    }
+    res.json({
+      success: true,
+      submitted: true,
+      checkedIn: Boolean(rsvp.checked_in_at),
+      data: formatCheckinRsvp(rsvp)
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/checkin', async (req, res) => {
+  const data = parseBody(req.body);
+  const lineUserId = safeText(data.lineUserId || data.userId);
+  if (!lineUserId) {
+    res.status(400).json({ success: false, error: 'lineUserId required' });
+    return;
+  }
+
+  try {
+    const rsvp = await getCheckinRsvp(lineUserId);
+    if (!rsvp) {
+      res.status(404).json({ success: false, error: 'rsvp_not_found' });
+      return;
+    }
+
+    const social = normalizeSocial(data);
+    const tableName = safeText(data.tableName || data.table_name || rsvp.table_name);
+    const pictureUrl = safeText(data.pictureUrl || data.photo || rsvp.picture_url);
+    if (rsvp.checked_in_at) {
+      await updateRsvpCheckin(lineUserId, {
+        tableName,
+        source: safeText(data.source) || rsvp.checkin_source || 'qr',
+        ...social
+      });
+      res.json({
+        success: true,
+        checkedIn: true,
+        alreadyCheckedIn: true,
+        data: formatCheckinRsvp({
+          ...rsvp,
+          table_name: tableName,
+          is_single: social.isSingle,
+          instagram: social.instagram,
+          show_social_on_wall: social.showSocialOnWall
+        })
+      });
+      return;
+    }
+
+    await updateRsvpCheckin(lineUserId, {
+      tableName,
+      source: safeText(data.source) || 'qr',
+      ...social
+    });
+
+    const checkin = await createCheckin({
+      lineUserId,
+      displayName: safeText(data.displayName || data.name),
+      nickname: safeText(data.nickName || data.nickname),
+      pictureUrl,
+      source: safeText(data.source) || 'qr',
+      tableName,
+      ...social
+    });
+
+    res.json({ success: true, checkedIn: true, checkin });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/checkin/manual', async (req, res) => {
+  const data = parseBody(req.body);
+  const lineUserId = safeText(data.lineUserId || data.userId);
+  const firstName = safeText(data.firstName);
+  const lastName = safeText(data.lastName);
+  const nickname = safeText(data.nickName || data.nickname);
+  const displayName = safeText(data.name || data.displayName) || nickname || `${firstName} ${lastName}`.trim();
+  if (!lineUserId && !displayName) {
+    res.status(400).json({ success: false, error: 'name or lineUserId required' });
+    return;
+  }
+
+  try {
+    const source = safeText(data.source) || 'staff';
+    const social = normalizeSocial(data);
+    const tableName = safeText(data.tableName || data.table_name);
+
+    if (lineUserId) {
+      await pool.query(
+        `INSERT INTO rsvp_submissions (
+           line_user_id, first_name, last_name, nickname, full_name, phone, side,
+           relationship, guests, dietary, message, session, picture_url, submitted_at,
+           table_name, checked_in_at, checkin_source, is_single, instagram,
+           show_social_on_wall, welcome_announced_at
+         )
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,NOW(),$14,NOW(),$15,$16,$17,$18,NOW())
+         ON CONFLICT (line_user_id) DO UPDATE SET
+           first_name = CASE WHEN EXCLUDED.first_name <> '' THEN EXCLUDED.first_name ELSE rsvp_submissions.first_name END,
+           last_name = CASE WHEN EXCLUDED.last_name <> '' THEN EXCLUDED.last_name ELSE rsvp_submissions.last_name END,
+           nickname = CASE WHEN EXCLUDED.nickname <> '' THEN EXCLUDED.nickname ELSE rsvp_submissions.nickname END,
+           full_name = CASE WHEN EXCLUDED.full_name <> '' THEN EXCLUDED.full_name ELSE rsvp_submissions.full_name END,
+           phone = CASE WHEN EXCLUDED.phone <> '' THEN EXCLUDED.phone ELSE rsvp_submissions.phone END,
+           side = CASE WHEN EXCLUDED.side <> '' THEN EXCLUDED.side ELSE rsvp_submissions.side END,
+           relationship = CASE WHEN EXCLUDED.relationship <> '' THEN EXCLUDED.relationship ELSE rsvp_submissions.relationship END,
+           guests = EXCLUDED.guests,
+           dietary = CASE WHEN EXCLUDED.dietary <> '' THEN EXCLUDED.dietary ELSE rsvp_submissions.dietary END,
+           message = CASE WHEN EXCLUDED.message <> '' THEN EXCLUDED.message ELSE rsvp_submissions.message END,
+           session = CASE WHEN EXCLUDED.session <> '' THEN EXCLUDED.session ELSE rsvp_submissions.session END,
+           picture_url = CASE WHEN EXCLUDED.picture_url <> '' THEN EXCLUDED.picture_url ELSE rsvp_submissions.picture_url END,
+           table_name = EXCLUDED.table_name,
+           checked_in_at = COALESCE(rsvp_submissions.checked_in_at, NOW()),
+           checkin_source = EXCLUDED.checkin_source,
+           is_single = EXCLUDED.is_single,
+           instagram = EXCLUDED.instagram,
+           show_social_on_wall = EXCLUDED.show_social_on_wall,
+           welcome_announced_at = COALESCE(rsvp_submissions.welcome_announced_at, NOW())`,
+        [
+          lineUserId,
+          firstName,
+          lastName,
+          nickname,
+          displayName,
+          safeText(data.phone),
+          safeText(data.side),
+          safeText(data.relationship),
+          safeGuests(data.guests),
+          safeText(data.dietary),
+          safeText(data.message),
+          safeText(data.session),
+          safeText(data.pictureUrl || data.photo),
+          tableName,
+          source,
+          social.isSingle,
+          social.instagram,
+          social.showSocialOnWall
+        ]
+      );
+    }
+
+    const checkin = await createCheckin({
+      lineUserId,
+      displayName,
+      nickname,
+      pictureUrl: safeText(data.pictureUrl || data.photo),
+      source,
+      tableName,
+      ...social
+    });
+    res.json({ success: true, checkedIn: true, checkin });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
@@ -258,6 +472,13 @@ app.get('/rsvp', async (req, res) => {
            message,
            session,
            picture_url,
+           table_name,
+           checked_in_at,
+           checkin_source,
+           is_single,
+           instagram,
+           show_social_on_wall,
+           welcome_announced_at,
            submitted_at
          FROM rsvp_submissions
          WHERE line_user_id = $1`,
@@ -286,6 +507,13 @@ app.get('/rsvp', async (req, res) => {
           message: row.message,
           session: row.session,
           photo: row.picture_url || '',
+          tableName: row.table_name,
+          checkedInAt: row.checked_in_at?.toISOString?.() || '',
+          checkinSource: row.checkin_source,
+          isSingle: row.is_single,
+          instagram: row.instagram,
+          showSocialOnWall: row.show_social_on_wall,
+          welcomeAnnouncedAt: row.welcome_announced_at?.toISOString?.() || '',
           timestamp: row.submitted_at?.toISOString?.() || ''
         }
       });
@@ -308,6 +536,13 @@ app.get('/rsvp', async (req, res) => {
            message,
            session,
            picture_url,
+           table_name,
+           checked_in_at,
+           checkin_source,
+           is_single,
+           instagram,
+           show_social_on_wall,
+           welcome_announced_at,
            submitted_at
          FROM rsvp_submissions
          ORDER BY submitted_at DESC`
@@ -344,7 +579,14 @@ app.get('/rsvp', async (req, res) => {
         dietary: r.dietary,
         message: r.message,
         session: r.session,
-        photo: r.picture_url || ''
+        photo: r.picture_url || '',
+        tableName: r.table_name,
+        checkedInAt: r.checked_in_at?.toISOString?.() || '',
+        checkinSource: r.checkin_source,
+        isSingle: r.is_single,
+        instagram: r.instagram,
+        showSocialOnWall: r.show_social_on_wall,
+        welcomeAnnouncedAt: r.welcome_announced_at?.toISOString?.() || ''
       }));
 
       const visited = visitedRes.rows.map((r) => ({
@@ -549,6 +791,25 @@ function safeGuests(value) {
   return Math.max(1, Math.min(10, Math.round(num)));
 }
 
+function safeBool(value) {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value === 1;
+  if (typeof value !== 'string') return false;
+  return ['1', 'true', 'yes', 'y', 'on'].includes(value.trim().toLowerCase());
+}
+
+function safeInstagram(value) {
+  return safeText(value).replace(/^@+/, '').replace(/[^a-zA-Z0-9._]/g, '').slice(0, 30);
+}
+
+function normalizeSocial(data) {
+  return {
+    isSingle: safeBool(data.isSingle ?? data.is_single),
+    instagram: safeInstagram(data.instagram),
+    showSocialOnWall: safeBool(data.showSocialOnWall ?? data.show_social_on_wall)
+  };
+}
+
 function formatBkk(value) {
   if (!value) return '';
   const date = value instanceof Date ? value : new Date(value);
@@ -588,6 +849,30 @@ async function recordLineWebhookEvents(data, events) {
   }
 }
 
+async function sendCheckinLink(event) {
+  if (!lineChannelToken || !checkinLiffUrl || !event?.replyToken) return;
+  const response = await fetch('https://api.line.me/v2/bot/message/reply', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${lineChannelToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      replyToken: event.replyToken,
+      messages: [
+        {
+          type: 'text',
+          text: `ยินดีต้อนรับสู่งานแต่งงานของอันอันและอ๋องครับ\nกรุณากดเช็กอินเพื่อดูโต๊ะและขึ้น Welcome Screen:\n${checkinLiffUrl}`
+        }
+      ]
+    })
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`LINE reply failed ${response.status}${text ? `: ${text}` : ''}`);
+  }
+}
+
 function formatCheckin(row) {
   return {
     id: row.id,
@@ -599,6 +884,10 @@ function formatCheckin(row) {
     photo: row.picture_url,
     source: row.source,
     beaconType: row.beacon_type,
+    tableName: row.table_name || '',
+    isSingle: Boolean(row.is_single),
+    instagram: row.instagram || '',
+    showSocialOnWall: Boolean(row.show_social_on_wall),
     checkedInAt: row.checked_in_at?.toISOString?.() || row.checked_in_at || ''
   };
 }
@@ -614,12 +903,59 @@ function broadcastWelcome(checkin) {
 async function lookupRsvp(lineUserId) {
   if (!lineUserId) return null;
   const result = await pool.query(
-    `SELECT line_user_id, first_name, last_name, nickname, full_name, picture_url
+    `SELECT line_user_id, first_name, last_name, nickname, full_name, picture_url,
+            table_name, checked_in_at, checkin_source, is_single, instagram,
+            show_social_on_wall, welcome_announced_at
      FROM rsvp_submissions
      WHERE line_user_id = $1`,
     [lineUserId]
   );
   return result.rows[0] || null;
+}
+
+async function getCheckinRsvp(lineUserId) {
+  return lookupRsvp(lineUserId);
+}
+
+function formatCheckinRsvp(row) {
+  return {
+    lineUserId: row.line_user_id,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    nickName: row.nickname,
+    nickname: row.nickname,
+    name: row.full_name,
+    photo: row.picture_url || '',
+    tableName: row.table_name || '',
+    checkedInAt: row.checked_in_at?.toISOString?.() || '',
+    checkinSource: row.checkin_source || '',
+    isSingle: Boolean(row.is_single),
+    instagram: row.instagram || '',
+    showSocialOnWall: Boolean(row.show_social_on_wall),
+    welcomeAnnouncedAt: row.welcome_announced_at?.toISOString?.() || ''
+  };
+}
+
+async function updateRsvpCheckin(lineUserId, { tableName, source, isSingle, instagram, showSocialOnWall }) {
+  await pool.query(
+    `UPDATE rsvp_submissions
+     SET table_name = $2,
+         checked_in_at = COALESCE(checked_in_at, NOW()),
+         checkin_source = $3,
+         is_single = $4,
+         instagram = $5,
+         show_social_on_wall = $6,
+         welcome_announced_at = COALESCE(welcome_announced_at, NOW())
+     WHERE line_user_id = $1`,
+    [
+      lineUserId,
+      safeText(tableName),
+      safeText(source),
+      Boolean(isSingle),
+      safeInstagram(instagram),
+      Boolean(showSocialOnWall)
+    ]
+  );
 }
 
 async function lookupLineProfile(lineUserId) {
@@ -635,7 +971,18 @@ async function lookupLineProfile(lineUserId) {
   }
 }
 
-async function createCheckin({ lineUserId, displayName, nickname, pictureUrl, source, beaconType }) {
+async function createCheckin({
+  lineUserId,
+  displayName,
+  nickname,
+  pictureUrl,
+  source,
+  beaconType,
+  tableName,
+  isSingle,
+  instagram,
+  showSocialOnWall
+}) {
   const rsvp = await lookupRsvp(lineUserId);
   const rsvpPicture = safeText(rsvp?.picture_url);
   // Fetch LINE profile if we still need a picture (rsvp missing or no picture)
@@ -653,10 +1000,15 @@ async function createCheckin({ lineUserId, displayName, nickname, pictureUrl, so
     safeText(pictureUrl) ||
     rsvpPicture ||
     safeText(profile?.pictureUrl);
+  const resolvedTableName = safeText(tableName) || safeText(rsvp?.table_name);
+  const resolvedInstagram = safeInstagram(instagram || rsvp?.instagram);
+  const resolvedIsSingle = Boolean(isSingle ?? rsvp?.is_single);
+  const resolvedShowSocialOnWall = Boolean(showSocialOnWall ?? rsvp?.show_social_on_wall);
 
   if (lineUserId) {
     const recent = await pool.query(
-      `SELECT id, line_user_id, display_name, nickname, picture_url, source, beacon_type, checked_in_at
+      `SELECT id, line_user_id, display_name, nickname, picture_url, source, beacon_type,
+              table_name, is_single, instagram, show_social_on_wall, checked_in_at
        FROM checkins
        WHERE line_user_id = $1
          AND checked_in_at > NOW() - ($2::int * INTERVAL '1 millisecond')
@@ -670,16 +1022,24 @@ async function createCheckin({ lineUserId, displayName, nickname, pictureUrl, so
   }
 
   const result = await pool.query(
-    `INSERT INTO checkins (line_user_id, display_name, nickname, picture_url, source, beacon_type, checked_in_at)
-     VALUES ($1, $2, $3, $4, $5, $6, NOW())
-     RETURNING id, line_user_id, display_name, nickname, picture_url, source, beacon_type, checked_in_at`,
+    `INSERT INTO checkins (
+       line_user_id, display_name, nickname, picture_url, source, beacon_type,
+       table_name, is_single, instagram, show_social_on_wall, checked_in_at
+     )
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+     RETURNING id, line_user_id, display_name, nickname, picture_url, source, beacon_type,
+               table_name, is_single, instagram, show_social_on_wall, checked_in_at`,
     [
       safeText(lineUserId),
       resolvedDisplayName,
       resolvedNickname,
       resolvedPictureUrl,
       safeText(source),
-      safeText(beaconType)
+      safeText(beaconType),
+      resolvedTableName,
+      resolvedIsSingle,
+      resolvedInstagram,
+      resolvedShowSocialOnWall
     ]
   );
 

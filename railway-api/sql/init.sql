@@ -12,6 +12,13 @@ CREATE TABLE IF NOT EXISTS rsvp_submissions (
   message TEXT NOT NULL DEFAULT '',
   session TEXT NOT NULL DEFAULT '',
   picture_url TEXT NOT NULL DEFAULT '',
+  table_name TEXT NOT NULL DEFAULT '',
+  checked_in_at TIMESTAMPTZ,
+  checkin_source TEXT NOT NULL DEFAULT '',
+  is_single BOOLEAN NOT NULL DEFAULT false,
+  instagram TEXT NOT NULL DEFAULT '',
+  show_social_on_wall BOOLEAN NOT NULL DEFAULT false,
+  welcome_announced_at TIMESTAMPTZ,
   submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -39,6 +46,10 @@ CREATE TABLE IF NOT EXISTS checkins (
   picture_url TEXT NOT NULL DEFAULT '',
   source TEXT NOT NULL DEFAULT '',
   beacon_type TEXT NOT NULL DEFAULT '',
+  table_name TEXT NOT NULL DEFAULT '',
+  is_single BOOLEAN NOT NULL DEFAULT false,
+  instagram TEXT NOT NULL DEFAULT '',
+  show_social_on_wall BOOLEAN NOT NULL DEFAULT false,
   checked_in_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
