@@ -67,39 +67,44 @@ body{
 .optional{font-family:'Be Vietnam Pro',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary);font-weight:600}
 .settings-body{padding:20px}
 .field{margin-top:0}
-.field label{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary);font-weight:600;margin-bottom:8px}
+.field-label{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary);font-weight:600;margin-bottom:8px;margin-top:20px}
 .input{
-  width:100%;border:1px solid var(--border);border-radius:10px;padding:13px 14px 13px 38px;
+  width:100%;border:1px solid var(--border);border-radius:10px;padding:14px 14px;
   font:inherit;background:white;color:var(--text);outline:none;
 }
 .input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(113,88,39,.12)}
 .ig-wrap{position:relative}
-.ig-prefix{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--secondary);font-weight:700}
+.ig-prefix{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);pointer-events:none}
 .checkline{
-  display:flex;align-items:flex-start;gap:10px;margin-top:13px;font-size:13px;color:var(--text);line-height:1.55;
-  background:white;border:0;border-radius:10px;padding:0;
+  display:flex;align-items:center;gap:12px;margin-top:0;font-size:14px;color:var(--text);line-height:1.5;
+  background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;
+  transition:border-color .18s,background .18s;
 }
-.checkline input{width:18px;height:18px;margin-top:2px;accent-color:var(--primary);flex:0 0 auto}
+.checkline:has(input:checked){border-color:var(--primary);background:rgba(113,88,39,.04)}
+.checkline input{width:20px;height:20px;margin:0;accent-color:var(--primary);flex:0 0 auto;cursor:pointer}
+.checkline span{flex:1}
 .frame-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
 .frame-option{
-  border:1px solid var(--border);background:white;border-radius:10px;padding:10px 5px;
-  min-height:48px;cursor:pointer;font:inherit;color:var(--text);display:flex;
-  align-items:center;justify-content:center;text-align:center;transition:all .22s ease;
+  border:1.5px solid var(--border);background:white;border-radius:10px;padding:12px 4px;
+  min-height:52px;cursor:pointer;font:inherit;color:var(--text);display:flex;
+  align-items:center;justify-content:center;text-align:center;transition:all .2s ease;
 }
-.frame-option.active{border-color:var(--primary);background:var(--surface);transform:translateY(-2px);box-shadow:0 7px 16px rgba(113,88,39,.10)}
+.frame-option.active{border-color:var(--primary);background:rgba(113,88,39,.06);box-shadow:0 4px 12px rgba(113,88,39,.12)}
 .frame-dot{display:none}
-.frame-label{font-family:'Be Vietnam Pro',sans-serif;font-size:10px;font-weight:600;line-height:1.15;color:var(--secondary)}
+.frame-label{font-family:'Be Vietnam Pro',sans-serif;font-size:10px;font-weight:600;line-height:1.2;color:var(--secondary)}
 .frame-option.active .frame-label{color:var(--primary)}
 .btn{
-  width:100%;border:0;border-radius:999px;padding:15px 16px;font:inherit;font-weight:700;
-  cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;border:0;border-radius:999px;padding:0 20px;font:inherit;font-weight:700;font-size:15px;
+  min-height:52px;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:opacity .15s,box-shadow .15s;
 }
-.btn:disabled{opacity:.68;cursor:not-allowed}
-.primary{background:linear-gradient(135deg,var(--primary),var(--primary-soft));color:white;box-shadow:0 10px 20px rgba(113,88,39,.20);margin-top:18px}
-.secondary{background:transparent;color:var(--primary);border:1px solid var(--primary)}
-.accent{background:linear-gradient(135deg,var(--primary),var(--primary-soft));color:white;box-shadow:0 10px 20px rgba(113,88,39,.20)}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
-.actions .wide{grid-column:1/-1}
+.btn:active{opacity:.88}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.primary{background:linear-gradient(135deg,var(--primary),var(--primary-soft));color:white;box-shadow:0 8px 20px rgba(113,88,39,.22);margin-top:20px}
+.secondary{background:white;color:var(--primary);border:1.5px solid var(--border)}
+.secondary:active{background:var(--paper-low)}
+.accent{background:linear-gradient(135deg,var(--primary),var(--primary-soft));color:white;box-shadow:0 8px 20px rgba(113,88,39,.22)}
+.actions{display:flex;flex-direction:column;gap:10px;margin-top:20px}
 .done{display:none}
 .done.on{display:block}
 .event-card{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:center;opacity:.88}
@@ -120,9 +125,13 @@ body{
 .map-img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--border)}
 .map-empty{padding:42px 18px;color:var(--muted);line-height:1.7}
 .hidden{display:none!important}
-.tiny{font-size:12px;color:rgba(106,93,67,.68);text-align:center;margin-top:12px;line-height:1.6;padding:0 12px}
+.tiny{font-size:12px;color:rgba(106,93,67,.68);text-align:center;margin-top:16px;line-height:1.6;padding:0 12px}
 @media(max-width:560px){
-  .wrap{padding:22px 18px 30px}.panel{padding:20px}.settings-card{padding:0}.info-grid,.actions{grid-template-columns:1fr}.actions .wide{grid-column:auto}.frame-grid{grid-template-columns:repeat(3,1fr)}
+  .wrap{padding:20px 16px 32px}
+  .panel{padding:20px}
+  .settings-card{padding:0}
+  .frame-option{padding:10px 3px}
+  .frame-label{font-size:9px}
 }
 </style>
 </head>
@@ -179,14 +188,14 @@ body{
               <input type="checkbox" id="showSocial">
               <span>ต้องการให้แสดง Instagram บน Welcome Screen</span>
             </label>
-            <div id="igInputWrap" class="hidden">
+            <div id="igInputWrap" class="hidden" style="margin-top:12px">
               <div class="ig-wrap">
-                <span class="ig-prefix" style="font-size:12px;color:var(--muted);left:12px">instagram.com/</span>
-                <input class="input" id="instagram" placeholder="yourname" style="padding-left:122px">
+                <span class="ig-prefix">instagram.com/</span>
+                <input class="input" id="instagram" placeholder="yourname" style="padding-left:118px">
               </div>
             </div>
           </div>
-          <label style="margin-top:18px">เลือกกรอบรูปบน Welcome Screen</label>
+          <div class="field-label">เลือกกรอบรูปบน Welcome Screen</div>
           <div class="frame-grid" id="frameGrid" aria-label="เลือกกรอบรูป">
             <button class="frame-option active" type="button" data-frame="classic">
               <span class="frame-dot"></span><span class="frame-label">Classic</span>
