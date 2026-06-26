@@ -6,136 +6,134 @@
 <title>Wedding Check-in - Pattaraporn & Praphat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
 <style>
 :root{
-  --ivory:#FEFCFB;--cream:#FFF6F2;--blush:#F9D9DD;--rose:#D97E88;
-  --peach:#C9917A;--gold:#B8965A;--text:#3D2428;--muted:#8F6F6F;
-  --border:#EBD3D1;--ok:#4F8C6B;--danger:#B85A5A;
+  --surface:#FFF8F5;--paper:#FFFFFF;--paper-low:#FBF2ED;--paper-high:#EFE6E2;
+  --primary:#715827;--primary-soft:#8C713D;--secondary:#6A5D43;
+  --text:#1E1B18;--muted:#7F7669;--border:#D0C5B6;
+  --ok:#4F8C6B;--danger:#BA1A1A;
 }
 *{box-sizing:border-box}
 body{
   margin:0;min-height:100vh;font-family:'Noto Sans Thai',sans-serif;color:var(--text);
-  background:linear-gradient(160deg,var(--ivory),var(--cream));
+  background:
+    radial-gradient(circle at 50% 0%, #FBF2ED 0%, var(--surface) 58%),
+    linear-gradient(180deg,var(--surface),#fff);
 }
-.wrap{width:min(760px,100%);margin:0 auto;padding:26px 18px 34px}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle}
+.wrap{width:min(520px,100%);margin:0 auto;padding:24px 20px 34px}
 .brand{text-align:center;margin-bottom:22px}
-.eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700}
-.couple{font-family:'Playfair Display',serif;font-size:clamp(34px,10vw,54px);line-height:1.05;margin-top:5px}
-.date{font-size:13px;color:var(--muted);margin-top:8px}
-.flow{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px;
-}
-.step{
-  background:white;border:1px solid var(--border);border-radius:8px;padding:10px;
-  min-height:76px;display:flex;flex-direction:column;gap:5px;
-}
-.step-no{
-  width:24px;height:24px;border-radius:50%;display:grid;place-items:center;
-  background:var(--blush);color:var(--text);font-size:12px;font-weight:800;
-}
-.step-title{font-size:13px;font-weight:800;line-height:1.25}
-.step-sub{font-size:11px;color:var(--muted);line-height:1.35}
+.brand-mark{font-family:'Playfair Display',serif;font-size:34px;line-height:1;color:var(--primary);margin-bottom:18px}
+.eyebrow{font-family:'Be Vietnam Pro',sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--secondary);font-weight:600}
+.couple{font-family:'Playfair Display',serif;font-size:clamp(32px,9vw,44px);line-height:1.1;margin-top:7px;color:var(--primary)}
+.date{font-size:14px;color:var(--secondary);margin-top:8px}
+.divider{width:88px;height:1px;background:rgba(106,93,67,.28);margin:18px auto 0}
 .panel{
-  background:rgba(255,255,255,.78);border:1px solid var(--border);border-radius:8px;
-  box-shadow:0 18px 48px rgba(120,70,70,.10);padding:20px;margin-bottom:14px;
+  background:var(--paper);border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 4px 22px -2px rgba(113,88,39,.10);padding:24px;margin-bottom:18px;
 }
-.profile{display:flex;align-items:center;gap:14px}
-.avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;background:var(--blush);border:3px solid white}
-.avatar-fallback{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--blush);font-weight:700}
-.hello{font-size:22px;font-weight:700;line-height:1.2}
-.sub{font-size:13px;color:var(--muted);line-height:1.6;margin-top:4px}
-.status{padding:13px 14px;border-radius:8px;font-size:14px;line-height:1.6;margin-bottom:14px;background:white;border:1px solid var(--border)}
+.profile{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.avatar{width:58px;height:58px;border-radius:50%;object-fit:cover;background:var(--paper-low);border:3px solid white;box-shadow:0 0 0 1px var(--border)}
+.avatar-fallback{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--paper-low);font-weight:700;color:var(--primary);border:3px solid white;box-shadow:0 0 0 1px var(--border)}
+.hello{font-size:24px;font-weight:700;line-height:1.2;color:var(--primary)}
+.sub{font-size:13px;color:var(--secondary);line-height:1.6;margin-top:4px}
+.status{padding:13px 15px;border-radius:12px;font-size:14px;line-height:1.6;margin-bottom:18px;background:rgba(255,255,255,.72);border:1px solid var(--border);text-align:center;color:var(--secondary)}
 .status.ok{border-color:rgba(79,140,107,.35);background:rgba(79,140,107,.08)}
 .status.err{border-color:rgba(184,90,90,.3);background:rgba(184,90,90,.08);color:var(--danger)}
-.info-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:10px;margin-top:16px}
-.info{border:1px solid var(--border);border-radius:8px;padding:12px;background:white}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.info{border:1px solid rgba(208,197,182,.65);border-radius:10px;padding:16px;background:var(--paper-low);text-align:center}
 .table-card{
-  width:100%;text-align:left;cursor:pointer;background:#1f1918;color:white;border-color:#1f1918;
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  box-shadow:0 14px 26px rgba(31,25,24,.18);
+  width:100%;cursor:pointer;background:var(--paper-low);color:var(--text);
+  display:block;box-shadow:none;
 }
-.table-card .label{color:rgba(255,255,255,.65)}
-.table-card .value.table{color:white}
+.table-card .label{color:var(--secondary)}
+.table-card .value.table{color:var(--primary)}
 .table-icon{
-  width:56px;height:56px;border-radius:50%;display:grid;place-items:center;
-  background:rgba(255,255,255,.1);font-size:26px;flex:0 0 auto;
+  display:none;
 }
-.label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
-.value{font-size:18px;font-weight:700;margin-top:4px;min-height:27px}
-.value.table{font-size:34px;color:var(--gold)}
+.label{font-family:'Be Vietnam Pro',sans-serif;font-size:11px;color:var(--secondary);font-weight:600;text-transform:uppercase;letter-spacing:.1em}
+.value{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;margin-top:5px;min-height:38px;color:var(--primary)}
+.value.table{font-size:34px;color:var(--primary)}
 .note{
-  margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(249,217,221,.32);
-  border:1px solid rgba(217,126,136,.18);font-size:12px;line-height:1.55;color:var(--muted);
+  margin-top:14px;padding:11px 13px;border-radius:10px;background:rgba(251,242,237,.72);
+  border:1px solid rgba(208,197,182,.55);font-size:12px;line-height:1.55;color:var(--muted);text-align:center;
 }
-.field{margin-top:16px}
-.field label{display:block;font-size:13px;font-weight:700;margin-bottom:8px}
+.settings-card{border-style:dashed;border-width:2px;overflow:hidden;padding:0}
+.settings-head{background:var(--paper-high);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.settings-title{font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
+.optional{font-family:'Be Vietnam Pro',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary);font-weight:600}
+.settings-body{padding:20px}
+.field{margin-top:0}
+.field label{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary);font-weight:600;margin-bottom:8px}
 .input{
-  width:100%;border:1.5px solid var(--border);border-radius:8px;padding:12px 13px;
+  width:100%;border:1px solid var(--border);border-radius:10px;padding:13px 14px 13px 38px;
   font:inherit;background:white;color:var(--text);outline:none;
 }
-.input:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(217,126,136,.13)}
+.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(113,88,39,.12)}
+.ig-wrap{position:relative}
+.ig-prefix{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--secondary);font-weight:700}
 .checkline{
-  display:flex;align-items:flex-start;gap:10px;margin-top:12px;font-size:13px;color:var(--text);line-height:1.55;
-  background:white;border:1px solid var(--border);border-radius:8px;padding:12px;
+  display:flex;align-items:flex-start;gap:10px;margin-top:13px;font-size:13px;color:var(--text);line-height:1.55;
+  background:white;border:0;border-radius:10px;padding:0;
 }
-.checkline input{width:18px;height:18px;margin-top:2px;accent-color:var(--rose);flex:0 0 auto}
+.checkline input{width:18px;height:18px;margin-top:2px;accent-color:var(--primary);flex:0 0 auto}
 .frame-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
 .frame-option{
-  border:1px solid var(--border);background:white;border-radius:8px;padding:9px 6px;
-  min-height:70px;cursor:pointer;font:inherit;color:var(--text);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:6px;text-align:center;
+  border:1px solid var(--border);background:white;border-radius:10px;padding:10px 5px;
+  min-height:48px;cursor:pointer;font:inherit;color:var(--text);display:flex;
+  align-items:center;justify-content:center;text-align:center;transition:all .22s ease;
 }
-.frame-option.active{border-color:var(--rose);box-shadow:0 0 0 3px rgba(217,126,136,.13)}
-.frame-dot{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blush),var(--rose));border:3px solid white;box-shadow:0 0 0 2px var(--border)}
-.frame-option[data-frame="single"] .frame-dot{background:linear-gradient(135deg,#FDE8EC,#D97E88,#B8965A)}
-.frame-option[data-frame="bride"] .frame-dot{background:linear-gradient(135deg,#FDE8EC,#F59C9A,#FFBE98)}
-.frame-option[data-frame="groom"] .frame-dot{background:linear-gradient(135deg,#E8F3FF,#9ECCF0,#C5DBA9)}
-.frame-option[data-frame="lucky"] .frame-dot{background:linear-gradient(135deg,#FFE7AB,#C5DBA9,#9ECCF0)}
-.frame-label{font-size:11px;font-weight:800;line-height:1.15}
+.frame-option.active{border-color:var(--primary);background:var(--surface);transform:translateY(-2px);box-shadow:0 7px 16px rgba(113,88,39,.10)}
+.frame-dot{display:none}
+.frame-label{font-family:'Be Vietnam Pro',sans-serif;font-size:10px;font-weight:600;line-height:1.15;color:var(--secondary)}
+.frame-option.active .frame-label{color:var(--primary)}
 .btn{
-  width:100%;border:0;border-radius:8px;padding:14px 16px;font:inherit;font-weight:700;
+  width:100%;border:0;border-radius:999px;padding:15px 16px;font:inherit;font-weight:700;
   cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;
 }
 .btn:disabled{opacity:.68;cursor:not-allowed}
-.primary{background:linear-gradient(135deg,var(--rose),var(--peach));color:white;box-shadow:0 12px 24px rgba(201,145,122,.22)}
-.secondary{background:white;color:var(--text);border:1px solid var(--border)}
-.accent{background:var(--text);color:white}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.primary{background:linear-gradient(135deg,var(--primary),var(--primary-soft));color:white;box-shadow:0 10px 20px rgba(113,88,39,.20);margin-top:18px}
+.secondary{background:transparent;color:var(--primary);border:1px solid var(--primary)}
+.accent{background:linear-gradient(135deg,var(--primary),var(--primary-soft));color:white;box-shadow:0 10px 20px rgba(113,88,39,.20)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
 .actions .wide{grid-column:1/-1}
 .done{display:none}
 .done.on{display:block}
-.event-card{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:center}
-.event-icon{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--cream);font-size:20px}
+.event-card{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:center;opacity:.88}
+.event-icon{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--paper-high);font-size:20px;color:var(--primary)}
 .modal{
   position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;
   background:rgba(31,25,24,.58);padding:16px;
 }
 .modal.on{display:flex}
 .modal-box{
-  width:min(920px,100%);max-height:90vh;overflow:auto;background:white;border-radius:8px;
+  width:min(920px,100%);max-height:90vh;overflow:auto;background:white;border-radius:12px;
   border:1px solid var(--border);box-shadow:0 24px 70px rgba(31,25,24,.25);
 }
 .modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border)}
 .modal-title{font-size:18px;font-weight:800}
-.modal-close{border:0;background:var(--cream);border-radius:8px;width:38px;height:38px;font-size:20px;cursor:pointer}
+.modal-close{border:0;background:var(--paper-low);border-radius:10px;width:38px;height:38px;font-size:20px;cursor:pointer}
 .map-wrap{padding:12px;background:#faf8f6;text-align:center}
 .map-img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--border)}
 .map-empty{padding:42px 18px;color:var(--muted);line-height:1.7}
 .hidden{display:none!important}
-.tiny{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.6}
+.tiny{font-size:12px;color:rgba(106,93,67,.68);text-align:center;margin-top:12px;line-height:1.6;padding:0 12px}
 @media(max-width:560px){
-  .wrap{padding:22px 14px 28px}.panel{padding:17px}.flow{grid-template-columns:1fr}.info-grid,.actions{grid-template-columns:1fr}.actions .wide{grid-column:auto}.frame-grid{grid-template-columns:repeat(2,1fr)}
+  .wrap{padding:22px 18px 30px}.panel{padding:20px}.settings-card{padding:0}.info-grid,.actions{grid-template-columns:1fr}.actions .wide{grid-column:auto}.frame-grid{grid-template-columns:repeat(3,1fr)}
 }
 </style>
 </head>
 <body>
 <main class="wrap">
   <header class="brand">
+    <div class="brand-mark">An-An &amp; Ong</div>
     <div class="eyebrow">Wedding Check-in</div>
     <div class="couple">Pattaraporn &amp; Praphat</div>
     <div class="date">3 July 2026 · Chatrium Riverside Bangkok</div>
+    <div class="divider"></div>
   </header>
 
   <div class="status" id="status">กำลังเปิด LINE และเช็กอินให้คุณ...</div>
@@ -152,11 +150,8 @@ body{
 
     <div class="info-grid">
       <button class="info table-card" id="tableCard" type="button">
-        <span>
         <div class="label">โต๊ะนั่ง</div>
         <div class="value table" id="tableName">-</div>
-        </span>
-        <span class="table-icon">⌖</span>
       </button>
       <div class="info">
         <div class="label">จำนวนแขก</div>
@@ -165,34 +160,48 @@ body{
     </div>
     <div class="note" id="tableNote">ถ้าโต๊ะยังว่าง ให้แจ้งทีมงานหน้างานเพื่ออัปเดตให้ทันที</div>
 
-    <div class="field">
-      <label for="instagram">Instagram สำหรับแสดงบน Welcome Screen (optional)</label>
-      <input class="input" id="instagram" placeholder="your.ig">
-      <label class="checkline">
-        <input type="checkbox" id="isSingle">
-        <span>โสด และอยากได้กรอบ / badge พิเศษบน Welcome Screen</span>
-      </label>
-      <label class="checkline">
-        <input type="checkbox" id="showSocial">
-        <span>อนุญาตให้แสดง IG บน Welcome Screen เพื่อให้คนกดไปดูได้</span>
-      </label>
-      <label style="margin-top:16px">กรอบรูปบน Welcome Screen</label>
-      <div class="frame-grid" id="frameGrid" aria-label="เลือกกรอบรูป">
-        <button class="frame-option active" type="button" data-frame="classic">
-          <span class="frame-dot"></span><span class="frame-label">Classic</span>
-        </button>
-        <button class="frame-option" type="button" data-frame="single">
-          <span class="frame-dot"></span><span class="frame-label">Single</span>
-        </button>
-        <button class="frame-option" type="button" data-frame="bride">
-          <span class="frame-dot"></span><span class="frame-label">Bride</span>
-        </button>
-        <button class="frame-option" type="button" data-frame="groom">
-          <span class="frame-dot"></span><span class="frame-label">Groom</span>
-        </button>
-        <button class="frame-option" type="button" data-frame="lucky">
-          <span class="frame-dot"></span><span class="frame-label">Lucky</span>
-        </button>
+    <div class="panel settings-card">
+      <div class="settings-head">
+        <div class="settings-title">
+          <span class="material-symbols-outlined">photo_camera</span>
+          Welcome Screen Settings
+        </div>
+        <div class="optional">Optional</div>
+      </div>
+      <div class="settings-body">
+        <div class="field">
+          <label for="instagram">Instagram Username</label>
+          <div class="ig-wrap">
+            <span class="ig-prefix">@</span>
+            <input class="input" id="instagram" placeholder="yourname">
+          </div>
+          <label class="checkline">
+            <input type="checkbox" id="isSingle">
+            <span>โสด และอยากได้กรอบ / badge พิเศษบน Welcome Screen</span>
+          </label>
+          <label class="checkline">
+            <input type="checkbox" id="showSocial">
+            <span>อนุญาตให้แสดง IG บน Welcome Screen เพื่อให้คนกดไปดูได้</span>
+          </label>
+          <label style="margin-top:18px">เลือกรอบรูปบน Welcome Screen</label>
+          <div class="frame-grid" id="frameGrid" aria-label="เลือกกรอบรูป">
+            <button class="frame-option active" type="button" data-frame="classic">
+              <span class="frame-dot"></span><span class="frame-label">Classic</span>
+            </button>
+            <button class="frame-option" type="button" data-frame="single">
+              <span class="frame-dot"></span><span class="frame-label">Single</span>
+            </button>
+            <button class="frame-option" type="button" data-frame="bride">
+              <span class="frame-dot"></span><span class="frame-label">Bride</span>
+            </button>
+            <button class="frame-option" type="button" data-frame="groom">
+              <span class="frame-dot"></span><span class="frame-label">Groom</span>
+            </button>
+            <button class="frame-option" type="button" data-frame="lucky">
+              <span class="frame-dot"></span><span class="frame-label">Lucky</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -211,7 +220,7 @@ body{
 
   <section class="panel">
     <div class="event-card">
-      <div class="event-icon">□</div>
+      <div class="event-icon"><span class="material-symbols-outlined">calendar_today</span></div>
       <div>
         <div class="hello" style="font-size:18px">ข้อมูลงานแต่งงาน</div>
         <div class="sub">วันศุกร์ที่ 3 กรกฎาคม 2569 · Chatrium Riverside Bangkok</div>
