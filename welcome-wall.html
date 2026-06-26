@@ -94,6 +94,16 @@ body{
   background:linear-gradient(135deg,#FDE8EC,#D97E88,#B8965A,#E8B4BC);
   box-shadow:0 0 0 4px rgba(255,255,255,.22),0 0 34px rgba(217,126,136,.38);
 }
+.bubble.frame-bride .avatar-ring{
+  background:linear-gradient(135deg,#FDE8EC,#F59C9A,#FFBE98,#FDE8EC);
+}
+.bubble.frame-groom .avatar-ring{
+  background:linear-gradient(135deg,#E8F3FF,#9ECCF0,#C5DBA9,#FEFCFB);
+}
+.bubble.frame-lucky .avatar-ring{
+  background:linear-gradient(135deg,#FFE7AB,#C5DBA9,#9ECCF0,#F59C9A);
+  box-shadow:0 0 0 4px rgba(255,255,255,.18),0 0 30px rgba(255,231,171,.32);
+}
 .avatar-img,.avatar-fallback{
   width:100%;height:100%;border-radius:50%;
   object-fit:cover;border:3px solid rgba(254,252,251,.92);
@@ -285,6 +295,8 @@ function makeBubble(data, isNew=false){
   const id = data.lineUserId || `guest_${data.id || Date.now()}`;
   const name = displayNameOf(data);
   const isSingle = Boolean(data.isSingle || data.is_single);
+  const rawFrame = (data.wallFrame || data.wall_frame || (isSingle ? 'single' : 'classic')).trim();
+  const frame = ['classic','single','bride','groom','lucky'].includes(rawFrame) ? rawFrame : 'classic';
   const instagram = (data.instagram || '').trim().replace(/^@+/, '');
   const showIg = Boolean(data.showSocialOnWall || data.show_social_on_wall) && instagram;
   const instagramUrl = showIg ? `https://instagram.com/${encodeURIComponent(instagram)}` : '';
@@ -297,7 +309,7 @@ function makeBubble(data, isNew=false){
   }
 
   const el = document.createElement('div');
-  el.className = `bubble${isNew ? ' new' : ''}${isSingle ? ' single' : ''}`;
+  el.className = `bubble frame-${frame}${isNew ? ' new' : ''}${isSingle || frame === 'single' ? ' single' : ''}`;
   const picture = data.pictureUrl || data.photo || '';
   el.innerHTML = `
     <div class="bubble-inner">

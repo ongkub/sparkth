@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS rsvp_submissions (
   is_single BOOLEAN NOT NULL DEFAULT false,
   instagram TEXT NOT NULL DEFAULT '',
   show_social_on_wall BOOLEAN NOT NULL DEFAULT false,
+  wall_frame TEXT NOT NULL DEFAULT 'classic',
   welcome_announced_at TIMESTAMPTZ,
   submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -50,6 +51,7 @@ CREATE TABLE IF NOT EXISTS checkins (
   is_single BOOLEAN NOT NULL DEFAULT false,
   instagram TEXT NOT NULL DEFAULT '',
   show_social_on_wall BOOLEAN NOT NULL DEFAULT false,
+  wall_frame TEXT NOT NULL DEFAULT 'classic',
   checked_in_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -62,6 +64,13 @@ CREATE TABLE IF NOT EXISTS line_webhook_events (
   event_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
   raw_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
   received_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS seating_maps (
+  map_key TEXT PRIMARY KEY,
+  map_mime TEXT NOT NULL DEFAULT 'image/jpeg',
+  map_data TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_rsvp_submitted_at ON rsvp_submissions (submitted_at DESC);

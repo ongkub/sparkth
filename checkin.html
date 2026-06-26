@@ -51,6 +51,17 @@ body{
 .status.err{border-color:rgba(184,90,90,.3);background:rgba(184,90,90,.08);color:var(--danger)}
 .info-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:10px;margin-top:16px}
 .info{border:1px solid var(--border);border-radius:8px;padding:12px;background:white}
+.table-card{
+  width:100%;text-align:left;cursor:pointer;background:#1f1918;color:white;border-color:#1f1918;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  box-shadow:0 14px 26px rgba(31,25,24,.18);
+}
+.table-card .label{color:rgba(255,255,255,.65)}
+.table-card .value.table{color:white}
+.table-icon{
+  width:56px;height:56px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,255,255,.1);font-size:26px;flex:0 0 auto;
+}
 .label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
 .value{font-size:18px;font-weight:700;margin-top:4px;min-height:27px}
 .value.table{font-size:34px;color:var(--gold)}
@@ -70,6 +81,19 @@ body{
   background:white;border:1px solid var(--border);border-radius:8px;padding:12px;
 }
 .checkline input{width:18px;height:18px;margin-top:2px;accent-color:var(--rose);flex:0 0 auto}
+.frame-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+.frame-option{
+  border:1px solid var(--border);background:white;border-radius:8px;padding:9px 6px;
+  min-height:70px;cursor:pointer;font:inherit;color:var(--text);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:6px;text-align:center;
+}
+.frame-option.active{border-color:var(--rose);box-shadow:0 0 0 3px rgba(217,126,136,.13)}
+.frame-dot{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blush),var(--rose));border:3px solid white;box-shadow:0 0 0 2px var(--border)}
+.frame-option[data-frame="single"] .frame-dot{background:linear-gradient(135deg,#FDE8EC,#D97E88,#B8965A)}
+.frame-option[data-frame="bride"] .frame-dot{background:linear-gradient(135deg,#FDE8EC,#F59C9A,#FFBE98)}
+.frame-option[data-frame="groom"] .frame-dot{background:linear-gradient(135deg,#E8F3FF,#9ECCF0,#C5DBA9)}
+.frame-option[data-frame="lucky"] .frame-dot{background:linear-gradient(135deg,#FFE7AB,#C5DBA9,#9ECCF0)}
+.frame-label{font-size:11px;font-weight:800;line-height:1.15}
 .btn{
   width:100%;border:0;border-radius:8px;padding:14px 16px;font:inherit;font-weight:700;
   cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;
@@ -82,10 +106,27 @@ body{
 .actions .wide{grid-column:1/-1}
 .done{display:none}
 .done.on{display:block}
+.event-card{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:center}
+.event-icon{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--cream);font-size:20px}
+.modal{
+  position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;
+  background:rgba(31,25,24,.58);padding:16px;
+}
+.modal.on{display:flex}
+.modal-box{
+  width:min(920px,100%);max-height:90vh;overflow:auto;background:white;border-radius:8px;
+  border:1px solid var(--border);box-shadow:0 24px 70px rgba(31,25,24,.25);
+}
+.modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.modal-title{font-size:18px;font-weight:800}
+.modal-close{border:0;background:var(--cream);border-radius:8px;width:38px;height:38px;font-size:20px;cursor:pointer}
+.map-wrap{padding:12px;background:#faf8f6;text-align:center}
+.map-img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--border)}
+.map-empty{padding:42px 18px;color:var(--muted);line-height:1.7}
 .hidden{display:none!important}
 .tiny{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.6}
 @media(max-width:560px){
-  .wrap{padding:22px 14px 28px}.panel{padding:17px}.flow{grid-template-columns:1fr}.info-grid,.actions{grid-template-columns:1fr}.actions .wide{grid-column:auto}
+  .wrap{padding:22px 14px 28px}.panel{padding:17px}.flow{grid-template-columns:1fr}.info-grid,.actions{grid-template-columns:1fr}.actions .wide{grid-column:auto}.frame-grid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
@@ -97,25 +138,7 @@ body{
     <div class="date">3 July 2026 · Chatrium Riverside Bangkok</div>
   </header>
 
-  <section class="flow" aria-label="Check-in flow">
-    <div class="step">
-      <div class="step-no">1</div>
-      <div class="step-title">Scan QR</div>
-      <div class="step-sub">เปิดด้วย LINE เพื่อดึงโปรไฟล์</div>
-    </div>
-    <div class="step">
-      <div class="step-no">2</div>
-      <div class="step-title">เช็กโต๊ะ</div>
-      <div class="step-sub">ดู RSVP และโต๊ะนั่งทันที</div>
-    </div>
-    <div class="step">
-      <div class="step-no">3</div>
-      <div class="step-title">ขึ้น Welcome</div>
-      <div class="step-sub">โปรไฟล์ขึ้นจอและเข้าคิวเสียง</div>
-    </div>
-  </section>
-
-  <div class="status" id="status">กำลังเปิด LINE check-in...</div>
+  <div class="status" id="status">กำลังเปิด LINE และเช็กอินให้คุณ...</div>
 
   <section class="panel hidden" id="guestPanel">
     <div class="profile">
@@ -128,10 +151,13 @@ body{
     </div>
 
     <div class="info-grid">
-      <div class="info">
+      <button class="info table-card" id="tableCard" type="button">
+        <span>
         <div class="label">โต๊ะนั่ง</div>
         <div class="value table" id="tableName">-</div>
-      </div>
+        </span>
+        <span class="table-icon">⌖</span>
+      </button>
       <div class="info">
         <div class="label">จำนวนแขก</div>
         <div class="value" id="guestCount">-</div>
@@ -150,9 +176,27 @@ body{
         <input type="checkbox" id="showSocial">
         <span>อนุญาตให้แสดง IG บน Welcome Screen เพื่อให้คนกดไปดูได้</span>
       </label>
+      <label style="margin-top:16px">กรอบรูปบน Welcome Screen</label>
+      <div class="frame-grid" id="frameGrid" aria-label="เลือกกรอบรูป">
+        <button class="frame-option active" type="button" data-frame="classic">
+          <span class="frame-dot"></span><span class="frame-label">Classic</span>
+        </button>
+        <button class="frame-option" type="button" data-frame="single">
+          <span class="frame-dot"></span><span class="frame-label">Single</span>
+        </button>
+        <button class="frame-option" type="button" data-frame="bride">
+          <span class="frame-dot"></span><span class="frame-label">Bride</span>
+        </button>
+        <button class="frame-option" type="button" data-frame="groom">
+          <span class="frame-dot"></span><span class="frame-label">Groom</span>
+        </button>
+        <button class="frame-option" type="button" data-frame="lucky">
+          <span class="frame-dot"></span><span class="frame-label">Lucky</span>
+        </button>
+      </div>
     </div>
 
-    <button class="btn primary" id="checkinBtn" type="button">ยืนยัน Check-in</button>
+    <button class="btn primary" id="checkinBtn" type="button">บันทึกข้อมูลโสด / IG</button>
   </section>
 
   <section class="panel done" id="donePanel">
@@ -165,26 +209,57 @@ body{
     </div>
   </section>
 
+  <section class="panel">
+    <div class="event-card">
+      <div class="event-icon">□</div>
+      <div>
+        <div class="hello" style="font-size:18px">ข้อมูลงานแต่งงาน</div>
+        <div class="sub">วันศุกร์ที่ 3 กรกฎาคม 2569 · Chatrium Riverside Bangkok</div>
+      </div>
+    </div>
+  </section>
+
   <p class="tiny">สำหรับแขกที่ยังไม่ได้ลงทะเบียน ทีมงานสามารถ check-in แบบ manual จากหน้า Admin ได้</p>
 </main>
+
+<div class="modal" id="mapModal" aria-hidden="true">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">แผนผังที่นั่ง</div>
+        <div class="sub" id="mapSub">โต๊ะของคุณ: -</div>
+      </div>
+      <button class="modal-close" type="button" id="closeMapBtn">×</button>
+    </div>
+    <div class="map-wrap" id="mapWrap">
+      <div class="map-empty">กำลังโหลดแผนผังที่นั่ง...</div>
+    </div>
+  </div>
+</div>
 
 <script>
 const SAVED_API_URL = (localStorage.getItem('weddingApiUrl') || '').trim();
 const API_BASE = (SAVED_API_URL && !SAVED_API_URL.includes('script.google.com')
   ? SAVED_API_URL
   : 'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/, '');
+const SEATING_MAP_URL = `${API_BASE}/seating-map`;
 const LIFF_ID = localStorage.getItem('weddingCheckinLiffId') || '2006674119-opWzXpla';
 const urlParams = new URLSearchParams(location.search);
 const GAME_URL = (urlParams.get('game') || localStorage.getItem('weddingGameUrl') || '').trim();
 
 let profile = null;
 let rsvp = null;
+let seatingMap = null;
+let autoCheckinDone = false;
+let selectedFrame = 'classic';
 
 const statusEl = document.getElementById('status');
 const guestPanel = document.getElementById('guestPanel');
 const donePanel = document.getElementById('donePanel');
 const profileImg = document.getElementById('profileImg');
 const avatarFallback = document.getElementById('avatarFallback');
+const mapModal = document.getElementById('mapModal');
+const mapWrap = document.getElementById('mapWrap');
 
 function setStatus(text, type=''){
   statusEl.textContent = text;
@@ -202,11 +277,12 @@ function showProfile(){
   document.getElementById('tableName').textContent = rsvp?.tableName || '-';
   document.getElementById('guestCount').textContent = rsvp?.guests || '1';
   document.getElementById('tableNote').textContent = rsvp?.tableName
-    ? 'กรุณาจำโต๊ะนี้ไว้ หรือแคปหน้าจอนี้ไว้ให้ทีมงานช่วยพาไปที่โต๊ะได้'
+    ? 'กดการ์ดโต๊ะเพื่อดูแผนผังที่นั่ง และแคปหน้าจอนี้ไว้ได้'
     : 'ยังไม่มีข้อมูลโต๊ะในระบบ กรุณาแจ้งทีมงานหน้างานเพื่ออัปเดต';
   document.getElementById('instagram').value = rsvp?.instagram || '';
   document.getElementById('isSingle').checked = Boolean(rsvp?.isSingle);
   document.getElementById('showSocial').checked = Boolean(rsvp?.showSocialOnWall);
+  selectFrame(rsvp?.wallFrame || (rsvp?.isSingle ? 'single' : 'classic'));
   avatarFallback.textContent = initials(name);
   if(profile?.pictureUrl || rsvp?.photo){
     profileImg.src = profile?.pictureUrl || rsvp?.photo;
@@ -214,6 +290,23 @@ function showProfile(){
     avatarFallback.classList.add('hidden');
   }
   guestPanel.classList.remove('hidden');
+}
+
+function selectFrame(frame){
+  selectedFrame = ['classic','single','bride','groom','lucky'].includes(frame) ? frame : 'classic';
+  document.querySelectorAll('.frame-option').forEach((option) => {
+    option.classList.toggle('active', option.dataset.frame === selectedFrame);
+  });
+}
+
+async function loadSeatingMap(){
+  try{
+    const res = await fetch(SEATING_MAP_URL);
+    const data = await res.json();
+    seatingMap = data.map || null;
+  }catch(_error){
+    seatingMap = null;
+  }
 }
 
 async function loadCheckin(){
@@ -226,19 +319,18 @@ async function loadCheckin(){
   }
   rsvp = data.data;
   if(data.checkedIn){
-    setStatus('คุณเช็กอินไว้แล้ว', 'ok');
+    setStatus('เช็กอินเรียบร้อยแล้ว', 'ok');
     showProfile();
     showDone();
     return;
   }
-  setStatus('พบข้อมูล RSVP แล้ว กรุณากด Check in', 'ok');
   showProfile();
+  await submitCheckin({ auto: true });
 }
 
 function showDone(){
   donePanel.classList.add('on');
-  document.getElementById('checkinBtn').disabled = true;
-  document.getElementById('checkinBtn').textContent = 'Check-in แล้ว';
+  document.getElementById('checkinBtn').textContent = 'บันทึกข้อมูลโสด / IG';
   const gameLink = document.getElementById('gameLink');
   if(GAME_URL){
     gameLink.href = GAME_URL;
@@ -246,10 +338,10 @@ function showDone(){
   }
 }
 
-document.getElementById('checkinBtn').addEventListener('click', async () => {
+async function submitCheckin({ auto=false } = {}){
   const btn = document.getElementById('checkinBtn');
   btn.disabled = true;
-  btn.textContent = 'กำลังเช็กอิน...';
+  btn.textContent = auto ? 'กำลังเช็กอิน...' : 'กำลังบันทึก...';
   try{
     const res = await fetch(`${API_BASE}/checkin`, {
       method:'POST',
@@ -262,24 +354,54 @@ document.getElementById('checkinBtn').addEventListener('click', async () => {
         isSingle: document.getElementById('isSingle').checked,
         instagram: document.getElementById('instagram').value.trim(),
         showSocialOnWall: document.getElementById('showSocial').checked,
+        wallFrame: selectedFrame,
         source:'qr'
       })
     });
     const data = await res.json();
     if(!res.ok || !data.success) throw new Error(data.error || 'เช็กอินไม่สำเร็จ');
-    setStatus(data.alreadyCheckedIn ? 'คุณเช็กอินไว้แล้ว' : 'เช็กอินสำเร็จ ยินดีต้อนรับครับ', 'ok');
+    autoCheckinDone = true;
+    setStatus(auto || !data.alreadyCheckedIn ? 'เช็กอินเรียบร้อยแล้ว ขอให้มีความสุขในงานแต่งงานของเราครับ' : 'บันทึกข้อมูลเพิ่มเติมแล้ว', 'ok');
     showDone();
   }catch(error){
     setStatus(error.message || 'เช็กอินไม่สำเร็จ กรุณาลองใหม่', 'err');
+  }finally{
     btn.disabled = false;
-    btn.textContent = 'Check in';
+    btn.textContent = autoCheckinDone ? 'บันทึกข้อมูลโสด / IG' : 'ลองเช็กอินอีกครั้ง';
   }
+}
+
+function openSeatingMap(){
+  document.getElementById('mapSub').textContent = `โต๊ะของคุณ: ${rsvp?.tableName || '-'}`;
+  if(seatingMap?.data){
+    mapWrap.innerHTML = `<img class="map-img" src="data:${seatingMap.mime};base64,${seatingMap.data}" alt="แผนผังที่นั่ง">`;
+  }else{
+    mapWrap.innerHTML = '<div class="map-empty">ยังไม่ได้อัปโหลดรูปแผนผังที่นั่งในระบบหลังบ้าน กรุณาสอบถามทีมงานหน้างานครับ</div>';
+  }
+  mapModal.classList.add('on');
+  mapModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeSeatingMap(){
+  mapModal.classList.remove('on');
+  mapModal.setAttribute('aria-hidden', 'true');
+}
+
+document.getElementById('checkinBtn').addEventListener('click', () => submitCheckin({ auto: false }));
+document.getElementById('tableCard').addEventListener('click', openSeatingMap);
+document.getElementById('closeMapBtn').addEventListener('click', closeSeatingMap);
+document.querySelectorAll('.frame-option').forEach((option) => {
+  option.addEventListener('click', () => selectFrame(option.dataset.frame));
+});
+mapModal.addEventListener('click', (event) => {
+  if(event.target === mapModal) closeSeatingMap();
 });
 
 liff.init({ liffId: LIFF_ID })
   .then(async () => {
     if(!liff.isLoggedIn()){ liff.login(); return; }
     profile = await liff.getProfile();
+    await loadSeatingMap();
     await loadCheckin();
   })
   .catch((error) => {

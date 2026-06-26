@@ -56,6 +56,10 @@ async function ensureSchema() {
   );
   await pool.query(
     `ALTER TABLE rsvp_submissions
+     ADD COLUMN IF NOT EXISTS wall_frame TEXT NOT NULL DEFAULT 'classic'`
+  );
+  await pool.query(
+    `ALTER TABLE rsvp_submissions
      ADD COLUMN IF NOT EXISTS welcome_announced_at TIMESTAMPTZ`
   );
   await pool.query(
@@ -106,6 +110,10 @@ async function ensureSchema() {
      ADD COLUMN IF NOT EXISTS show_social_on_wall BOOLEAN NOT NULL DEFAULT false`
   );
   await pool.query(
+    `ALTER TABLE checkins
+     ADD COLUMN IF NOT EXISTS wall_frame TEXT NOT NULL DEFAULT 'classic'`
+  );
+  await pool.query(
     `CREATE TABLE IF NOT EXISTS line_webhook_events (
        id BIGSERIAL PRIMARY KEY,
        event_type TEXT NOT NULL DEFAULT '',
@@ -124,6 +132,14 @@ async function ensureSchema() {
   await pool.query(
     `CREATE INDEX IF NOT EXISTS idx_line_webhook_events_line_user_id
      ON line_webhook_events (line_user_id)`
+  );
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS seating_maps (
+       map_key TEXT PRIMARY KEY,
+       map_mime TEXT NOT NULL DEFAULT 'image/jpeg',
+       map_data TEXT NOT NULL DEFAULT '',
+       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     )`
   );
 }
 
@@ -161,7 +177,8 @@ app.get('/welcome/recent', async (req, res) => {
          COALESCE(NULLIF(c.table_name,''), r.table_name, '') AS table_name,
          COALESCE(c.is_single, r.is_single, false) AS is_single,
          COALESCE(NULLIF(c.instagram,''), r.instagram, '') AS instagram,
-         COALESCE(c.show_social_on_wall, r.show_social_on_wall, false) AS show_social_on_wall
+         COALESCE(c.show_social_on_wall, r.show_social_on_wall, false) AS show_social_on_wall,
+         COALESCE(NULLIF(c.wall_frame,''), r.wall_frame, 'classic') AS wall_frame
        FROM checkins c
        LEFT JOIN rsvp_submissions r ON r.line_user_id = c.line_user_id
        WHERE c.source NOT IN ('codex-smoke', 'screen-test', 'line-beacon')
@@ -288,7 +305,8 @@ app.post('/checkin', async (req, res) => {
           table_name: tableName,
           is_single: social.isSingle,
           instagram: social.instagram,
-          show_social_on_wall: social.showSocialOnWall
+          show_social_on_wall: social.showSocialOnWall,
+          wall_frame: social.wallFrame
         })
       });
       return;
@@ -339,9 +357,9 @@ app.post('/checkin/manual', async (req, res) => {
            line_user_id, first_name, last_name, nickname, full_name, phone, side,
            relationship, guests, dietary, message, session, picture_url, submitted_at,
            table_name, checked_in_at, checkin_source, is_single, instagram,
-           show_social_on_wall
+           show_social_on_wall, wall_frame
          )
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,NOW(),$14,NOW(),$15,$16,$17,$18)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,NOW(),$14,NOW(),$15,$16,$17,$18,$19)
          ON CONFLICT (line_user_id) DO UPDATE SET
            first_name = CASE WHEN EXCLUDED.first_name <> '' THEN EXCLUDED.first_name ELSE rsvp_submissions.first_name END,
            last_name = CASE WHEN EXCLUDED.last_name <> '' THEN EXCLUDED.last_name ELSE rsvp_submissions.last_name END,
@@ -360,7 +378,8 @@ app.post('/checkin/manual', async (req, res) => {
            checkin_source = EXCLUDED.checkin_source,
            is_single = EXCLUDED.is_single,
            instagram = EXCLUDED.instagram,
-           show_social_on_wall = EXCLUDED.show_social_on_wall`,
+           show_social_on_wall = EXCLUDED.show_social_on_wall,
+           wall_frame = EXCLUDED.wall_frame`,
         [
           lineUserId,
           firstName,
@@ -379,7 +398,8 @@ app.post('/checkin/manual', async (req, res) => {
           source,
           social.isSingle,
           social.instagram,
-          social.showSocialOnWall
+          social.showSocialOnWall,
+          social.wallFrame
         ]
       );
     }
@@ -450,6 +470,46 @@ app.get('/debug/line-webhook', async (req, res) => {
   }
 });
 
+app.post('/seating/assign', async (req, res) => {
+  const data = parseBody(req.body);
+  const rawAssignments = Array.isArray(data.assignments) ? data.assignments : [data];
+  const assignments = rawAssignments
+    .map((item) => ({
+      lineUserId: safeText(item.lineUserId || item.userId || item.lineUid),
+      tableName: safeText(item.tableName || item.table_name)
+    }))
+    .filter((item) => item.lineUserId);
+
+  if (!assignments.length) {
+    res.status(400).json({ success: false, error: 'assignments required' });
+    return;
+  }
+
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      for (const item of assignments) {
+        await client.query(
+          `UPDATE rsvp_submissions
+           SET table_name = $2
+           WHERE line_user_id = $1`,
+          [item.lineUserId, item.tableName]
+        );
+      }
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+    res.json({ success: true, updated: assignments.length });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.get('/rsvp', async (req, res) => {
   const action = (req.query.action || '').toString();
   const userId = (req.query.userId || '').toString().trim();
@@ -477,6 +537,7 @@ app.get('/rsvp', async (req, res) => {
            is_single,
            instagram,
            show_social_on_wall,
+           wall_frame,
            welcome_announced_at,
            submitted_at
          FROM rsvp_submissions
@@ -512,6 +573,7 @@ app.get('/rsvp', async (req, res) => {
           isSingle: row.is_single,
           instagram: row.instagram,
           showSocialOnWall: row.show_social_on_wall,
+          wallFrame: row.wall_frame || 'classic',
           welcomeAnnouncedAt: row.welcome_announced_at?.toISOString?.() || '',
           timestamp: row.submitted_at?.toISOString?.() || ''
         }
@@ -541,6 +603,7 @@ app.get('/rsvp', async (req, res) => {
            is_single,
            instagram,
            show_social_on_wall,
+           wall_frame,
            welcome_announced_at,
            submitted_at
          FROM rsvp_submissions
@@ -585,6 +648,7 @@ app.get('/rsvp', async (req, res) => {
         isSingle: r.is_single,
         instagram: r.instagram,
         showSocialOnWall: r.show_social_on_wall,
+        wallFrame: r.wall_frame || 'classic',
         welcomeAnnouncedAt: r.welcome_announced_at?.toISOString?.() || ''
       }));
 
@@ -801,11 +865,17 @@ function safeInstagram(value) {
   return safeText(value).replace(/^@+/, '').replace(/[^a-zA-Z0-9._]/g, '').slice(0, 30);
 }
 
+function safeWallFrame(value) {
+  const frame = safeText(value).toLowerCase();
+  return ['classic', 'single', 'bride', 'groom', 'lucky'].includes(frame) ? frame : 'classic';
+}
+
 function normalizeSocial(data) {
   return {
     isSingle: safeBool(data.isSingle ?? data.is_single),
     instagram: safeInstagram(data.instagram),
-    showSocialOnWall: safeBool(data.showSocialOnWall ?? data.show_social_on_wall)
+    showSocialOnWall: safeBool(data.showSocialOnWall ?? data.show_social_on_wall),
+    wallFrame: safeWallFrame(data.wallFrame ?? data.wall_frame)
   };
 }
 
@@ -887,6 +957,7 @@ function formatCheckin(row) {
     isSingle: Boolean(row.is_single),
     instagram: row.instagram || '',
     showSocialOnWall: Boolean(row.show_social_on_wall),
+    wallFrame: row.wall_frame || 'classic',
     checkedInAt: row.checked_in_at?.toISOString?.() || row.checked_in_at || ''
   };
 }
@@ -904,7 +975,7 @@ async function lookupRsvp(lineUserId) {
   const result = await pool.query(
     `SELECT line_user_id, first_name, last_name, nickname, full_name, picture_url,
             table_name, checked_in_at, checkin_source, is_single, instagram,
-            show_social_on_wall, welcome_announced_at
+            show_social_on_wall, wall_frame, welcome_announced_at
      FROM rsvp_submissions
      WHERE line_user_id = $1`,
     [lineUserId]
@@ -931,11 +1002,12 @@ function formatCheckinRsvp(row) {
     isSingle: Boolean(row.is_single),
     instagram: row.instagram || '',
     showSocialOnWall: Boolean(row.show_social_on_wall),
+    wallFrame: row.wall_frame || 'classic',
     welcomeAnnouncedAt: row.welcome_announced_at?.toISOString?.() || ''
   };
 }
 
-async function updateRsvpCheckin(lineUserId, { tableName, source, isSingle, instagram, showSocialOnWall }) {
+async function updateRsvpCheckin(lineUserId, { tableName, source, isSingle, instagram, showSocialOnWall, wallFrame }) {
   await pool.query(
     `UPDATE rsvp_submissions
      SET table_name = $2,
@@ -943,7 +1015,8 @@ async function updateRsvpCheckin(lineUserId, { tableName, source, isSingle, inst
          checkin_source = $3,
          is_single = $4,
          instagram = $5,
-         show_social_on_wall = $6
+         show_social_on_wall = $6,
+         wall_frame = $7
      WHERE line_user_id = $1`,
     [
       lineUserId,
@@ -951,7 +1024,8 @@ async function updateRsvpCheckin(lineUserId, { tableName, source, isSingle, inst
       safeText(source),
       Boolean(isSingle),
       safeInstagram(instagram),
-      Boolean(showSocialOnWall)
+      Boolean(showSocialOnWall),
+      safeWallFrame(wallFrame)
     ]
   );
 }
@@ -979,7 +1053,8 @@ async function createCheckin({
   tableName,
   isSingle,
   instagram,
-  showSocialOnWall
+  showSocialOnWall,
+  wallFrame
 }) {
   const rsvp = await lookupRsvp(lineUserId);
   const rsvpPicture = safeText(rsvp?.picture_url);
@@ -1002,11 +1077,12 @@ async function createCheckin({
   const resolvedInstagram = safeInstagram(instagram || rsvp?.instagram);
   const resolvedIsSingle = Boolean(isSingle ?? rsvp?.is_single);
   const resolvedShowSocialOnWall = Boolean(showSocialOnWall ?? rsvp?.show_social_on_wall);
+  const resolvedWallFrame = safeWallFrame(wallFrame || rsvp?.wall_frame);
 
   if (lineUserId) {
     const recent = await pool.query(
       `SELECT id, line_user_id, display_name, nickname, picture_url, source, beacon_type,
-              table_name, is_single, instagram, show_social_on_wall, checked_in_at
+              table_name, is_single, instagram, show_social_on_wall, wall_frame, checked_in_at
        FROM checkins
        WHERE line_user_id = $1
          AND checked_in_at > NOW() - ($2::int * INTERVAL '1 millisecond')
@@ -1023,11 +1099,11 @@ async function createCheckin({
   const result = await pool.query(
     `INSERT INTO checkins (
        line_user_id, display_name, nickname, picture_url, source, beacon_type,
-       table_name, is_single, instagram, show_social_on_wall, checked_in_at
+       table_name, is_single, instagram, show_social_on_wall, wall_frame, checked_in_at
      )
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
      RETURNING id, line_user_id, display_name, nickname, picture_url, source, beacon_type,
-               table_name, is_single, instagram, show_social_on_wall, checked_in_at`,
+               table_name, is_single, instagram, show_social_on_wall, wall_frame, checked_in_at`,
     [
       safeText(lineUserId),
       resolvedDisplayName,
@@ -1038,7 +1114,8 @@ async function createCheckin({
       resolvedTableName,
       resolvedIsSingle,
       resolvedInstagram,
-      resolvedShowSocialOnWall
+      resolvedShowSocialOnWall,
+      resolvedWallFrame
     ]
   );
 
@@ -1118,6 +1195,65 @@ app.post('/slip', async (req, res) => {
       `INSERT INTO slip_submissions (nickname, side, slip_mime, slip_data, submitted_at)
        VALUES ($1, $2, $3, $4, NOW())`,
       [nickname, side, slipMime, slipBase64]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/seating-map', async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT map_mime, map_data, updated_at
+       FROM seating_maps
+       WHERE map_key = 'main'
+       LIMIT 1`
+    );
+    if (result.rowCount === 0 || !result.rows[0].map_data) {
+      res.json({ map: null });
+      return;
+    }
+    const row = result.rows[0];
+    res.json({
+      map: {
+        mime: row.map_mime,
+        data: row.map_data,
+        updatedAt: row.updated_at?.toISOString?.() || row.updated_at || ''
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/seating-map', async (req, res) => {
+  const data = parseBody(req.body);
+  const mapBase64 = typeof data.mapBase64 === 'string' ? data.mapBase64.trim() : '';
+  const mapMime = safeText(data.mapMime) || 'image/jpeg';
+
+  if (!mapBase64) {
+    res.status(400).json({ success: false, error: 'map image required' });
+    return;
+  }
+  if (!mapMime.startsWith('image/')) {
+    res.status(400).json({ success: false, error: 'image file required' });
+    return;
+  }
+  if (mapBase64.length > 8 * 1024 * 1024) {
+    res.status(400).json({ success: false, error: 'map image too large' });
+    return;
+  }
+
+  try {
+    await pool.query(
+      `INSERT INTO seating_maps (map_key, map_mime, map_data, updated_at)
+       VALUES ('main', $1, $2, NOW())
+       ON CONFLICT (map_key) DO UPDATE SET
+         map_mime = EXCLUDED.map_mime,
+         map_data = EXCLUDED.map_data,
+         updated_at = NOW()`,
+      [mapMime, mapBase64]
     );
     res.json({ success: true });
   } catch (error) {

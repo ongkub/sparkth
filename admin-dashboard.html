@@ -478,6 +478,9 @@ tr:hover td{background:rgba(254,240,238,.4)}
     <div class="nav-item" onclick="nav('dashboard')">
       <span class="nav-icon">📊</span>Dashboard
     </div>
+    <div class="nav-item" onclick="nav('seating')">
+      <span class="nav-icon">🪑</span>ผังโต๊ะ
+    </div>
     <div class="nav-item" onclick="nav('slip')">
       <span class="nav-icon">💸</span>สลิปโอนเงิน
     </div>
@@ -871,6 +874,29 @@ tr:hover td{background:rgba(254,240,238,.4)}
           </div>
         </div>
       </div>
+
+      <div class="card">
+        <div class="card-h">🪑 จัดการรายชื่อเข้ากลุ่มโต๊ะ</div>
+        <div class="tbl-head" style="padding:0 0 14px;border-bottom:0">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <input type="text" class="tbl-search" id="seatingSearch" placeholder="🔍 ค้นหาชื่อ / UID / โต๊ะ..." oninput="renderSeatingManager()">
+            <div class="tbl-filter">
+              <div class="filter-pill active" id="seatFilterAll" onclick="setSeatingFilter('all',this)">ทั้งหมด</div>
+              <div class="filter-pill" onclick="setSeatingFilter('unassigned',this)">ยังไม่จัดโต๊ะ</div>
+              <div class="filter-pill" onclick="setSeatingFilter('checkedin',this)">เช็กอินแล้ว</div>
+            </div>
+          </div>
+          <button class="refresh-btn" onclick="loadSeatingGuests()"><span>🔄</span> รีเฟรช</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+          <input type="text" id="bulkTableName" class="config-inp" style="max-width:220px" placeholder="โต๊ะ เช่น 12 หรือ VIP">
+          <button class="save-btn" style="padding:10px 16px" onclick="bulkAssignSelectedTables()">ตั้งโต๊ะให้รายการที่เลือก</button>
+          <span id="seatingSummary" style="font-size:12px;color:var(--muted)"></span>
+        </div>
+        <div id="seatingTableWrap">
+          <div class="loading-overlay">⏳ กำลังโหลด...</div>
+        </div>
+      </div>
     </div>
 
 
@@ -976,6 +1002,32 @@ tr:hover td{background:rgba(254,240,238,.4)}
       </div>
     </div>
 
+    <!-- ═══ SECTION: SEATING MAP ═══ -->
+    <div class="section" id="sec-seating">
+      <div class="sec-title">ผังโต๊ะ</div>
+      <div class="sec-sub">อัปโหลดรูปแผนผังที่นั่งสำหรับให้แขกกดดูจากหน้า Check-in</div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-h">🗺️ อัปโหลดแผนผังที่นั่ง</div>
+          <div class="info-box" style="margin-bottom:14px">
+            <p>รองรับไฟล์รูปภาพ เช่น JPG, PNG หรือ WebP ขนาดไม่เกินประมาณ 5 MB<br>
+            หลังอัปโหลด แขกที่กดการ์ดโต๊ะในหน้า Check-in จะเห็นแผนผังล่าสุดทันที</p>
+          </div>
+          <input type="file" id="seatingMapFile" accept="image/*" class="config-inp" style="padding:9px;background:white">
+          <button class="save-btn" style="margin-top:12px" onclick="uploadSeatingMap()">อัปโหลดแผนผัง</button>
+          <div id="seatingMapStatus" style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-h">👁️ แผนผังปัจจุบัน</div>
+          <div id="seatingMapPreview">
+            <div class="loading-overlay">⏳ กำลังโหลด...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══ SECTION: SLIP ═══ -->
     <div class="section" id="sec-slip">
       <div class="sec-title">สลิปโอนเงิน</div>
@@ -1032,6 +1084,9 @@ const SAVED_API_URL = (localStorage.getItem('weddingApiUrl') || localStorage.get
 const SHEET_URL = (SAVED_API_URL && !SAVED_API_URL.includes('script.google.com')
   ? SAVED_API_URL
   : 'https://sparkth-production.up.railway.app/rsvp').trim();
+const API_BASE = SHEET_URL.replace(/\/rsvp$/, '');
+const SEATING_MAP_API = API_BASE + '/seating-map';
+const SEATING_ASSIGN_API = API_BASE + '/seating/assign';
 const ADMIN_LIFF  = localStorage.getItem('weddingAdminLiffId') || '2006674119-kldPE7YA';
 const ADMIN_UIDS  = [
   'U4abc134b530c083a2a88255c5ff56292',
@@ -1045,6 +1100,7 @@ let adminPic      = '';
 let isInLINE      = false;
 let allRsvpData   = [];
 let currentFilter = 'all';
+let seatingFilter = 'all';
 
 // ══════════════════════════════════════
 //  NAVIGATION
@@ -1056,6 +1112,7 @@ function nav(id){
   event.currentTarget.classList.add('active');
   if(id==='rsvp') loadRSVP();
   if(id==='dashboard') loadDashboard();
+  if(id==='seating'){ loadSeatingMapAdmin(); loadSeatingGuests(); }
   if(id==='slip') loadSlips();
   if(window.innerWidth <= 768) closeSidebar();
 }
@@ -2023,7 +2080,206 @@ initAdminLIFF();
 // ══════════════════════════════════════
 //  SLIP SUBMISSIONS
 // ══════════════════════════════════════
-const SLIP_API = 'https://sparkth-production.up.railway.app/slip';
+async function loadSeatingMapAdmin(){
+  const preview = document.getElementById('seatingMapPreview');
+  const status = document.getElementById('seatingMapStatus');
+  if(!preview) return;
+  preview.innerHTML = '<div class="loading-overlay">⏳ กำลังโหลด...</div>';
+  try{
+    const res = await fetch(SEATING_MAP_API);
+    const json = await res.json();
+    if(!json.map){
+      preview.innerHTML = '<div class="empty-state" style="padding:32px">ยังไม่ได้อัปโหลดแผนผังที่นั่ง</div>';
+      if(status) status.textContent = '';
+      return;
+    }
+    preview.innerHTML = `
+      <img src="data:${escHtml(json.map.mime)};base64,${json.map.data}"
+        style="width:100%;border-radius:12px;border:1px solid var(--border);background:white"
+        alt="แผนผังที่นั่ง">`;
+    if(status) status.textContent = json.map.updatedAt ? 'อัปเดตล่าสุด: ' + json.map.updatedAt : '';
+  }catch(error){
+    preview.innerHTML = '<div class="empty-state" style="padding:32px">⚠️ โหลดแผนผังไม่ได้</div>';
+    if(status) status.textContent = error.message || String(error);
+  }
+}
+
+async function loadSeatingGuests(){
+  const wrap = document.getElementById('seatingTableWrap');
+  if(wrap) wrap.innerHTML = '<div class="loading-overlay">⏳ กำลังโหลด...</div>';
+  try{
+    const res = await fetch(SHEET_URL + '?action=list');
+    const data = await res.json();
+    allRsvpData = [...(data.submitted||[]), ...(data.visited||[])];
+    allRsvpData.sort((a,b)=>{
+      const ta = String(a.tableName || '').localeCompare(String(b.tableName || ''), 'th');
+      if(ta) return ta;
+      return String(a.name || a.nickName || '').localeCompare(String(b.name || b.nickName || ''), 'th');
+    });
+    renderSeatingManager();
+  }catch(error){
+    if(wrap) wrap.innerHTML = '<div class="empty-state">⚠️ โหลดรายชื่อไม่ได้</div>';
+  }
+}
+
+function setSeatingFilter(filter, el){
+  seatingFilter = filter;
+  document.querySelectorAll('#sec-seating .filter-pill').forEach(p=>p.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderSeatingManager();
+}
+
+function seatingRows(){
+  const q = (document.getElementById('seatingSearch')?.value || '').trim().toLowerCase();
+  return allRsvpData.filter((r) => {
+    if(r.status !== 'submitted') return false;
+    if(seatingFilter === 'unassigned' && r.tableName) return false;
+    if(seatingFilter === 'checkedin' && !r.checkedInAt) return false;
+    const hay = [
+      r.lineUid, r.name, r.firstName, r.lastName, r.nickName, r.nickname,
+      r.phone, r.side, r.relationship, r.tableName
+    ].join(' ').toLowerCase();
+    return !q || hay.includes(q);
+  });
+}
+
+function renderSeatingManager(){
+  const wrap = document.getElementById('seatingTableWrap');
+  if(!wrap) return;
+  const rows = seatingRows();
+  const assigned = allRsvpData.filter(r => r.status === 'submitted' && r.tableName).length;
+  const submitted = allRsvpData.filter(r => r.status === 'submitted').length;
+  const summary = document.getElementById('seatingSummary');
+  if(summary) summary.textContent = `จัดโต๊ะแล้ว ${assigned}/${submitted} รายชื่อ`;
+  if(!rows.length){
+    wrap.innerHTML = '<div class="empty-state">ไม่พบรายชื่อในเงื่อนไขนี้</div>';
+    return;
+  }
+  const body = rows.map((r) => {
+    const uid = escHtml(r.lineUid || '');
+    const name = escHtml(r.nickName || r.nickname || r.name || '-');
+    const fullName = escHtml(r.name || '');
+    const tableName = escHtml(r.tableName || '');
+    const checked = r.checkedInAt ? '<span class="status-badge status-submitted">เช็กอินแล้ว</span>' : '<span class="cell-sub">ยังไม่เช็กอิน</span>';
+    return `<tr>
+      <td><input type="checkbox" class="seat-select" value="${uid}"></td>
+      <td>
+        <div class="cell-name">${name}</div>
+        <div class="cell-sub">${fullName}</div>
+        <div class="cell-sub" style="font-family:'JetBrains Mono',monospace">${uid}</div>
+      </td>
+      <td>${r.guests || 1}</td>
+      <td>${escHtml(r.side || '-')}</td>
+      <td>${escHtml(r.relationship || '-')}</td>
+      <td>
+        <input class="config-inp seat-table-input" data-uid="${uid}" value="${tableName}"
+          placeholder="ยังไม่จัดโต๊ะ" style="min-width:120px;padding:8px 10px">
+      </td>
+      <td>${checked}</td>
+      <td>
+        <button onclick="saveSeatTable('${uid}')" style="border:1px solid var(--rose);background:white;color:var(--text);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">บันทึก</button>
+      </td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML = `<table>
+    <thead><tr>
+      <th style="width:34px"><input type="checkbox" onchange="toggleAllSeatRows(this)"></th>
+      <th>แขก / UID</th><th>จำนวน</th><th>ฝั่ง</th><th>ความสัมพันธ์</th><th>โต๊ะ</th><th>สถานะ</th><th></th>
+    </tr></thead>
+    <tbody>${body}</tbody>
+  </table>`;
+}
+
+function toggleAllSeatRows(master){
+  document.querySelectorAll('.seat-select').forEach((box) => { box.checked = master.checked; });
+}
+
+async function assignTables(assignments){
+  const res = await fetch(SEATING_ASSIGN_API, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ assignments })
+  });
+  const json = await res.json();
+  if(!res.ok || !json.success) throw new Error(json.error || 'assign failed');
+  return json;
+}
+
+async function saveSeatTable(uid){
+  const input = document.querySelector(`.seat-table-input[data-uid="${CSS.escape(uid)}"]`);
+  try{
+    await assignTables([{ lineUserId: uid, tableName: input?.value?.trim() || '' }]);
+    showToast('✅ บันทึกโต๊ะแล้ว');
+    await loadSeatingGuests();
+  }catch(error){
+    showToast('❌ บันทึกโต๊ะไม่สำเร็จ');
+  }
+}
+
+async function bulkAssignSelectedTables(){
+  const tableName = document.getElementById('bulkTableName')?.value?.trim() || '';
+  const selected = Array.from(document.querySelectorAll('.seat-select:checked')).map((box) => box.value);
+  if(!selected.length){
+    showToast('กรุณาเลือกรายชื่อก่อน');
+    return;
+  }
+  try{
+    await assignTables(selected.map((lineUserId) => ({ lineUserId, tableName })));
+    showToast('✅ ตั้งโต๊ะให้รายการที่เลือกแล้ว');
+    await loadSeatingGuests();
+  }catch(error){
+    showToast('❌ ตั้งโต๊ะไม่สำเร็จ');
+  }
+}
+
+function fileToBase64(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || '');
+      resolve(result.includes(',') ? result.split(',')[1] : result);
+    };
+    reader.onerror = () => reject(reader.error || new Error('read file failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadSeatingMap(){
+  const input = document.getElementById('seatingMapFile');
+  const status = document.getElementById('seatingMapStatus');
+  const file = input?.files?.[0];
+  if(!file){
+    showToast('กรุณาเลือกรูปแผนผังก่อน');
+    return;
+  }
+  if(!file.type.startsWith('image/')){
+    showToast('กรุณาอัปโหลดไฟล์รูปภาพ');
+    return;
+  }
+  if(file.size > 5 * 1024 * 1024){
+    showToast('รูปใหญ่เกินไป กรุณาใช้ไฟล์ไม่เกิน 5 MB');
+    return;
+  }
+  try{
+    if(status) status.textContent = 'กำลังอัปโหลด...';
+    const mapBase64 = await fileToBase64(file);
+    const res = await fetch(SEATING_MAP_API, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ mapBase64, mapMime:file.type || 'image/jpeg' })
+    });
+    const json = await res.json();
+    if(!res.ok || !json.success) throw new Error(json.error || 'upload failed');
+    showToast('✅ อัปโหลดแผนผังแล้ว');
+    input.value = '';
+    await loadSeatingMapAdmin();
+  }catch(error){
+    if(status) status.textContent = 'อัปโหลดไม่สำเร็จ: ' + (error.message || String(error));
+    showToast('❌ อัปโหลดไม่สำเร็จ');
+  }
+}
+
+const SLIP_API = API_BASE + '/slip';
 
 async function loadSlips(){
   const wrap = document.getElementById('slipTableWrap');
