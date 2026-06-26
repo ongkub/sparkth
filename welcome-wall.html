@@ -120,10 +120,12 @@ body{
   box-shadow:0 8px 18px rgba(0,0,0,.18);
 }
 .bubble-ig{
+  display:block;text-decoration:none;
   max-width:150px;margin-top:4px;padding:3px 8px;border-radius:999px;
   color:white;background:rgba(61,36,40,.62);border:1px solid rgba(255,255,255,.18);
   font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
+.bubble-ig:hover{background:rgba(61,36,40,.82)}
 .bubble.new .avatar-ring{animation:pop .85s cubic-bezier(.2,1.4,.35,1)}
 .bubble.new .bubble-label{animation:labelPop .9s cubic-bezier(.2,1.4,.35,1)}
 @keyframes pop{
@@ -285,6 +287,7 @@ function makeBubble(data, isNew=false){
   const isSingle = Boolean(data.isSingle || data.is_single);
   const instagram = (data.instagram || '').trim().replace(/^@+/, '');
   const showIg = Boolean(data.showSocialOnWall || data.show_social_on_wall) && instagram;
+  const instagramUrl = showIg ? `https://instagram.com/${encodeURIComponent(instagram)}` : '';
   if(bubbles.has(id)){
     const existing = bubbles.get(id);
     existing.vx += (Math.random() - .5) * 1.2;
@@ -305,7 +308,7 @@ function makeBubble(data, isNew=false){
       </div>
       ${isSingle ? '<div class="single-badge">โสด</div>' : ''}
       <div class="bubble-label">${escapeHtml(name)}</div>
-      ${showIg ? `<div class="bubble-ig">@${escapeHtml(instagram)}</div>` : ''}
+      ${showIg ? `<a class="bubble-ig" href="${instagramUrl}" target="_blank" rel="noopener">@${escapeHtml(instagram)}</a>` : ''}
     </div>`;
   stage.appendChild(el);
 

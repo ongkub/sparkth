@@ -19,11 +19,24 @@ body{
   margin:0;min-height:100vh;font-family:'Noto Sans Thai',sans-serif;color:var(--text);
   background:linear-gradient(160deg,var(--ivory),var(--cream));
 }
-.wrap{width:min(720px,100%);margin:0 auto;padding:26px 18px 34px}
+.wrap{width:min(760px,100%);margin:0 auto;padding:26px 18px 34px}
 .brand{text-align:center;margin-bottom:22px}
 .eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700}
 .couple{font-family:'Playfair Display',serif;font-size:clamp(34px,10vw,54px);line-height:1.05;margin-top:5px}
 .date{font-size:13px;color:var(--muted);margin-top:8px}
+.flow{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px;
+}
+.step{
+  background:white;border:1px solid var(--border);border-radius:8px;padding:10px;
+  min-height:76px;display:flex;flex-direction:column;gap:5px;
+}
+.step-no{
+  width:24px;height:24px;border-radius:50%;display:grid;place-items:center;
+  background:var(--blush);color:var(--text);font-size:12px;font-weight:800;
+}
+.step-title{font-size:13px;font-weight:800;line-height:1.25}
+.step-sub{font-size:11px;color:var(--muted);line-height:1.35}
 .panel{
   background:rgba(255,255,255,.78);border:1px solid var(--border);border-radius:8px;
   box-shadow:0 18px 48px rgba(120,70,70,.10);padding:20px;margin-bottom:14px;
@@ -36,11 +49,15 @@ body{
 .status{padding:13px 14px;border-radius:8px;font-size:14px;line-height:1.6;margin-bottom:14px;background:white;border:1px solid var(--border)}
 .status.ok{border-color:rgba(79,140,107,.35);background:rgba(79,140,107,.08)}
 .status.err{border-color:rgba(184,90,90,.3);background:rgba(184,90,90,.08);color:var(--danger)}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.info-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:10px;margin-top:16px}
 .info{border:1px solid var(--border);border-radius:8px;padding:12px;background:white}
 .label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
 .value{font-size:18px;font-weight:700;margin-top:4px;min-height:27px}
-.value.table{font-size:28px;color:var(--gold)}
+.value.table{font-size:34px;color:var(--gold)}
+.note{
+  margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(249,217,221,.32);
+  border:1px solid rgba(217,126,136,.18);font-size:12px;line-height:1.55;color:var(--muted);
+}
 .field{margin-top:16px}
 .field label{display:block;font-size:13px;font-weight:700;margin-bottom:8px}
 .input{
@@ -48,21 +65,27 @@ body{
   font:inherit;background:white;color:var(--text);outline:none;
 }
 .input:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(217,126,136,.13)}
-.checkline{display:flex;align-items:flex-start;gap:10px;margin-top:12px;font-size:13px;color:var(--text);line-height:1.55}
+.checkline{
+  display:flex;align-items:flex-start;gap:10px;margin-top:12px;font-size:13px;color:var(--text);line-height:1.55;
+  background:white;border:1px solid var(--border);border-radius:8px;padding:12px;
+}
 .checkline input{width:18px;height:18px;margin-top:2px;accent-color:var(--rose);flex:0 0 auto}
 .btn{
   width:100%;border:0;border-radius:8px;padding:14px 16px;font:inherit;font-weight:700;
   cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;
 }
+.btn:disabled{opacity:.68;cursor:not-allowed}
 .primary{background:linear-gradient(135deg,var(--rose),var(--peach));color:white;box-shadow:0 12px 24px rgba(201,145,122,.22)}
 .secondary{background:white;color:var(--text);border:1px solid var(--border)}
-.actions{display:grid;grid-template-columns:1fr;gap:10px;margin-top:16px}
+.accent{background:var(--text);color:white}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.actions .wide{grid-column:1/-1}
 .done{display:none}
 .done.on{display:block}
 .hidden{display:none!important}
 .tiny{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.6}
 @media(max-width:560px){
-  .wrap{padding:22px 14px 28px}.panel{padding:17px}.info-grid{grid-template-columns:1fr}
+  .wrap{padding:22px 14px 28px}.panel{padding:17px}.flow{grid-template-columns:1fr}.info-grid,.actions{grid-template-columns:1fr}.actions .wide{grid-column:auto}
 }
 </style>
 </head>
@@ -73,6 +96,24 @@ body{
     <div class="couple">Pattaraporn &amp; Praphat</div>
     <div class="date">3 July 2026 · Chatrium Riverside Bangkok</div>
   </header>
+
+  <section class="flow" aria-label="Check-in flow">
+    <div class="step">
+      <div class="step-no">1</div>
+      <div class="step-title">Scan QR</div>
+      <div class="step-sub">เปิดด้วย LINE เพื่อดึงโปรไฟล์</div>
+    </div>
+    <div class="step">
+      <div class="step-no">2</div>
+      <div class="step-title">เช็กโต๊ะ</div>
+      <div class="step-sub">ดู RSVP และโต๊ะนั่งทันที</div>
+    </div>
+    <div class="step">
+      <div class="step-no">3</div>
+      <div class="step-title">ขึ้น Welcome</div>
+      <div class="step-sub">โปรไฟล์ขึ้นจอและเข้าคิวเสียง</div>
+    </div>
+  </section>
 
   <div class="status" id="status">กำลังเปิด LINE check-in...</div>
 
@@ -88,42 +129,43 @@ body{
 
     <div class="info-grid">
       <div class="info">
-        <div class="label">Table</div>
+        <div class="label">โต๊ะนั่ง</div>
         <div class="value table" id="tableName">-</div>
       </div>
       <div class="info">
-        <div class="label">Guest</div>
+        <div class="label">จำนวนแขก</div>
         <div class="value" id="guestCount">-</div>
       </div>
     </div>
+    <div class="note" id="tableNote">ถ้าโต๊ะยังว่าง ให้แจ้งทีมงานหน้างานเพื่ออัปเดตให้ทันที</div>
 
     <div class="field">
-      <label for="instagram">Instagram (optional)</label>
+      <label for="instagram">Instagram สำหรับแสดงบน Welcome Screen (optional)</label>
       <input class="input" id="instagram" placeholder="your.ig">
       <label class="checkline">
         <input type="checkbox" id="isSingle">
-        <span>โสด และอยากได้ badge พิเศษบน Welcome Screen</span>
+        <span>โสด และอยากได้กรอบ / badge พิเศษบน Welcome Screen</span>
       </label>
       <label class="checkline">
         <input type="checkbox" id="showSocial">
-        <span>อนุญาตให้แสดง IG บน Welcome Screen</span>
+        <span>อนุญาตให้แสดง IG บน Welcome Screen เพื่อให้คนกดไปดูได้</span>
       </label>
     </div>
 
-    <button class="btn primary" id="checkinBtn" type="button">Check in</button>
+    <button class="btn primary" id="checkinBtn" type="button">ยืนยัน Check-in</button>
   </section>
 
   <section class="panel done" id="donePanel">
     <div class="hello">เช็กอินเรียบร้อยแล้ว</div>
-    <div class="sub">ข้อมูลของคุณถูกส่งขึ้น Welcome Screen แล้ว ขอให้สนุกกับงานครับ</div>
+    <div class="sub">โปรไฟล์ของคุณถูกส่งขึ้น Welcome Screen แล้ว ขอให้สนุกกับงานครับ</div>
     <div class="actions">
-      <a class="btn secondary" href="slip.html">ไปหน้าแจ้งโอน / Slip</a>
-      <a class="btn secondary hidden" id="gameLink" href="#">ไปหน้าเกม</a>
-      <a class="btn secondary" href="welcome-wall.html">เปิด Welcome Wall</a>
+      <a class="btn accent wide" href="welcome-wall.html">ดู Welcome Wall</a>
+      <a class="btn secondary" href="slip.html">QR / แจ้ง Slip</a>
+      <a class="btn secondary hidden" id="gameLink" href="#">เล่นเกมชิงรางวัล</a>
     </div>
   </section>
 
-  <p class="tiny">ถ้าข้อมูลโต๊ะยังว่าง ให้แจ้งทีมงานหน้างานเพื่ออัปเดตให้ทันที</p>
+  <p class="tiny">สำหรับแขกที่ยังไม่ได้ลงทะเบียน ทีมงานสามารถ check-in แบบ manual จากหน้า Admin ได้</p>
 </main>
 
 <script>
@@ -132,7 +174,8 @@ const API_BASE = (SAVED_API_URL && !SAVED_API_URL.includes('script.google.com')
   ? SAVED_API_URL
   : 'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/, '');
 const LIFF_ID = localStorage.getItem('weddingCheckinLiffId') || '2006674119-opWzXpla';
-const GAME_URL = (localStorage.getItem('weddingGameUrl') || '').trim();
+const urlParams = new URLSearchParams(location.search);
+const GAME_URL = (urlParams.get('game') || localStorage.getItem('weddingGameUrl') || '').trim();
 
 let profile = null;
 let rsvp = null;
@@ -158,6 +201,9 @@ function showProfile(){
   document.getElementById('guestSub').textContent = rsvp?.name && rsvp.name !== name ? rsvp.name : 'ยินดีต้อนรับสู่งานแต่งงาน';
   document.getElementById('tableName').textContent = rsvp?.tableName || '-';
   document.getElementById('guestCount').textContent = rsvp?.guests || '1';
+  document.getElementById('tableNote').textContent = rsvp?.tableName
+    ? 'กรุณาจำโต๊ะนี้ไว้ หรือแคปหน้าจอนี้ไว้ให้ทีมงานช่วยพาไปที่โต๊ะได้'
+    : 'ยังไม่มีข้อมูลโต๊ะในระบบ กรุณาแจ้งทีมงานหน้างานเพื่ออัปเดต';
   document.getElementById('instagram').value = rsvp?.instagram || '';
   document.getElementById('isSingle').checked = Boolean(rsvp?.isSingle);
   document.getElementById('showSocial').checked = Boolean(rsvp?.showSocialOnWall);
@@ -175,7 +221,7 @@ async function loadCheckin(){
   const data = await res.json();
   if(!res.ok || !data.success) throw new Error(data.error || 'โหลดข้อมูลไม่ได้');
   if(!data.submitted){
-    setStatus('ยังไม่พบ RSVP ของบัญชี LINE นี้ กรุณาติดต่อทีมงานหน้างาน', 'err');
+    setStatus('ยังไม่พบ RSVP ของบัญชี LINE นี้ กรุณาติดต่อทีมงานเพื่อ check-in แบบ manual', 'err');
     return;
   }
   rsvp = data.data;
@@ -191,6 +237,8 @@ async function loadCheckin(){
 
 function showDone(){
   donePanel.classList.add('on');
+  document.getElementById('checkinBtn').disabled = true;
+  document.getElementById('checkinBtn').textContent = 'Check-in แล้ว';
   const gameLink = document.getElementById('gameLink');
   if(GAME_URL){
     gameLink.href = GAME_URL;
