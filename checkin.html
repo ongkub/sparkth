@@ -170,20 +170,23 @@ body{
       </div>
       <div class="settings-body">
         <div class="field">
-          <label for="instagram">Instagram Username</label>
-          <div class="ig-wrap">
-            <span class="ig-prefix">@</span>
-            <input class="input" id="instagram" placeholder="yourname">
-          </div>
           <label class="checkline">
             <input type="checkbox" id="isSingle">
-            <span>โสด และอยากได้กรอบ / badge พิเศษบน Welcome Screen</span>
+            <span>ฉันโสด และอยากได้กรอบ / badge พิเศษบน Welcome Screen</span>
           </label>
-          <label class="checkline">
-            <input type="checkbox" id="showSocial">
-            <span>อนุญาตให้แสดง IG บน Welcome Screen เพื่อให้คนกดไปดูได้</span>
-          </label>
-          <label style="margin-top:18px">เลือกรอบรูปบน Welcome Screen</label>
+          <div id="igSection" class="hidden" style="margin-top:14px;padding:14px;background:var(--paper-low);border-radius:10px;border:1px solid var(--border)">
+            <label class="checkline" style="margin-bottom:12px">
+              <input type="checkbox" id="showSocial">
+              <span>ต้องการให้แสดง Instagram บน Welcome Screen</span>
+            </label>
+            <div id="igInputWrap" class="hidden">
+              <div class="ig-wrap">
+                <span class="ig-prefix" style="font-size:12px;color:var(--muted);left:12px">instagram.com/</span>
+                <input class="input" id="instagram" placeholder="yourname" style="padding-left:122px">
+              </div>
+            </div>
+          </div>
+          <label style="margin-top:18px">เลือกกรอบรูปบน Welcome Screen</label>
           <div class="frame-grid" id="frameGrid" aria-label="เลือกกรอบรูป">
             <button class="frame-option active" type="button" data-frame="classic">
               <span class="frame-dot"></span><span class="frame-label">Classic</span>
@@ -291,9 +294,10 @@ function showProfile(){
   document.getElementById('tableNote').textContent = rsvp?.tableName
     ? 'กดการ์ดโต๊ะเพื่อดูแผนผังที่นั่ง และแคปหน้าจอนี้ไว้ได้'
     : 'ยังไม่มีข้อมูลโต๊ะในระบบ กรุณาแจ้งทีมงานหน้างานเพื่ออัปเดต';
-  document.getElementById('instagram').value = rsvp?.instagram || '';
   document.getElementById('isSingle').checked = Boolean(rsvp?.isSingle);
   document.getElementById('showSocial').checked = Boolean(rsvp?.showSocialOnWall);
+  document.getElementById('instagram').value = rsvp?.instagram || '';
+  updateIgVisibility();
   selectFrame(rsvp?.wallFrame || (rsvp?.isSingle ? 'single' : 'classic'));
   avatarFallback.textContent = initials(name);
   if(profile?.pictureUrl || rsvp?.photo){
@@ -400,6 +404,22 @@ function closeSeatingMap(){
 }
 
 document.getElementById('checkinBtn').addEventListener('click', () => submitCheckin({ auto: false }));
+
+const isSingleCb = document.getElementById('isSingle');
+const showSocialCb = document.getElementById('showSocial');
+const igSection = document.getElementById('igSection');
+const igInputWrap = document.getElementById('igInputWrap');
+
+function updateIgVisibility(){
+  igSection.classList.toggle('hidden', !isSingleCb.checked);
+  igInputWrap.classList.toggle('hidden', !showSocialCb.checked);
+  if(!isSingleCb.checked){
+    showSocialCb.checked = false;
+    document.getElementById('instagram').value = '';
+  }
+}
+isSingleCb.addEventListener('change', updateIgVisibility);
+showSocialCb.addEventListener('change', updateIgVisibility);
 document.getElementById('tableCard').addEventListener('click', openSeatingMap);
 document.getElementById('closeMapBtn').addEventListener('click', closeSeatingMap);
 document.querySelectorAll('.frame-option').forEach((option) => {
