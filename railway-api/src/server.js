@@ -141,6 +141,15 @@ async function ensureSchema() {
        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
      )`
   );
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS frame_templates (
+       frame_key TEXT PRIMARY KEY,
+       frame_label TEXT NOT NULL DEFAULT '',
+       frame_mime TEXT NOT NULL DEFAULT 'image/png',
+       frame_data TEXT NOT NULL DEFAULT '',
+       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     )`
+  );
 }
 
 app.use(express.json({ limit: '10mb' }));
@@ -1254,6 +1263,64 @@ app.post('/seating-map', async (req, res) => {
          map_data = EXCLUDED.map_data,
          updated_at = NOW()`,
       [mapMime, mapBase64]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/frame-templates', async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT frame_key, frame_label, frame_mime, frame_data, updated_at
+       FROM frame_templates
+       ORDER BY frame_key`
+    );
+    res.json({
+      templates: result.rows.map((row) => ({
+        frameKey: row.frame_key,
+        label: row.frame_label || row.frame_key,
+        mime: row.frame_mime,
+        data: row.frame_data,
+        updatedAt: row.updated_at?.toISOString?.() || row.updated_at || ''
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/frame-templates', async (req, res) => {
+  const data = parseBody(req.body);
+  const frameKey = safeWallFrame(data.frameKey || data.frame_key);
+  const label = safeText(data.label || data.frameLabel || data.frame_label) || frameKey;
+  const frameBase64 = typeof data.frameBase64 === 'string' ? data.frameBase64.trim() : '';
+  const frameMime = safeText(data.frameMime) || 'image/png';
+
+  if (!frameBase64) {
+    res.status(400).json({ success: false, error: 'frame image required' });
+    return;
+  }
+  if (!frameMime.startsWith('image/')) {
+    res.status(400).json({ success: false, error: 'image file required' });
+    return;
+  }
+  if (frameBase64.length > 8 * 1024 * 1024) {
+    res.status(400).json({ success: false, error: 'frame image too large' });
+    return;
+  }
+
+  try {
+    await pool.query(
+      `INSERT INTO frame_templates (frame_key, frame_label, frame_mime, frame_data, updated_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       ON CONFLICT (frame_key) DO UPDATE SET
+         frame_label = EXCLUDED.frame_label,
+         frame_mime = EXCLUDED.frame_mime,
+         frame_data = EXCLUDED.frame_data,
+         updated_at = NOW()`,
+      [frameKey, label, frameMime, frameBase64]
     );
     res.json({ success: true });
   } catch (error) {

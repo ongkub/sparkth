@@ -73,6 +73,14 @@ CREATE TABLE IF NOT EXISTS seating_maps (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS frame_templates (
+  frame_key TEXT PRIMARY KEY,
+  frame_label TEXT NOT NULL DEFAULT '',
+  frame_mime TEXT NOT NULL DEFAULT 'image/png',
+  frame_data TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS idx_rsvp_submitted_at ON rsvp_submissions (submitted_at DESC);
 CREATE INDEX IF NOT EXISTS idx_invites_sent_at ON invites (sent_at DESC);
 CREATE INDEX IF NOT EXISTS idx_checkins_checked_in_at ON checkins (checked_in_at DESC);

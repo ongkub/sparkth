@@ -481,6 +481,9 @@ tr:hover td{background:rgba(254,240,238,.4)}
     <div class="nav-item" onclick="nav('seating')">
       <span class="nav-icon">🪑</span>ผังโต๊ะ
     </div>
+    <div class="nav-item" onclick="nav('frames')">
+      <span class="nav-icon">🖼</span>กรอบ Profile
+    </div>
     <div class="nav-item" onclick="nav('slip')">
       <span class="nav-icon">💸</span>สลิปโอนเงิน
     </div>
@@ -875,28 +878,6 @@ tr:hover td{background:rgba(254,240,238,.4)}
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-h">🪑 จัดการรายชื่อเข้ากลุ่มโต๊ะ</div>
-        <div class="tbl-head" style="padding:0 0 14px;border-bottom:0">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <input type="text" class="tbl-search" id="seatingSearch" placeholder="🔍 ค้นหาชื่อ / UID / โต๊ะ..." oninput="renderSeatingManager()">
-            <div class="tbl-filter">
-              <div class="filter-pill active" id="seatFilterAll" onclick="setSeatingFilter('all',this)">ทั้งหมด</div>
-              <div class="filter-pill" onclick="setSeatingFilter('unassigned',this)">ยังไม่จัดโต๊ะ</div>
-              <div class="filter-pill" onclick="setSeatingFilter('checkedin',this)">เช็กอินแล้ว</div>
-            </div>
-          </div>
-          <button class="refresh-btn" onclick="loadSeatingGuests()"><span>🔄</span> รีเฟรช</button>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
-          <input type="text" id="bulkTableName" class="config-inp" style="max-width:220px" placeholder="โต๊ะ เช่น 12 หรือ VIP">
-          <button class="save-btn" style="padding:10px 16px" onclick="bulkAssignSelectedTables()">ตั้งโต๊ะให้รายการที่เลือก</button>
-          <span id="seatingSummary" style="font-size:12px;color:var(--muted)"></span>
-        </div>
-        <div id="seatingTableWrap">
-          <div class="loading-overlay">⏳ กำลังโหลด...</div>
-        </div>
-      </div>
     </div>
 
 
@@ -1026,6 +1007,46 @@ tr:hover td{background:rgba(254,240,238,.4)}
           </div>
         </div>
       </div>
+
+      <div class="card">
+        <div class="card-h">🪑 จัดการรายชื่อเข้ากลุ่มโต๊ะ</div>
+        <div class="tbl-head" style="padding:0 0 14px;border-bottom:0">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <input type="text" class="tbl-search" id="seatingSearch" placeholder="🔍 ค้นหาชื่อ / UID / โต๊ะ..." oninput="renderSeatingManager()">
+            <div class="tbl-filter">
+              <div class="filter-pill active" id="seatFilterAll" onclick="setSeatingFilter('all',this)">ทั้งหมด</div>
+              <div class="filter-pill" onclick="setSeatingFilter('unassigned',this)">ยังไม่จัดโต๊ะ</div>
+              <div class="filter-pill" onclick="setSeatingFilter('checkedin',this)">เช็กอินแล้ว</div>
+            </div>
+          </div>
+          <button class="refresh-btn" onclick="loadSeatingGuests()"><span>🔄</span> รีเฟรช</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+          <input type="text" id="bulkTableName" class="config-inp" style="max-width:220px" placeholder="โต๊ะ เช่น 12 หรือ VIP">
+          <button class="save-btn" style="padding:10px 16px" onclick="bulkAssignSelectedTables()">ตั้งโต๊ะให้รายการที่เลือก</button>
+          <span id="seatingSummary" style="font-size:12px;color:var(--muted)"></span>
+        </div>
+        <div id="seatingTableWrap">
+          <div class="loading-overlay">⏳ กำลังโหลด...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION: PROFILE FRAMES ═══ -->
+    <div class="section" id="sec-frames">
+      <div class="sec-title">กรอบ Profile</div>
+      <div class="sec-sub">อัปโหลด template กรอบสำหรับ Welcome Wall แยกตาม preset ที่แขกเลือก</div>
+
+      <div class="card">
+        <div class="card-h">🖼 Template กรอบรูป</div>
+        <div class="info-box" style="margin-bottom:14px">
+          <p>แนะนำอัปโหลดเป็น PNG พื้นหลังโปร่งใส ขนาดสี่เหลี่ยมจัตุรัส เช่น 512×512 หรือ 1024×1024<br>
+          ถ้ายังไม่อัปโหลด preset ใด ระบบจะใช้กรอบ CSS สำรองเดิม</p>
+        </div>
+        <div id="frameTemplateWrap" class="grid-2">
+          <div class="loading-overlay">⏳ กำลังโหลด...</div>
+        </div>
+      </div>
     </div>
 
     <!-- ═══ SECTION: SLIP ═══ -->
@@ -1087,6 +1108,7 @@ const SHEET_URL = (SAVED_API_URL && !SAVED_API_URL.includes('script.google.com')
 const API_BASE = SHEET_URL.replace(/\/rsvp$/, '');
 const SEATING_MAP_API = API_BASE + '/seating-map';
 const SEATING_ASSIGN_API = API_BASE + '/seating/assign';
+const FRAME_TEMPLATES_API = API_BASE + '/frame-templates';
 const ADMIN_LIFF  = localStorage.getItem('weddingAdminLiffId') || '2006674119-kldPE7YA';
 const ADMIN_UIDS  = [
   'U4abc134b530c083a2a88255c5ff56292',
@@ -1101,6 +1123,14 @@ let isInLINE      = false;
 let allRsvpData   = [];
 let currentFilter = 'all';
 let seatingFilter = 'all';
+let frameTemplates = {};
+const FRAME_PRESETS = [
+  { key:'classic', label:'Classic' },
+  { key:'single', label:'Single' },
+  { key:'bride', label:'Bride Side' },
+  { key:'groom', label:'Groom Side' },
+  { key:'lucky', label:'Lucky / Game' }
+];
 
 // ══════════════════════════════════════
 //  NAVIGATION
@@ -1113,6 +1143,7 @@ function nav(id){
   if(id==='rsvp') loadRSVP();
   if(id==='dashboard') loadDashboard();
   if(id==='seating'){ loadSeatingMapAdmin(); loadSeatingGuests(); }
+  if(id==='frames') loadFrameTemplatesAdmin();
   if(id==='slip') loadSlips();
   if(window.innerWidth <= 768) closeSidebar();
 }
@@ -2242,6 +2273,86 @@ function fileToBase64(file){
     reader.onerror = () => reject(reader.error || new Error('read file failed'));
     reader.readAsDataURL(file);
   });
+}
+
+async function loadFrameTemplatesAdmin(){
+  const wrap = document.getElementById('frameTemplateWrap');
+  if(!wrap) return;
+  wrap.innerHTML = '<div class="loading-overlay">⏳ กำลังโหลด...</div>';
+  try{
+    const res = await fetch(FRAME_TEMPLATES_API);
+    const json = await res.json();
+    frameTemplates = {};
+    (json.templates || []).forEach((template) => {
+      frameTemplates[template.frameKey] = template;
+    });
+    renderFrameTemplatesAdmin();
+  }catch(error){
+    wrap.innerHTML = '<div class="empty-state">⚠️ โหลด template กรอบไม่ได้</div>';
+  }
+}
+
+function renderFrameTemplatesAdmin(){
+  const wrap = document.getElementById('frameTemplateWrap');
+  if(!wrap) return;
+  wrap.innerHTML = FRAME_PRESETS.map((preset) => {
+    const template = frameTemplates[preset.key];
+    const preview = template?.data
+      ? `<img src="data:${escHtml(template.mime)};base64,${template.data}"
+          style="width:112px;height:112px;object-fit:contain;border-radius:14px;border:1px solid var(--border);background:linear-gradient(135deg,#fff,#FEF0EE)"
+          alt="${escHtml(preset.label)}">`
+      : `<div style="width:112px;height:112px;border-radius:14px;border:1px dashed var(--border);display:grid;place-items:center;color:var(--muted);background:var(--ivory);font-size:12px;text-align:center">ยังไม่มี<br>template</div>`;
+    return `<div class="card" style="margin-bottom:0">
+      <div class="card-h">${escHtml(preset.label)}</div>
+      <div style="display:flex;gap:14px;align-items:center">
+        ${preview}
+        <div style="flex:1;min-width:0">
+          <input type="file" id="frameFile_${preset.key}" accept="image/*" class="config-inp" style="padding:9px;background:white">
+          <button class="save-btn" style="margin-top:10px;padding:9px 14px" onclick="uploadFrameTemplate('${preset.key}')">อัปโหลดกรอบนี้</button>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5">
+            ${template?.updatedAt ? 'อัปเดตล่าสุด: ' + escHtml(template.updatedAt) : 'จะใช้ CSS fallback ถ้ายังไม่อัปโหลด'}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function uploadFrameTemplate(frameKey){
+  const preset = FRAME_PRESETS.find((item) => item.key === frameKey);
+  const input = document.getElementById(`frameFile_${frameKey}`);
+  const file = input?.files?.[0];
+  if(!file){
+    showToast('กรุณาเลือกรูปกรอบก่อน');
+    return;
+  }
+  if(!file.type.startsWith('image/')){
+    showToast('กรุณาอัปโหลดไฟล์รูปภาพ');
+    return;
+  }
+  if(file.size > 5 * 1024 * 1024){
+    showToast('รูปใหญ่เกินไป กรุณาใช้ไฟล์ไม่เกิน 5 MB');
+    return;
+  }
+  try{
+    const frameBase64 = await fileToBase64(file);
+    const res = await fetch(FRAME_TEMPLATES_API, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        frameKey,
+        label: preset?.label || frameKey,
+        frameBase64,
+        frameMime: file.type || 'image/png'
+      })
+    });
+    const json = await res.json();
+    if(!res.ok || !json.success) throw new Error(json.error || 'upload failed');
+    showToast('✅ อัปโหลดกรอบแล้ว');
+    await loadFrameTemplatesAdmin();
+  }catch(error){
+    showToast('❌ อัปโหลดกรอบไม่สำเร็จ');
+  }
 }
 
 async function uploadSeatingMap(){

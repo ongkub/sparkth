@@ -85,6 +85,7 @@ body{
   display:flex;flex-direction:column;align-items:center;
 }
 .avatar-ring{
+  position:relative;
   width:108px;height:108px;border-radius:50%;
   padding:5px;
   background:linear-gradient(135deg,var(--blush),var(--rose),var(--sky),var(--sage));
@@ -112,6 +113,10 @@ body{
 .avatar-fallback{
   display:flex;align-items:center;justify-content:center;
   color:var(--text);font-size:34px;font-weight:700;
+}
+.frame-template{
+  position:absolute;inset:-9px;width:calc(100% + 18px);height:calc(100% + 18px);
+  object-fit:contain;pointer-events:none;z-index:2;
 }
 .bubble-label{
   max-width:160px;margin-top:7px;padding:6px 11px;border-radius:999px;
@@ -196,6 +201,7 @@ body{
 
 <script>
 const API_URL = (localStorage.getItem('weddingApiUrl') || 'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/, '');
+const FRAME_TEMPLATES_URL = `${API_URL}/frame-templates`;
 const stage = document.getElementById('stage');
 const statusEl = document.getElementById('status');
 const bgVideo = document.getElementById('bgVideo');
@@ -209,6 +215,7 @@ const SPEECH_DELAY_MS = Number(localStorage.getItem('welcomeSpeechDelayMs') || 1
 const SPEECH_MAX_NAMES = Number(localStorage.getItem('welcomeSpeechMaxNames') || 6);
 const speechQueue = new Map();
 let speechTimer = null;
+const frameTemplates = new Map();
 
 function playBackgroundVideo(){
   if(!bgVideo) return;
@@ -283,6 +290,18 @@ document.getElementById('testBtn').addEventListener('click', async () => {
   }, true);
 });
 
+async function loadFrameTemplates(){
+  try{
+    const res = await fetch(FRAME_TEMPLATES_URL);
+    const data = await res.json();
+    (data.templates || []).forEach((template) => {
+      if(template.frameKey && template.data){
+        frameTemplates.set(template.frameKey, `data:${template.mime};base64,${template.data}`);
+      }
+    });
+  }catch(_error){}
+}
+
 function displayNameOf(data){
   return (data.nickName || data.nickname || data.displayName || 'Guest').trim();
 }
@@ -297,6 +316,7 @@ function makeBubble(data, isNew=false){
   const isSingle = Boolean(data.isSingle || data.is_single);
   const rawFrame = (data.wallFrame || data.wall_frame || (isSingle ? 'single' : 'classic')).trim();
   const frame = ['classic','single','bride','groom','lucky'].includes(rawFrame) ? rawFrame : 'classic';
+  const frameTemplate = frameTemplates.get(frame);
   const instagram = (data.instagram || '').trim().replace(/^@+/, '');
   const showIg = Boolean(data.showSocialOnWall || data.show_social_on_wall) && instagram;
   const instagramUrl = showIg ? `https://instagram.com/${encodeURIComponent(instagram)}` : '';
@@ -317,6 +337,7 @@ function makeBubble(data, isNew=false){
         ${picture
           ? `<img class="avatar-img" src="${picture}" alt="${escapeHtml(name)}" onerror="this.replaceWith(fallbackAvatar('${escapeHtml(initials(name))}'))">`
           : `<div class="avatar-fallback">${escapeHtml(initials(name))}</div>`}
+        ${frameTemplate ? `<img class="frame-template" src="${frameTemplate}" alt="">` : ''}
       </div>
       ${isSingle ? '<div class="single-badge">โสด</div>' : ''}
       <div class="bubble-label">${escapeHtml(name)}</div>
@@ -459,8 +480,10 @@ document.getElementById('bgVideo').addEventListener('error', () => {
   document.getElementById('bgVideo').style.display = 'none';
 });
 
-loadRecent();
-connectStream();
+loadFrameTemplates().finally(() => {
+  loadRecent();
+  connectStream();
+});
 animate();
 </script>
 </body>
