@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Singles Zone – Wedding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+:root{
+  --surface:#FFF8F5;--paper:#FFFFFF;--paper-low:#FBF2ED;--paper-high:#EFE6E2;
+  --primary:#715827;--primary-soft:#8C713D;--secondary:#6A5D43;
+  --text:#1E1B18;--muted:#7F7669;--border:#D0C5B6;
+  --like:#E8546A;--pass:#888;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Noto Sans Thai',sans-serif;
+  background:radial-gradient(circle at 50% 0%, #FBF2ED 0%, var(--surface) 58%);
+  display:flex;flex-direction:column;
+}
+.wrap{
+  width:min(480px,100%);margin:0 auto;
+  display:flex;flex-direction:column;
+  height:100dvh;padding:16px 16px 20px;
+}
+/* header */
+.top-bar{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-shrink:0}
+.back-btn{
+  width:38px;height:38px;border:0;border-radius:50%;
+  background:var(--paper);box-shadow:0 2px 8px rgba(113,88,39,.12);
+  color:var(--primary);font-size:18px;cursor:pointer;display:grid;place-items:center;
+}
+.page-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--primary);flex:1;text-align:center}
+.matches-btn{
+  height:38px;border:0;border-radius:999px;padding:0 14px;
+  background:var(--paper);box-shadow:0 2px 8px rgba(113,88,39,.12);
+  color:var(--primary);font-size:13px;font-weight:600;cursor:pointer;
+  font-family:'Be Vietnam Pro',sans-serif;white-space:nowrap;
+}
+
+/* card stack */
+.stack{position:relative;flex:1;min-height:0;display:flex;align-items:center}
+.cards-area{position:absolute;inset:0}
+.card{
+  position:absolute;inset:0;
+  border-radius:20px;overflow:hidden;
+  background:var(--paper-high);
+  box-shadow:0 10px 40px rgba(113,88,39,.18);
+  cursor:grab;user-select:none;touch-action:none;
+  transform-origin:50% 115%;
+  will-change:transform;
+}
+.card:active{cursor:grabbing}
+.card.back-1{transform:scale(.96) translateY(10px);z-index:0;pointer-events:none}
+.card.back-2{transform:scale(.92) translateY(20px);z-index:-1;pointer-events:none}
+.card.top{z-index:2}
+
+/* card photo */
+.card-photo{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  transition:opacity .2s;
+}
+.card-fallback{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:72px;font-weight:700;color:var(--primary);background:var(--paper-high);
+}
+.photo-dots{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;gap:4px;padding:10px 10px 0;z-index:3;
+}
+.dot-seg{
+  flex:1;height:3px;border-radius:2px;
+  background:rgba(255,255,255,.45);
+  transition:background .15s;
+}
+.dot-seg.active{background:rgba(255,255,255,.95)}
+
+/* swipe overlays */
+.like-tag,.pass-tag{
+  position:absolute;z-index:5;
+  top:24px;
+  border-radius:8px;border-width:3px;border-style:solid;
+  font-family:'Be Vietnam Pro',sans-serif;font-weight:800;font-size:24px;
+  letter-spacing:.12em;padding:5px 16px;
+  opacity:0;pointer-events:none;
+}
+.like-tag{left:18px;color:#E8546A;border-color:#E8546A;transform:rotate(-14deg)}
+.pass-tag{right:18px;color:#999;border-color:#999;transform:rotate(14deg)}
+
+/* card info overlay */
+.card-overlay{
+  position:absolute;bottom:0;left:0;right:0;z-index:4;
+  padding:80px 20px 22px;
+  background:linear-gradient(to top,rgba(0,0,0,.78) 0%,transparent 100%);
+  color:white;
+}
+.card-name{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;line-height:1.15}
+.card-ig{font-size:13px;opacity:.82;margin-top:5px}
+
+/* empty state */
+.empty{
+  position:absolute;inset:0;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;gap:14px;padding:32px;
+}
+.empty.on{display:flex}
+.empty-icon{font-size:72px}
+.empty-title{font-family:'Playfair Display',serif;font-size:24px;color:var(--primary)}
+.empty-sub{font-size:14px;line-height:1.8;color:var(--muted)}
+
+/* action row */
+.action-row{
+  display:flex;gap:24px;justify-content:center;align-items:center;
+  padding-top:16px;flex-shrink:0;
+}
+.swipe-btn{
+  border:0;border-radius:50%;display:grid;place-items:center;
+  cursor:pointer;transition:transform .15s,box-shadow .15s;flex-shrink:0;
+}
+.swipe-btn:active{transform:scale(.9) !important}
+.swipe-btn.pass{
+  width:60px;height:60px;font-size:24px;
+  background:white;color:#888;
+  box-shadow:0 4px 16px rgba(113,88,39,.14);
+}
+.swipe-btn.like{
+  width:72px;height:72px;font-size:30px;
+  background:linear-gradient(135deg,#E8546A,#bf3153);color:white;
+  box-shadow:0 6px 24px rgba(232,84,106,.38);
+}
+.count-bar{
+  text-align:center;font-size:11px;color:var(--muted);
+  padding-top:8px;flex-shrink:0;letter-spacing:.04em;
+  font-family:'Be Vietnam Pro',sans-serif;
+}
+
+/* match overlay */
+.match-overlay{
+  position:fixed;inset:0;z-index:50;
+  background:rgba(20,10,5,.92);
+  display:none;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:18px;padding:32px 24px;text-align:center;
+}
+.match-overlay.on{display:flex}
+.match-burst{font-size:64px;animation:burst .7s cubic-bezier(.2,1.4,.35,1) both}
+.match-title{
+  font-family:'Playfair Display',serif;font-size:38px;color:white;line-height:1.1;
+  animation:fadein .5s .15s both;
+}
+.match-tagline{color:rgba(255,255,255,.72);font-size:15px;animation:fadein .5s .3s both}
+.match-avatars{display:flex;align-items:center;gap:14px;animation:fadein .5s .2s both}
+.match-av{
+  width:88px;height:88px;border-radius:50%;
+  object-fit:cover;border:3px solid white;
+}
+.match-av-fall{
+  width:88px;height:88px;border-radius:50%;
+  display:grid;place-items:center;background:var(--paper-low);
+  font-size:28px;font-weight:700;color:var(--primary);border:3px solid white;
+}
+.match-heart{font-size:28px}
+.match-ig{
+  display:block;color:rgba(255,255,255,.82);font-size:14px;
+  text-decoration:none;padding:8px 18px;
+  border:1px solid rgba(255,255,255,.3);border-radius:999px;
+  animation:fadein .5s .4s both;
+  transition:color .15s;
+}
+.match-ig:hover{color:white}
+.match-continue{
+  margin-top:4px;background:rgba(255,255,255,.12);
+  border:1.5px solid rgba(255,255,255,.25);color:white;
+  padding:13px 36px;border-radius:999px;
+  font:inherit;font-weight:600;font-size:15px;cursor:pointer;
+  animation:fadein .5s .5s both;transition:background .15s;
+}
+.match-continue:hover{background:rgba(255,255,255,.2)}
+
+@keyframes burst{0%{transform:scale(0);opacity:0}65%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-bar">
+    <button class="back-btn" id="backBtn" aria-label="กลับ">←</button>
+    <div class="page-title">Singles Zone 💕</div>
+    <button class="matches-btn" id="matchesBtn">Matches ❤️</button>
+  </div>
+
+  <div class="stack">
+    <div class="cards-area" id="cardsArea">
+      <div class="empty" id="emptyState">
+        <div class="empty-icon">💌</div>
+        <div class="empty-title">หมดแล้ว!</div>
+        <div class="empty-sub">คุณผ่านทุกคนเรียบร้อยแล้ว<br>ไปดู Matches ได้เลย</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="count-bar" id="countBar"></div>
+
+  <div class="action-row" id="actionRow">
+    <button class="swipe-btn pass" id="passBtn" aria-label="ข้าม">✕</button>
+    <button class="swipe-btn like" id="likeBtn" aria-label="ชอบ">❤</button>
+  </div>
+</div>
+
+<div class="match-overlay" id="matchOverlay">
+  <div class="match-burst">💕</div>
+  <div class="match-title">It's a Match!</div>
+  <div class="match-avatars" id="matchAvatars"></div>
+  <div class="match-tagline">คุณและ <strong id="matchName"></strong> ชอบกันและกัน 🎉</div>
+  <a class="match-ig hidden" id="matchIg" href="#" target="_blank" rel="noopener">📸 Instagram: @<span id="matchIgHandle"></span></a>
+  <button class="match-continue" id="matchContinue">ดูต่อ</button>
+</div>
+
+<script>
+const API_BASE = (localStorage.getItem('weddingApiUrl') || 'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/, '');
+const p = new URLSearchParams(location.search);
+const MY_ID = p.get('userId') || localStorage.getItem('weddingUserId') || '';
+const BACK = p.get('back') || 'checkin.html';
+
+let singles = [];
+let idx = 0;
+let myProfile = null;
+let dragDx = 0;
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+function initials(n){ return (n||'G').trim().slice(0,2).toUpperCase() }
+function displayName(p){ return p.nickName || p.nickname || p.displayName || 'Guest' }
+function bestPhoto(p){ return p.customPhoto || p.pictureUrl || '' }
+function photos(p){
+  const a=[];
+  if(p.pictureUrl) a.push(p.pictureUrl);
+  if(p.customPhoto && p.customPhoto !== p.pictureUrl) a.push(p.customPhoto);
+  return a;
+}
+
+document.getElementById('backBtn').onclick = () => location.href = BACK;
+document.getElementById('matchesBtn').onclick = () => {
+  location.href = `matches.html?userId=${encodeURIComponent(MY_ID)}&back=${encodeURIComponent(location.href)}`;
+};
+
+async function init(){
+  if(!MY_ID){ showEmpty('ไม่พบข้อมูลผู้ใช้\nกรุณาเข้าผ่านหน้า Check-in ก่อน'); return; }
+  await Promise.all([loadMyProfile(), loadSingles()]);
+}
+
+async function loadMyProfile(){
+  try{
+    const r = await fetch(`${API_BASE}/checkin?userId=${encodeURIComponent(MY_ID)}`);
+    const d = await r.json();
+    if(d.success && d.data) myProfile = { name: displayName(d.data), photo: bestPhoto(d.data) };
+  }catch(_){}
+}
+
+async function loadSingles(){
+  try{
+    const r = await fetch(`${API_BASE}/singles?userId=${encodeURIComponent(MY_ID)}`);
+    const d = await r.json();
+    singles = d.singles || [];
+  }catch(e){
+    showEmpty('โหลดข้อมูลไม่ได้ กรุณาลองใหม่');
+    return;
+  }
+  renderCards();
+}
+
+function renderCards(){
+  const area = document.getElementById('cardsArea');
+  // remove old cards (not emptyState)
+  [...area.children].forEach(c => { if(c.id !== 'emptyState') c.remove(); });
+
+  if(idx >= singles.length){ showEmpty(); return; }
+
+  document.getElementById('emptyState').classList.remove('on');
+  updateCount();
+
+  const slice = singles.slice(idx, idx + 3);
+  // render back-to-front so top card is last child
+  [...slice].reverse().forEach((person, ri) => {
+    const depth = slice.length - 1 - ri;
+    const card = buildCard(person, depth);
+    area.appendChild(card);
+  });
+
+  initDrag(area.lastChild, singles[idx]);
+}
+
+function buildCard(person, depth){
+  const card = document.createElement('div');
+  card.className = `card ${depth===0?'top':depth===1?'back-1':'back-2'}`;
+
+  const ps = photos(person);
+  const name = displayName(person);
+  const ig = person.showSocialOnWall && person.instagram ? person.instagram.replace(/^@/,'') : '';
+
+  let photoHtml = '';
+  if(ps.length === 0){
+    photoHtml = `<div class="card-fallback">${esc(initials(name))}</div>`;
+  } else {
+    const dotsHtml = ps.length > 1
+      ? `<div class="photo-dots">${ps.map((_,i)=>`<div class="dot-seg${i===0?' active':''}"></div>`).join('')}</div>`
+      : '';
+    photoHtml = ps.map((src,i)=>
+      `<div class="card-photo" data-photo="${i}" style="background-image:url('${esc(src)}');${i>0?'opacity:0;pointer-events:none;':''}"></div>`
+    ).join('') + dotsHtml;
+  }
+
+  card.innerHTML = `
+    ${photoHtml}
+    <div class="like-tag">LIKE</div>
+    <div class="pass-tag">NOPE</div>
+    <div class="card-overlay">
+      <div class="card-name">${esc(name)}</div>
+      ${ig ? `<div class="card-ig">@${esc(ig)}</div>` : ''}
+    </div>`;
+
+  // photo carousel on tap (only on top card)
+  if(ps.length > 1 && depth === 0){
+    let photoIdx = 0;
+    card.addEventListener('click', (e) => {
+      if(Math.abs(dragDx) > 8) return;
+      const rect = card.getBoundingClientRect();
+      photoIdx = (e.clientX - rect.left) > rect.width * 0.5
+        ? Math.min(photoIdx + 1, ps.length - 1)
+        : Math.max(photoIdx - 1, 0);
+      card.querySelectorAll('.card-photo').forEach((el,i) => {
+        el.style.opacity = i === photoIdx ? '1' : '0';
+        el.style.pointerEvents = i === photoIdx ? '' : 'none';
+      });
+      card.querySelectorAll('.dot-seg').forEach((d,i) => d.classList.toggle('active', i === photoIdx));
+    });
+  }
+  return card;
+}
+
+function initDrag(card, person){
+  let sx, sy, down = false;
+  const likeTag = card.querySelector('.like-tag');
+  const passTag = card.querySelector('.pass-tag');
+
+  card.addEventListener('pointerdown', (e) => {
+    sx = e.clientX; sy = e.clientY; down = true; dragDx = 0;
+    card.setPointerCapture(e.pointerId);
+    card.style.transition = 'none';
+  });
+
+  card.addEventListener('pointermove', (e) => {
+    if(!down) return;
+    dragDx = e.clientX - sx;
+    const dy = (e.clientY - sy) * 0.22;
+    const rot = dragDx * 0.065;
+    card.style.transform = `translate(${dragDx}px,${dy}px) rotate(${rot}deg)`;
+    likeTag.style.opacity = Math.min(1, Math.max(0, dragDx / 70));
+    passTag.style.opacity = Math.min(1, Math.max(0, -dragDx / 70));
+  });
+
+  const release = (e) => {
+    if(!down) return; down = false;
+    card.style.transition = 'transform .28s, opacity .28s';
+    if(Math.abs(dragDx) > 80){
+      fireSwipe(card, person, dragDx > 0 ? 'like' : 'pass');
+    } else {
+      card.style.transform = '';
+      likeTag.style.opacity = 0;
+      passTag.style.opacity = 0;
+    }
+  };
+  card.addEventListener('pointerup', release);
+  card.addEventListener('pointercancel', release);
+}
+
+document.getElementById('likeBtn').onclick = () => {
+  const top = topCard(); if(top) fireSwipe(top, singles[idx], 'like');
+};
+document.getElementById('passBtn').onclick = () => {
+  const top = topCard(); if(top) fireSwipe(top, singles[idx], 'pass');
+};
+function topCard(){ return document.getElementById('cardsArea').lastChild?.id !== 'emptyState' ? document.getElementById('cardsArea').lastChild : null; }
+
+async function fireSwipe(card, person, dir){
+  const liked = dir === 'like';
+  card.style.transition = 'transform .38s, opacity .38s';
+  card.style.transform = `translateX(${liked ? 160 : -160}%) rotate(${liked ? 28 : -28}deg)`;
+  card.style.opacity = '0';
+
+  let matched = false;
+  if(MY_ID && person.lineUserId){
+    try{
+      const r = await fetch(`${API_BASE}/swipe`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ fromUserId: MY_ID, toUserId: person.lineUserId, liked })
+      });
+      const d = await r.json();
+      matched = liked && d.matched;
+    }catch(_){}
+  }
+
+  await new Promise(r => setTimeout(r, 400));
+  idx++;
+
+  if(matched) showMatch(person);
+  else renderCards();
+}
+
+function showMatch(person){
+  const name = displayName(person);
+  const ig = person.showSocialOnWall && person.instagram ? person.instagram.replace(/^@/,'') : '';
+
+  document.getElementById('matchName').textContent = name;
+
+  const av = document.getElementById('matchAvatars');
+  const mySrc = myProfile?.photo || '';
+  const theirSrc = bestPhoto(person);
+  av.innerHTML = `
+    ${mySrc ? `<img class="match-av" src="${esc(mySrc)}" alt="">` : `<div class="match-av-fall">${esc(initials(myProfile?.name||'ฉัน'))}</div>`}
+    <div class="match-heart">💕</div>
+    ${theirSrc ? `<img class="match-av" src="${esc(theirSrc)}" alt="${esc(name)}">` : `<div class="match-av-fall">${esc(initials(name))}</div>`}`;
+
+  const igEl = document.getElementById('matchIg');
+  if(ig){
+    document.getElementById('matchIgHandle').textContent = ig;
+    igEl.href = `https://instagram.com/${encodeURIComponent(ig)}`;
+    igEl.classList.remove('hidden');
+  } else {
+    igEl.classList.add('hidden');
+  }
+
+  document.getElementById('matchOverlay').classList.add('on');
+}
+
+document.getElementById('matchContinue').onclick = () => {
+  document.getElementById('matchOverlay').classList.remove('on');
+  renderCards();
+};
+
+function showEmpty(msg){
+  document.getElementById('emptyState').classList.add('on');
+  document.getElementById('actionRow').style.visibility = 'hidden';
+  document.getElementById('countBar').textContent = '';
+  if(msg) document.getElementById('emptyState').querySelector('.empty-sub').textContent = msg;
+}
+
+function updateCount(){
+  const rem = singles.length - idx;
+  document.getElementById('countBar').textContent = rem > 0 ? `เหลืออีก ${rem} คน` : '';
+  document.getElementById('actionRow').style.visibility = '';
+}
+
+init();
+</script>
+</body>
+</html>

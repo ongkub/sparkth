@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matches – Wedding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+:root{
+  --surface:#FFF8F5;--paper:#FFFFFF;--paper-low:#FBF2ED;--paper-high:#EFE6E2;
+  --primary:#715827;--primary-soft:#8C713D;--secondary:#6A5D43;
+  --text:#1E1B18;--muted:#7F7669;--border:#D0C5B6;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Noto Sans Thai',sans-serif;color:var(--text);
+  background:radial-gradient(circle at 50% 0%, #FBF2ED 0%, var(--surface) 58%);
+  min-height:100dvh;
+}
+.wrap{width:min(520px,100%);margin:0 auto;padding:20px 16px 40px}
+
+.top-bar{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.back-btn{
+  width:38px;height:38px;border:0;border-radius:50%;flex-shrink:0;
+  background:var(--paper);box-shadow:0 2px 8px rgba(113,88,39,.12);
+  color:var(--primary);font-size:18px;cursor:pointer;display:grid;place-items:center;
+}
+.page-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--primary)}
+
+.loading{text-align:center;padding:48px 24px;color:var(--muted);font-size:14px}
+
+.empty{
+  text-align:center;padding:56px 24px;
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+}
+.empty-icon{font-size:64px}
+.empty-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--primary)}
+.empty-sub{font-size:14px;line-height:1.8;color:var(--muted)}
+.swipe-cta{
+  margin-top:8px;display:inline-block;
+  background:linear-gradient(135deg,var(--primary),var(--primary-soft));
+  color:white;padding:13px 28px;border-radius:999px;
+  font-weight:700;font-size:15px;text-decoration:none;
+  box-shadow:0 6px 20px rgba(113,88,39,.24);
+}
+
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.match-card{
+  border-radius:16px;overflow:hidden;position:relative;
+  background:var(--paper);
+  box-shadow:0 4px 20px rgba(113,88,39,.12);
+  text-decoration:none;color:var(--text);
+  display:block;
+}
+.match-photo{
+  width:100%;aspect-ratio:1;
+  object-fit:cover;background:var(--paper-high);
+  display:block;
+}
+.match-photo-fall{
+  width:100%;aspect-ratio:1;
+  display:grid;place-items:center;background:var(--paper-high);
+  font-size:48px;font-weight:700;color:var(--primary);
+}
+.match-info{padding:12px 12px 14px}
+.match-name{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;line-height:1.2;color:var(--primary)}
+.match-ig{
+  display:inline-flex;align-items:center;gap:5px;
+  margin-top:7px;font-size:12px;color:var(--primary);
+  background:var(--paper-low);border-radius:999px;
+  padding:5px 10px;font-weight:600;text-decoration:none;
+  transition:background .15s;
+}
+.match-ig:hover{background:var(--paper-high)}
+.match-badge{
+  position:absolute;top:10px;right:10px;
+  background:rgba(232,84,106,.9);color:white;
+  font-size:18px;width:32px;height:32px;border-radius:50%;
+  display:grid;place-items:center;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-bar">
+    <button class="back-btn" id="backBtn" aria-label="กลับ">←</button>
+    <div class="page-title">Matches ❤️</div>
+  </div>
+  <div id="content"><div class="loading">กำลังโหลด...</div></div>
+</div>
+
+<script>
+const API_BASE = (localStorage.getItem('weddingApiUrl') || 'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/, '');
+const p = new URLSearchParams(location.search);
+const MY_ID = p.get('userId') || localStorage.getItem('weddingUserId') || '';
+const BACK = p.get('back') || 'singles.html' + (MY_ID ? `?userId=${encodeURIComponent(MY_ID)}` : '');
+
+document.getElementById('backBtn').onclick = () => location.href = BACK;
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+function initials(n){ return (n||'G').trim().slice(0,2).toUpperCase() }
+function displayName(m){ return m.nickName || m.nickname || m.displayName || 'Guest' }
+function bestPhoto(m){ return m.customPhoto || m.pictureUrl || '' }
+
+async function load(){
+  if(!MY_ID){
+    render([]);
+    return;
+  }
+  try{
+    const r = await fetch(`${API_BASE}/matches?userId=${encodeURIComponent(MY_ID)}`);
+    const d = await r.json();
+    render(d.matches || []);
+  }catch(_){
+    document.getElementById('content').innerHTML = '<div class="loading">โหลดไม่ได้ กรุณาลองใหม่</div>';
+  }
+}
+
+function render(matches){
+  const el = document.getElementById('content');
+  if(matches.length === 0){
+    const singlesHref = MY_ID ? `singles.html?userId=${encodeURIComponent(MY_ID)}` : 'singles.html';
+    el.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">💭</div>
+        <div class="empty-title">ยังไม่มี Match</div>
+        <div class="empty-sub">ไปปัดหาคนที่ใช่ก่อนเลย<br>ถ้า Match กันจะขึ้นที่นี่</div>
+        <a class="swipe-cta" href="${singlesHref}">Singles Zone 💕</a>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="grid">${matches.map(m => {
+    const name = displayName(m);
+    const photo = bestPhoto(m);
+    const ig = m.showSocialOnWall && m.instagram ? m.instagram.replace(/^@/,'') : '';
+    const igHref = ig ? `https://instagram.com/${encodeURIComponent(ig)}` : '';
+
+    return `<div class="match-card">
+      ${photo
+        ? `<img class="match-photo" src="${esc(photo)}" alt="${esc(name)}" loading="lazy">`
+        : `<div class="match-photo-fall">${esc(initials(name))}</div>`}
+      <div class="match-badge">❤</div>
+      <div class="match-info">
+        <div class="match-name">${esc(name)}</div>
+        ${ig ? `<a class="match-ig" href="${esc(igHref)}" target="_blank" rel="noopener">📸 @${esc(ig)}</a>` : ''}
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+load();
+</script>
+</body>
+</html>

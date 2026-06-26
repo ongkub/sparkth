@@ -140,6 +140,18 @@ async function ensureSchema() {
      ADD COLUMN IF NOT EXISTS custom_photo TEXT NOT NULL DEFAULT ''`
   );
   await pool.query(
+    `CREATE TABLE IF NOT EXISTS swipes (
+       id BIGSERIAL PRIMARY KEY,
+       from_user_id TEXT NOT NULL,
+       to_user_id TEXT NOT NULL,
+       liked BOOLEAN NOT NULL DEFAULT false,
+       swiped_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     )`
+  );
+  await pool.query(
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_swipes_pair ON swipes (from_user_id, to_user_id)`
+  );
+  await pool.query(
     `CREATE TABLE IF NOT EXISTS line_webhook_events (
        id BIGSERIAL PRIMARY KEY,
        event_type TEXT NOT NULL DEFAULT '',
@@ -1437,6 +1449,99 @@ app.post('/beacon-config', async (req, res) => {
       [enabled ? 'true' : 'false']
     );
     res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ── Singles / Swipe / Matches ──────────────────────────────────────────────
+
+app.get('/singles', async (req, res) => {
+  const userId = safeText(req.query.userId);
+  if (!userId) return res.status(400).json({ success: false, error: 'userId required' });
+  try {
+    const result = await pool.query(
+      `SELECT DISTINCT ON (c.line_user_id)
+         c.line_user_id    AS "lineUserId",
+         c.display_name    AS "displayName",
+         c.nickname        AS "nickName",
+         c.picture_url     AS "pictureUrl",
+         c.custom_photo    AS "customPhoto",
+         c.instagram,
+         c.show_social_on_wall AS "showSocialOnWall"
+       FROM checkins c
+       WHERE c.is_single = true
+         AND c.line_user_id <> ''
+         AND c.line_user_id <> $1
+         AND c.line_user_id NOT IN (
+           SELECT to_user_id FROM swipes WHERE from_user_id = $1
+         )
+       ORDER BY c.line_user_id, c.checked_in_at DESC`,
+      [userId]
+    );
+    // shuffle so order isn't predictable
+    const singles = result.rows.sort(() => Math.random() - 0.5);
+    res.json({ success: true, singles });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/swipe', async (req, res) => {
+  const data = parseBody(req.body);
+  const fromUserId = safeText(data.fromUserId);
+  const toUserId = safeText(data.toUserId);
+  const liked = Boolean(data.liked);
+  if (!fromUserId || !toUserId) {
+    return res.status(400).json({ success: false, error: 'fromUserId and toUserId required' });
+  }
+  try {
+    await pool.query(
+      `INSERT INTO swipes (from_user_id, to_user_id, liked)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (from_user_id, to_user_id)
+       DO UPDATE SET liked = EXCLUDED.liked, swiped_at = NOW()`,
+      [fromUserId, toUserId, liked]
+    );
+    let matched = false;
+    if (liked) {
+      const check = await pool.query(
+        `SELECT 1 FROM swipes WHERE from_user_id = $1 AND to_user_id = $2 AND liked = true`,
+        [toUserId, fromUserId]
+      );
+      matched = check.rowCount > 0;
+    }
+    res.json({ success: true, matched });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/matches', async (req, res) => {
+  const userId = safeText(req.query.userId);
+  if (!userId) return res.status(400).json({ success: false, error: 'userId required' });
+  try {
+    const result = await pool.query(
+      `SELECT DISTINCT ON (c.line_user_id)
+         c.line_user_id    AS "lineUserId",
+         c.display_name    AS "displayName",
+         c.nickname        AS "nickName",
+         c.picture_url     AS "pictureUrl",
+         c.custom_photo    AS "customPhoto",
+         c.instagram,
+         c.show_social_on_wall AS "showSocialOnWall",
+         s1.swiped_at      AS "matchedAt"
+       FROM swipes s1
+       JOIN swipes s2 ON s2.from_user_id = s1.to_user_id
+                      AND s2.to_user_id = s1.from_user_id
+                      AND s2.liked = true
+       JOIN checkins c ON c.line_user_id = s1.to_user_id
+       WHERE s1.from_user_id = $1
+         AND s1.liked = true
+       ORDER BY c.line_user_id, c.checked_in_at DESC`,
+      [userId]
+    );
+    res.json({ success: true, matches: result.rows });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

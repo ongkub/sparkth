@@ -233,9 +233,11 @@ body{
 
   <section class="panel done" id="donePanel">
     <div class="hello">เช็กอินเรียบร้อยแล้ว</div>
-    <div class="sub">โปรไฟล์ของคุณถูกส่งขึ้น Welcome Screen แล้ว ขอให้สนุกกับงานครับ</div>
+    <div class="sub">ขอให้สนุกกับงานแต่งงานครับ</div>
     <div class="actions">
-      <a class="btn accent wide" href="welcome-wall.html">ดู Welcome Wall</a>
+      <a class="btn accent" id="singlesLink" href="singles.html">Singles Zone 💕</a>
+      <a class="btn accent" id="matchesLink" href="matches.html">ดู Matches ❤️</a>
+      <a class="btn secondary" href="welcome-wall.html">ดู Welcome Wall</a>
       <a class="btn secondary" id="slipLink" href="https://liff.line.me/2006674119-vpB15mY0">QR / แจ้ง Slip</a>
       <a class="btn secondary hidden" id="gameLink" href="#">เล่นเกมชิงรางวัล</a>
     </div>
@@ -366,8 +368,17 @@ async function loadCheckin(){
   await submitCheckin({ auto: true });
 }
 
+function updateNavLinks(){
+  if(!profile?.userId) return;
+  const uid = encodeURIComponent(profile.userId);
+  localStorage.setItem('weddingUserId', profile.userId);
+  document.getElementById('singlesLink').href = `singles.html?userId=${uid}`;
+  document.getElementById('matchesLink').href = `matches.html?userId=${uid}`;
+}
+
 function showDone(){
   donePanel.classList.add('on');
+  updateNavLinks();
   document.getElementById('checkinBtn').textContent = 'บันทึกโปรไฟล์';
   const gameLink = document.getElementById('gameLink');
   if(GAME_URL){
