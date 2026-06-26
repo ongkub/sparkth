@@ -168,6 +168,13 @@ async function ensureSchema() {
        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
      )`
   );
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS app_config (
+       key TEXT PRIMARY KEY,
+       value TEXT NOT NULL DEFAULT '',
+       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     )`
+  );
 }
 
 app.use(express.json({ limit: '10mb' }));
@@ -947,6 +954,13 @@ async function recordLineWebhookEvents(data, events) {
 
 async function sendCheckinLink(event) {
   if (!lineChannelToken || !checkinLiffUrl || !event?.replyToken) return;
+  const cfgResult = await pool.query(
+    `SELECT key, value FROM app_config WHERE key IN ('beacon_message', 'beacon_enabled')`
+  ).catch(() => ({ rows: [] }));
+  const cfg = Object.fromEntries(cfgResult.rows.map(r => [r.key, r.value]));
+  if (cfg.beacon_enabled === 'false') return;
+  const template = cfg.beacon_message || BEACON_MESSAGE_DEFAULT;
+  const text = template.replace('{url}', checkinLiffUrl);
   const response = await fetch('https://api.line.me/v2/bot/message/reply', {
     method: 'POST',
     headers: {
@@ -955,12 +969,7 @@ async function sendCheckinLink(event) {
     },
     body: JSON.stringify({
       replyToken: event.replyToken,
-      messages: [
-        {
-          type: 'text',
-          text: `ยินดีต้อนรับสู่งานแต่งงานของอันอันและอ๋องครับ\nกรุณากดเช็กอินเพื่อดูโต๊ะและขึ้น Welcome Screen:\n${checkinLiffUrl}`
-        }
-      ]
+      messages: [{ type: 'text', text }]
     })
   });
   if (!response.ok) {
@@ -1351,6 +1360,48 @@ app.post('/frame-templates', async (req, res) => {
          frame_data = EXCLUDED.frame_data,
          updated_at = NOW()`,
       [frameKey, label, frameMime, frameBase64]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+const BEACON_MESSAGE_DEFAULT = `ยินดีต้อนรับสู่งานแต่งงานของอันอันและอ๋องครับ\nกรุณากดเช็กอินเพื่อดูโต๊ะและขึ้น Welcome Screen:\n{url}`;
+
+app.get('/beacon-config', async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT key, value FROM app_config WHERE key IN ('beacon_message', 'beacon_enabled')`
+    );
+    const cfg = Object.fromEntries(result.rows.map(r => [r.key, r.value]));
+    res.json({
+      success: true,
+      message: cfg.beacon_message ?? BEACON_MESSAGE_DEFAULT,
+      enabled: cfg.beacon_enabled !== 'false',
+      checkinUrl: checkinLiffUrl
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/beacon-config', async (req, res) => {
+  const data = parseBody(req.body);
+  const message = typeof data.message === 'string' ? data.message.slice(0, 1000) : null;
+  const enabled = data.enabled !== false && data.enabled !== 'false';
+  try {
+    if (message !== null) {
+      await pool.query(
+        `INSERT INTO app_config (key, value, updated_at) VALUES ('beacon_message', $1, NOW())
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+        [message]
+      );
+    }
+    await pool.query(
+      `INSERT INTO app_config (key, value, updated_at) VALUES ('beacon_enabled', $1, NOW())
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+      [enabled ? 'true' : 'false']
     );
     res.json({ success: true });
   } catch (error) {

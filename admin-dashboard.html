@@ -468,6 +468,9 @@ tr:hover td{background:rgba(254,240,238,.4)}
     <div class="nav-item" onclick="nav('slip', this)">
       <span class="nav-icon">💸</span>สลิปโอนเงิน
     </div>
+    <div class="nav-item" onclick="nav('beacon', this)">
+      <span class="nav-icon">📡</span>Beacon Setup
+    </div>
   </div>
 
   <!-- MAIN -->
@@ -992,6 +995,60 @@ tr:hover td{background:rgba(254,240,238,.4)}
       </div>
     </div>
 
+    <div class="section" id="sec-beacon">
+      <div class="sec-title">Beacon Setup</div>
+      <div class="sec-sub">ตั้งค่าข้อความที่ส่งให้แขกเมื่อเดินเข้างานและ LINE Beacon ตรวจจับได้</div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-h">📡 LINE Beacon Message</div>
+
+          <div class="config-field" style="margin-top:14px">
+            <label class="config-label">สถานะ Beacon Message</label>
+            <label style="display:flex;align-items:center;gap:10px;margin-top:6px;cursor:pointer">
+              <input type="checkbox" id="beaconEnabled" style="width:18px;height:18px;accent-color:var(--rose)">
+              <span style="font-size:14px">เปิดใช้งาน — ส่งข้อความหาแขกเมื่อ Enter Event</span>
+            </label>
+          </div>
+
+          <div class="config-field" style="margin-top:18px">
+            <label class="config-label">ข้อความที่ส่ง
+              <span>— ใช้ <code style="background:var(--cream);padding:1px 5px;border-radius:4px;font-size:11px">{url}</code> แทน Check-in URL</span>
+            </label>
+            <textarea id="beaconMessage" class="config-inp" rows="5"
+              style="resize:vertical;font-family:inherit;line-height:1.6"
+              placeholder="ยินดีต้อนรับสู่งานแต่งงาน&#10;กรุณากดเช็กอิน: {url}"></textarea>
+          </div>
+
+          <div class="config-field" style="margin-top:12px">
+            <label class="config-label">Check-in URL ที่ใช้แทน {url}</label>
+            <input type="text" id="beaconCheckinUrl" class="config-inp" readonly
+              style="background:var(--cream);color:var(--muted)" placeholder="โหลดจาก config...">
+          </div>
+
+          <div style="margin-top:18px;display:flex;gap:10px;align-items:center">
+            <button class="btn-primary" onclick="saveBeaconConfig()" id="beaconSaveBtn">💾 บันทึก</button>
+            <span id="beaconSaveStatus" style="font-size:13px;color:var(--muted)"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h">👁️ Preview ข้อความ</div>
+          <div style="margin-top:14px;padding:16px;background:var(--ivory);border-radius:12px;border:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em">ข้อความที่แขกจะได้รับ</div>
+            <div id="beaconPreview" style="font-size:14px;line-height:1.8;white-space:pre-wrap;color:var(--text)">—</div>
+          </div>
+          <div style="margin-top:16px;padding:14px;background:rgba(245,156,154,.08);border-radius:10px;border:1px dashed var(--rose)">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7">
+              <strong>📌 หมายเหตุ:</strong><br>
+              Beacon จะส่งข้อความนี้ครั้งเดียวต่อแขก 1 คน เมื่อ LINE ตรวจจับว่าแขกเดินเข้าในระยะ Beacon<br><br>
+              <strong>ขั้นตอน:</strong> แขกได้รับข้อความ → กดลิงก์ → เปิด Check-in LIFF → เช็กอินอัตโนมัติ
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /page -->
 
@@ -1052,6 +1109,7 @@ function nav(id, navItem){
   if(id==='seating'){ loadSeatingMapAdmin(); loadSeatingGuests(); }
   if(id==='frames') loadFrameTemplatesAdmin();
   if(id==='slip') loadSlips();
+  if(id==='beacon') loadBeaconConfig();
   if(window.innerWidth <= 768) closeSidebar();
 }
 
@@ -2159,6 +2217,54 @@ function escHtml(s){
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+async function loadBeaconConfig(){
+  try{
+    const res = await fetch(`${API_BASE}/beacon-config`);
+    const data = await res.json();
+    if(!data.success) return;
+    document.getElementById('beaconEnabled').checked = data.enabled;
+    document.getElementById('beaconMessage').value = data.message || '';
+    document.getElementById('beaconCheckinUrl').value = data.checkinUrl || '';
+    updateBeaconPreview();
+  }catch(e){
+    console.error('loadBeaconConfig', e);
+  }
+}
+
+function updateBeaconPreview(){
+  const msg = document.getElementById('beaconMessage').value;
+  const url = document.getElementById('beaconCheckinUrl').value || '{url}';
+  document.getElementById('beaconPreview').textContent = msg.replace('{url}', url) || '—';
+}
+
+async function saveBeaconConfig(){
+  const btn = document.getElementById('beaconSaveBtn');
+  const status = document.getElementById('beaconSaveStatus');
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลังบันทึก...';
+  try{
+    const res = await fetch(`${API_BASE}/beacon-config`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        enabled: document.getElementById('beaconEnabled').checked,
+        message: document.getElementById('beaconMessage').value
+      })
+    });
+    const data = await res.json();
+    if(!data.success) throw new Error(data.error || 'save failed');
+    status.textContent = '✅ บันทึกแล้ว';
+    setTimeout(()=>{ status.textContent=''; }, 3000);
+  }catch(e){
+    status.textContent = '❌ ' + e.message;
+  }finally{
+    btn.disabled = false;
+    btn.textContent = '💾 บันทึก';
+  }
+}
+
+document.getElementById('beaconMessage')?.addEventListener('input', updateBeaconPreview);
 
 </script>
 </body>
