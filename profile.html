@@ -208,6 +208,10 @@ body{
 
     <button class="save-btn" id="saveBtn">บันทึกโปรไฟล์</button>
     <div class="status" id="statusEl"></div>
+    <div id="postSaveCta" style="display:none;flex-direction:column;gap:10px;margin-top:14px">
+      <a class="save-btn" id="datingZoneBtn" href="singles.html" style="text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center">Dating Zone 💕</a>
+      <a id="backHomeBtn" href="checkin.html" style="text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:999px;border:1.5px solid var(--border);background:white;color:var(--primary);font-weight:700;font-size:15px">กลับหน้าหลัก</a>
+    </div>
   </div>
 </div>
 
@@ -224,6 +228,14 @@ let customPhoto = null;
 let originalPhoto = '';
 
 document.getElementById('backBtn').onclick = () => location.href = BACK;
+
+function setupPostSaveLinks() {
+  const uid = MY_ID ? encodeURIComponent(MY_ID) : '';
+  if (uid) {
+    document.getElementById('datingZoneBtn').href = `singles.html?userId=${uid}`;
+    document.getElementById('backHomeBtn').href = `checkin.html?userId=${uid}`;
+  }
+}
 
 // Photo
 const photoArea = document.getElementById('photoArea');
@@ -379,6 +391,8 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     if (!d.success) throw new Error(d.error || 'บันทึกไม่สำเร็จ');
     statusEl.textContent = 'บันทึกเรียบร้อยแล้ว ✓';
     statusEl.className = 'status ok';
+    setupPostSaveLinks();
+    document.getElementById('postSaveCta').style.display = 'flex';
   } catch (e) {
     statusEl.textContent = e.message || 'บันทึกไม่สำเร็จ กรุณาลองใหม่';
     statusEl.className = 'status err';

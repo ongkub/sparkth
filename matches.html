@@ -95,7 +95,7 @@ body{
 const API_BASE = (localStorage.getItem('weddingApiUrl') || 'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/, '');
 const p = new URLSearchParams(location.search);
 const MY_ID = p.get('userId') || localStorage.getItem('weddingUserId') || '';
-const BACK = p.get('back') || 'singles.html' + (MY_ID ? `?userId=${encodeURIComponent(MY_ID)}` : '');
+const BACK = p.get('back') || (MY_ID ? `checkin.html?userId=${encodeURIComponent(MY_ID)}` : 'checkin.html');
 
 document.getElementById('backBtn').onclick = () => location.href = BACK;
 

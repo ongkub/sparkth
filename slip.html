@@ -49,7 +49,10 @@ tailwind.config={
   <!-- ── Header ── -->
   <header class="flex items-center justify-between mb-5">
     <div class="flex items-center gap-2">
-      <img src="img/Wedding_Logo.png" alt="" class="h-7 w-auto opacity-80" onerror="this.style.display='none'">
+      <a id="backBtn" href="checkin.html"
+        class="w-9 h-9 rounded-full border border-border flex items-center justify-center text-muted hover:border-gold hover:text-gold transition-colors text-base leading-none flex-shrink-0"
+        aria-label="กลับ">←</a>
+      <img src="img/Wedding_Logo.png" alt="" class="h-7 w-auto opacity-80 ml-1" onerror="this.style.display='none'">
       <span class="font-corinthia text-2xl leading-none text-muted" style="line-height:1.4">An-An &amp; Ong</span>
     </div>
     <button onclick="toggleLang()" id="langBtn"
@@ -192,6 +195,11 @@ tailwind.config={
         </p>
         <div class="font-corinthia text-[36px] text-gold mt-1"
              style="animation:fadeUp .5s .5s both">An-An &amp; Ong</div>
+        <a id="homeBtn" href="checkin.html"
+          class="mt-4 px-8 py-3 rounded-full font-thai font-semibold text-[14px] text-white inline-block"
+          style="background:linear-gradient(135deg,#D4AF78 0%,#9A7840 100%);animation:fadeUp .5s .65s both;opacity:0">
+          กลับหน้าหลัก
+        </a>
       </div>
 
     </div><!-- /card -->
@@ -225,6 +233,10 @@ const API='https://sparkth-production.up.railway.app/slip';
 const API_BASE=(localStorage.getItem('weddingApiUrl')||'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/,'');
 const LIFF_ID=localStorage.getItem('weddingSlipLiffId')||'2006674119-vpB15mY0';
 const MAX_SIZE=5*1024*1024;
+const _sp=new URLSearchParams(location.search);
+const BACK_URL=_sp.get('back')||localStorage.getItem('weddingCheckinUrl')||'checkin.html';
+document.getElementById('backBtn').href=BACK_URL;
+document.getElementById('homeBtn').href=BACK_URL;
 const T={
   th:{langBtn:'EN',taskTitle:'แจ้งการโอนเงิน',taskSub:'July 3, 2026 · Chatrium Hotel Riverside Bangkok',lNickname:'ชื่อเล่นของคุณ',placeholder:'กรอกชื่อเล่น',lSide:'คุณเป็นแขกฝ่าย',descBride:'เจ้าสาว',descGroom:'เจ้าบ่าว',lSlip:'อัปโหลดสลิปโอนเงิน',uploadPrimary:'อัปโหลดสลิปการโอนเงิน',uploadSecondary:'ลากไฟล์มาวาง หรือกดเลือกไฟล์',changeBtn:'เปลี่ยนไฟล์',btnText:'ยืนยันการโอนเงิน',errNickname:'กรุณากรอกชื่อเล่นก่อนนะคะ',errSide:'กรุณาเลือกว่ามาในฝ่ายไหนนะคะ',errSlip:'กรุณาอัปโหลดสลิปโอนเงินด้วยนะคะ',errSize:'ไฟล์ใหญ่เกิน 5MB กรุณาเลือกรูปใหม่ค่ะ',errServer:'เกิดข้อผิดพลาด กรุณาลองอีกครั้งค่ะ 🙏',tyTitle:'ขอบคุณ',tySub:'ได้รับสลิปเรียบร้อยแล้วค่ะ<br>ขอบคุณสำหรับความรักและน้ำใจ<br>เจอกันในงานเร็วๆ นี้เลย ✨'},
   en:{langBtn:'TH',taskTitle:'Transfer Notification',taskSub:'July 3, 2026 · Chatrium Hotel Riverside Bangkok',lNickname:'Your Nickname',placeholder:'Enter your nickname',lSide:"I'm a guest of",descBride:"Bride's",descGroom:"Groom's",lSlip:'Upload Transfer Slip',uploadPrimary:'Upload Transfer Slip',uploadSecondary:'Drag & drop or tap to browse',changeBtn:'Change file',btnText:'Confirm Transfer',errNickname:'Please enter your nickname.',errSide:"Please select which side you're from.",errSlip:'Please upload your transfer slip.',errSize:'File exceeds 5MB. Please choose a smaller image.',errServer:'Something went wrong. Please try again. 🙏',tyTitle:'Thank You',tySub:"Your slip has been received!<br>We truly appreciate your kindness.<br>See you at the wedding! ✨"}
