@@ -487,12 +487,6 @@ tr:hover td{background:rgba(254,240,238,.4)}
     <div class="nav-item" onclick="nav('slip', this)">
       <span class="nav-icon">💸</span>สลิปโอนเงิน
     </div>
-    <div class="nav-item" onclick="nav('setup', this)">
-      <span class="nav-icon">🔧</span>Setup Guide
-    </div>
-    <div class="nav-item" onclick="nav('script', this)">
-      <span class="nav-icon">📋</span>Apps Script
-    </div>
   </div>
 
   <!-- MAIN -->
@@ -749,7 +743,7 @@ tr:hover td{background:rgba(254,240,238,.4)}
         <div class="card">
           <div class="card-h">📱 LINE LIFF</div>
           <div class="info-box" style="margin-bottom:14px">
-            <p>ต้องสร้าง LIFF <strong>2 ตัวแยกกัน</strong> ใน LINE Developers Console<br>
+            <p>ต้องสร้าง LIFF <strong>4 ตัวแยกกัน</strong> ใน LINE Developers Console<br>
             แต่ละตัวผูกกับ URL คนละหน้า</p>
           </div>
           <div class="config-field">
@@ -758,7 +752,23 @@ tr:hover td{background:rgba(254,240,238,.4)}
             </label>
             <input type="text" id="cfgLiff" class="config-inp"
               placeholder="2006674119-xxxxxxxxx"
-              value="2006674119-opWzXpla" id="cfgLiff">
+              value="2006674119-opWzXpla">
+          </div>
+          <div class="config-field">
+            <label class="config-label">Check-in LIFF ID
+              <span>— endpoint: page.sparkth.io/checkin.html</span>
+            </label>
+            <input type="text" id="cfgCheckinLiff" class="config-inp"
+              placeholder="2006674119-yyyyyyyyy"
+              value="2006674119-Y1d35qvg">
+          </div>
+          <div class="config-field">
+            <label class="config-label">Slip LIFF ID
+              <span>— endpoint: page.sparkth.io/slip.html</span>
+            </label>
+            <input type="text" id="cfgSlipLiff" class="config-inp"
+              placeholder="2006674119-zzzzzzzzz"
+              value="2006674119-vpB15mY0">
           </div>
           <div class="config-field">
             <label class="config-label">Admin LIFF ID
@@ -774,6 +784,22 @@ tr:hover td{background:rgba(254,240,238,.4)}
             </label>
             <input type="text" id="cfgLiffUrl" class="config-inp"
               placeholder="https://liff.line.me/2006674119-opWzXpla"
+              readonly style="background:#F5F0EB">
+          </div>
+          <div class="config-field">
+            <label class="config-label">Check-in LIFF URL
+              <span>— QR หน้างาน / LINE webhook</span>
+            </label>
+            <input type="text" id="cfgCheckinLiffUrl" class="config-inp"
+              placeholder="https://liff.line.me/2006674119-Y1d35qvg"
+              readonly style="background:#F5F0EB">
+          </div>
+          <div class="config-field">
+            <label class="config-label">Slip LIFF URL
+              <span>— ปุ่มแจ้งสลิปหลังเช็กอิน</span>
+            </label>
+            <input type="text" id="cfgSlipLiffUrl" class="config-inp"
+              placeholder="https://liff.line.me/2006674119-vpB15mY0"
               readonly style="background:#F5F0EB">
           </div>
         </div>
@@ -809,106 +835,6 @@ tr:hover td{background:rgba(254,240,238,.4)}
             📍 Chatrium Riverside Map
           </a>
         </div>
-      </div>
-    </div>
-
-
-    <!-- ═══ SECTION: SETUP GUIDE ═══ -->
-    <div class="section" id="sec-setup">
-      <div class="sec-title">Setup Guide</div>
-      <div class="sec-sub">ขั้นตอนการตั้งค่าระบบ RSVP ทั้งหมด ตั้งแต่ต้นจนถึงส่งการ์ดเชิญ</div>
-
-      <div class="card">
-        <div class="card-h">📋 ขั้นตอนทั้งหมด</div>
-
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-content">
-            <h4>สร้างฐานข้อมูลบน Railway (Postgres)</h4>
-            <p>สร้าง Postgres service ใน Railway แล้วรัน schema ครั้งแรกจากไฟล์ <code>railway-api/sql/init.sql</code><br>
-            จากนั้นเตรียมค่า <code>DATABASE_URL</code> และ <code>LINE_CHANNEL_TOKEN</code> ใน Variables</p>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-content">
-            <h4>Deploy RSVP API ขึ้น Railway</h4>
-            <p>Deploy โฟลเดอร์ <code>railway-api</code> ขึ้น Railway → ตรวจสอบว่า <code>/health</code> ตอบ <code>{ "ok": true }</code><br>
-            แล้วคัดลอก URL ของ service มาต่อท้าย <code>/rsvp</code> และใส่ใน Config Tab</p>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-content">
-            <h4>Upload RSVP Form เป็น LIFF App</h4>
-<p>ไปที่ <a href="https://developers.line.biz/console/" target="_blank" style="color:#C4642A">LINE Developers Console</a> → เลือก Channel → LIFF → Add LIFF App<br>
-            สร้าง <strong>2 LIFF แยกกัน:</strong><br>
-            1️⃣ <code>RSVP LIFF</code> — Size: Full · Endpoint: <code>https://page.sparkth.io/rsvp-form.html</code><br>
-            2️⃣ <code>Admin LIFF</code> — Size: Full · Endpoint: <code>https://page.sparkth.io/admin-dashboard.html</code><br>
-            เอา LIFF ID ทั้ง 2 ใส่ใน Config Tab</p>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-num">4</div>
-          <div class="step-content">
-            <h4>ตั้งค่า API URL ในหน้าแอดมิน</h4>
-            <p>เปิดหน้า <code>admin-dashboard.html</code> → แท็บ Config → ใส่ <code>Railway API URL</code> เป็น <code>https://your-app.up.railway.app/rsvp</code><br>
-            กดบันทึกแล้ว reload หน้า เพื่อให้ทั้ง admin และ rsvp-form ใช้ endpoint เดียวกัน</p>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-num">5</div>
-          <div class="step-content">
-            <h4>อัพเดต LIFF URL ใน Flex Message JSON</h4>
-            <p>กลับมาที่ Tab "Flex Message" → คัดลอก JSON → แทนที่ <code>YOUR_LIFF_ID</code> ด้วย LIFF ID ของคุณ → ทดสอบใน Flex Simulator ก่อน</p>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-num">6</div>
-          <div class="step-content">
-            <h4>ส่ง Flex Message ผ่าน LINE OA</h4>
-            <p>ใน LINE Official Account Manager → Message → Create Message → Custom JSON → วาง Flex Message JSON → ส่งให้แขกได้เลย!<br>
-            หรือใช้ <a href="https://developers.line.biz/en/reference/messaging-api/#send-push-message" target="_blank" style="color:#C4642A">Push Message API</a> เพื่อส่งแบบ programmatic</p>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-
-    <!-- ═══ SECTION: APPS SCRIPT ═══ -->
-    <div class="section" id="sec-script">
-      <div class="sec-title">Legacy Apps Script</div>
-      <div class="sec-sub">ส่วนนี้เก็บไว้สำหรับระบบเดิมเท่านั้น (ถ้าย้ายไป Railway แล้ว ไม่จำเป็นต้องใช้)</div>
-
-      <div class="card">
-        <div class="card-h">📋 Apps Script Code (Legacy)</div>
-        <div class="info-box">
-          <p>
-            1. เปิด Google Sheet → <strong>Extensions → Apps Script</strong><br>
-            2. ลบ code เดิมทิ้ง → วาง code ด้านล่างนี้<br>
-            3. <strong>Deploy → New Deployment → Web App</strong> → Execute as: Me · Who has access: Anyone<br>
-            4. คัดลอก URL ที่ได้ไปใส่ใน Config Tab และในไฟล์ <code>rsvp-form.html</code>
-          </p>
-        </div>
-        <div class="code-wrap">
-          <button class="copy-btn" id="copy2" onclick="copyCode('scriptCode',this)">Copy</button>
-          <div class="code-box tall" id="scriptCode"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-h">📋 Column Headers (Legacy)</div>
-        <div class="code-wrap">
-          <button class="copy-btn" id="copy3" onclick="copyCode('sheetHeaders',this)">Copy</button>
-          <div class="code-box" id="sheetHeaders">Timestamp	LINE UID	First Name	Last Name	Full Name	Phone	Side	Relationship	Guests	Dietary	Message	Session	Picture URL</div>
-        </div>
-        <p style="font-size:12px;font-weight:300;color:var(--muted);margin-top:8px">Sheet1 (13 columns) — Visitors และ Invites จะถูกสร้างอัตโนมัติ</p>
       </div>
     </div>
 
@@ -1503,262 +1429,6 @@ async function validateFlex(){
 }
 
 // ══════════════════════════════════════
-//  APPS SCRIPT CODE
-// ══════════════════════════════════════
-const scriptCode = `// Google Apps Script — Wedding RSVP v4
-// Deploy as Web App: Execute as Me | Anyone can access
-// =====================================================
-// Sheet1 columns:
-//   A: Timestamp  B: LINE UID  C: First Name  D: Last Name
-//   E: Full Name  F: Phone  G: Side  H: Relationship
-//   I: Guests  J: Dietary  K: Message  L: Session  M: Picture URL
-//
-// Visitors columns:
-//   A: Timestamp  B: LINE UID  C: Status  D: Picture URL
-//
-// Invites columns:
-//   A: Timestamp  B: Sender UID  C: Sender Name  D: Sender Picture
-
-const SHEET_RSVP     = 'Sheet1';
-const SHEET_VISITORS = 'Visitors';
-const SHEET_INVITES  = 'Invites';
-
-// ── POST ─────────────────────────────────────────────
-function doPost(e) {
-  try {
-    const data   = JSON.parse(e.postData.contents);
-    const action = data.action || 'submit';
-    const ss     = SpreadsheetApp.getActiveSpreadsheet();
-
-    if (action === 'submit') {
-      const sheet = ss.getSheetByName(SHEET_RSVP);
-      sheet.appendRow([
-        data.timestamp    || new Date().toLocaleString('th-TH'),
-        data.lineUserId   || '',
-        data.firstName    || '',
-        data.lastName     || '',
-        data.name         || (data.firstName + ' ' + data.lastName).trim(),
-        data.phone        || '',
-        data.side         || '',
-        data.relationship || '',
-        data.guests       || 1,
-        data.dietary      || '',
-        data.message      || '',
-        data.session      || '',
-        data.pictureUrl   || ''
-      ]);
-      _updateVisitorStatus(ss, data.lineUserId, 'submitted', data.pictureUrl);
-    }
-
-    else if (action === 'update') {
-      // find existing row by LINE UID and update it
-      const sheet = ss.getSheetByName(SHEET_RSVP);
-      if (!sheet) return _json({ success: false, error: 'Sheet not found' });
-      const rows = sheet.getDataRange().getValues();
-      for (let i = 1; i < rows.length; i++) {
-        if (rows[i][1] === data.lineUserId) {
-          const row = i + 1;
-          sheet.getRange(row, 1).setValue(data.timestamp || new Date().toLocaleString('th-TH'));
-          sheet.getRange(row, 3).setValue(data.firstName    || '');
-          sheet.getRange(row, 4).setValue(data.lastName     || '');
-          sheet.getRange(row, 5).setValue(data.name         || '');
-          sheet.getRange(row, 6).setValue(data.phone        || '');
-          sheet.getRange(row, 7).setValue(data.side         || '');
-          sheet.getRange(row, 8).setValue(data.relationship || '');
-          sheet.getRange(row, 9).setValue(data.guests       || 1);
-          sheet.getRange(row, 10).setValue(data.dietary     || '');
-          sheet.getRange(row, 11).setValue(data.message     || '');
-          sheet.getRange(row, 12).setValue(data.session     || '');
-          if (data.pictureUrl) sheet.getRange(row, 13).setValue(data.pictureUrl);
-          return _json({ success: true });
-        }
-      }
-      // not found — append as new
-      sheet.appendRow([
-        data.timestamp    || new Date().toLocaleString('th-TH'),
-        data.lineUserId   || '',
-        data.firstName    || '',
-        data.lastName     || '',
-        data.name         || '',
-        data.phone        || '',
-        data.side         || '',
-        data.relationship || '',
-        data.guests       || 1,
-        data.dietary      || '',
-        data.message      || '',
-        data.session      || '',
-        data.pictureUrl   || ''
-      ]);
-      _updateVisitorStatus(ss, data.lineUserId, 'submitted', data.pictureUrl);
-    }
-
-    else if (action === 'visit') {
-      _upsertVisitor(ss, data.lineUserId, data.pictureUrl);
-    }
-
-    else if (action === 'invite') {
-      let sheet = ss.getSheetByName(SHEET_INVITES);
-      if (!sheet) {
-        sheet = ss.insertSheet(SHEET_INVITES);
-        sheet.appendRow(['Timestamp','Sender UID','Sender Name','Sender Picture']);
-      }
-      sheet.appendRow([
-        data.timestamp     || new Date().toLocaleString('th-TH'),
-        data.senderUid     || '',
-        data.senderName    || '',
-        data.senderPicture || ''
-      ]);
-    }
-
-    else if (action === 'validateFlex') {
-      const token = PropertiesService.getScriptProperties().getProperty('LINE_CHANNEL_TOKEN');
-      if (!token) return _json({ ok: false, error: 'no_token' });
-      const resp = UrlFetchApp.fetch('https://api.line.me/v2/bot/message/validate/push', {
-        method: 'post',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        payload: JSON.stringify({ messages: [data.flexMessage] }),
-        muteHttpExceptions: true
-      });
-      const code = resp.getResponseCode();
-      if (code === 200) return _json({ ok: true });
-      const body = JSON.parse(resp.getContentText() || '{}');
-      return _json({ ok: false, message: body.message || ('HTTP ' + code) });
-    }
-
-    return _json({ success: true });
-  } catch (err) {
-    return _json({ success: false, error: err.message });
-  }
-}
-
-// ── GET ──────────────────────────────────────────────
-function doGet(e) {
-  const action = e.parameter.action || '';
-  const userId = e.parameter.userId || '';
-  const ss     = SpreadsheetApp.getActiveSpreadsheet();
-
-  // เช็ค submitted
-  if (userId && !action) {
-    const sheet = ss.getSheetByName(SHEET_RSVP);
-    if (!sheet) return _json({ submitted: false });
-    const rows = sheet.getDataRange().getValues();
-    for (let i = 1; i < rows.length; i++) {
-      if (rows[i][1] === userId) {           // col B = LINE UID
-        return _json({
-          submitted: true,
-          data: {
-            firstName:    rows[i][2],        // col C
-            lastName:     rows[i][3],        // col D
-            name:         rows[i][4],        // col E
-            phone:        rows[i][5],        // col F
-            side:         rows[i][6],        // col G
-            relationship: rows[i][7],        // col H
-            guests:       rows[i][8],        // col I
-            dietary:      rows[i][9],        // col J
-            message:      rows[i][10],       // col K
-            session:      rows[i][11],       // col L
-            photo:        rows[i][12] || ''  // col M
-          }
-        });
-      }
-    }
-    return _json({ submitted: false });
-  }
-
-  // ดึง RSVP list ทั้งหมด
-  if (action === 'list') {
-    const rsvpSheet  = ss.getSheetByName(SHEET_RSVP);
-    const visitSheet = ss.getSheetByName(SHEET_VISITORS);
-    const rsvpRows   = rsvpSheet  ? rsvpSheet.getDataRange().getValues()  : [];
-    const visitRows  = visitSheet ? visitSheet.getDataRange().getValues() : [];
-
-    const submitted = rsvpRows.slice(1).map(r => ({
-      status:        'submitted',
-      timestamp:     r[0],
-      lineUid:       r[1],
-      firstName:     r[2],
-      lastName:      r[3],
-      name:          r[4],
-      phone:         r[5],
-      side:          r[6],
-      relationship:  r[7],
-      guests:        r[8],
-      dietary:       r[9],
-      message:       r[10],
-      session:       r[11] || '',
-      photo:         r[12] || ''
-    }));
-
-    const submittedUids = new Set(submitted.map(r => r.lineUid));
-    const visited = visitRows.slice(1)
-      .filter(r => r[2] === 'visited' && !submittedUids.has(r[1]))
-      .map(r => ({
-        status:    'visited',
-        timestamp: r[0],
-        lineUid:   r[1],
-        name:      '',
-        photo:     r[3] || ''
-      }));
-
-    return _json({ submitted, visited });
-  }
-
-  // ดึง invite count
-  if (action === 'invites') {
-    const sheet = ss.getSheetByName(SHEET_INVITES);
-    const count = sheet ? Math.max(0, sheet.getLastRow() - 1) : 0;
-    return _json({ count });
-  }
-
-  return _json({ status: 'ok' });
-}
-
-// ── Helpers ───────────────────────────────────────────
-function _json(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-function _upsertVisitor(ss, uid, pictureUrl) {
-  if (!uid) return;
-  let sheet = ss.getSheetByName(SHEET_VISITORS);
-  if (!sheet) {
-    sheet = ss.insertSheet(SHEET_VISITORS);
-    sheet.appendRow(['Timestamp', 'LINE UID', 'Status', 'Picture URL']);
-  }
-  const rows = sheet.getDataRange().getValues();
-  for (let i = 1; i < rows.length; i++) {
-    if (rows[i][1] === uid) {
-      // update picture if newly available
-      if (pictureUrl && !rows[i][3]) sheet.getRange(i+1, 4).setValue(pictureUrl);
-      return;
-    }
-  }
-  sheet.appendRow([
-    new Date().toLocaleString('th-TH'),
-    uid,
-    'visited',
-    pictureUrl || ''
-  ]);
-}
-
-function _updateVisitorStatus(ss, uid, status, pictureUrl) {
-  if (!uid) return;
-  const sheet = ss.getSheetByName(SHEET_VISITORS);
-  if (!sheet) return;
-  const rows = sheet.getDataRange().getValues();
-  for (let i = 1; i < rows.length; i++) {
-    if (rows[i][1] === uid) {
-      sheet.getRange(i + 1, 3).setValue(status);
-      if (pictureUrl) sheet.getRange(i + 1, 4).setValue(pictureUrl);
-      return;
-    }
-  }
-}`;
-document.getElementById('scriptCode').textContent = scriptCode;
-
-// ══════════════════════════════════════
 //  COPY CODE
 // ══════════════════════════════════════
 function copyCode(elId, btn){
@@ -1788,12 +1458,20 @@ function copyCode(elId, btn){
 function saveConfig(){
   const apiUrl     = document.getElementById('cfgSheet').value.trim();
   const liff       = document.getElementById('cfgLiff').value.trim();
+  const checkinLiff = document.getElementById('cfgCheckinLiff').value.trim();
+  const slipLiff   = document.getElementById('cfgSlipLiff').value.trim();
   const adminLiff  = document.getElementById('cfgAdminLiff').value.trim();
   if(liff)      document.getElementById('cfgLiffUrl').value = 'https://liff.line.me/'+liff;
+  if(checkinLiff) document.getElementById('cfgCheckinLiffUrl').value = 'https://liff.line.me/'+checkinLiff;
+  if(slipLiff) document.getElementById('cfgSlipLiffUrl').value = 'https://liff.line.me/'+slipLiff;
   localStorage.setItem('weddingApiUrl',        apiUrl);
   localStorage.setItem('weddingSheetUrl',      apiUrl); // backward compatibility
   localStorage.removeItem('weddingSheetView');
   localStorage.setItem('weddingLiffId',        liff);
+  localStorage.setItem('weddingCheckinLiffId', checkinLiff);
+  localStorage.setItem('weddingSlipLiffId',    slipLiff);
+  localStorage.setItem('weddingCheckinLiffUrl', checkinLiff ? 'https://liff.line.me/'+checkinLiff : '');
+  localStorage.setItem('weddingSlipLiffUrl', slipLiff ? 'https://liff.line.me/'+slipLiff : '');
   localStorage.setItem('weddingAdminLiffId',   adminLiff);
   // re-init LIFF if admin LIFF changed
   if(adminLiff) initAdminLIFF();
@@ -1803,9 +1481,13 @@ function saveConfig(){
 function loadConfig(){
   const apiUrl    = localStorage.getItem('weddingApiUrl') || localStorage.getItem('weddingSheetUrl') || '';
   const liff      = localStorage.getItem('weddingLiffId')||'2006674119-opWzXpla';
+  const checkinLiff = localStorage.getItem('weddingCheckinLiffId')||'2006674119-Y1d35qvg';
+  const slipLiff = localStorage.getItem('weddingSlipLiffId')||'2006674119-vpB15mY0';
   const adminLiff = localStorage.getItem('weddingAdminLiffId')||'';
   if(apiUrl)    document.getElementById('cfgSheet').value = apiUrl;
   if(liff){ document.getElementById('cfgLiff').value = liff; document.getElementById('cfgLiffUrl').value='https://liff.line.me/'+liff; }
+  if(checkinLiff){ document.getElementById('cfgCheckinLiff').value = checkinLiff; document.getElementById('cfgCheckinLiffUrl').value='https://liff.line.me/'+checkinLiff; }
+  if(slipLiff){ document.getElementById('cfgSlipLiff').value = slipLiff; document.getElementById('cfgSlipLiffUrl').value='https://liff.line.me/'+slipLiff; }
   if(adminLiff) document.getElementById('cfgAdminLiff').value = adminLiff;
 }
 loadConfig();
@@ -2424,13 +2106,16 @@ async function loadSlips(){
       const dt = new Date(s.submitted_at);
       const dateStr = dt.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'2-digit'})
         +' '+dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+      const lineMeta = s.display_name
+        ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">LINE: ${escHtml(s.display_name)}</div>`
+        : '';
       const sideBadge = s.side==='bride'
         ? '<span style="background:rgba(245,156,154,.15);color:var(--deep);border:1px solid rgba(245,156,154,.4);border-radius:6px;font-size:11px;padding:2px 8px;font-weight:600">💍 เจ้าสาว</span>'
         : s.side==='groom'
         ? '<span style="background:rgba(158,204,240,.15);color:#2C6A9A;border:1px solid rgba(158,204,240,.4);border-radius:6px;font-size:11px;padding:2px 8px;font-weight:600">🤵 เจ้าบ่าว</span>'
         : '<span style="color:var(--muted);font-size:11px">—</span>';
       return `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:10px 12px;font-size:13px;font-weight:500">${escHtml(s.nickname)}</td>
+        <td style="padding:10px 12px;font-size:13px;font-weight:500">${escHtml(s.nickname)}${lineMeta}</td>
         <td style="padding:10px 12px">${sideBadge}</td>
         <td style="padding:10px 12px;font-size:11px;color:var(--muted)">${dateStr}</td>
         <td style="padding:10px 12px;text-align:right">

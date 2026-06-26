@@ -204,7 +204,7 @@ body{
     <div class="sub">โปรไฟล์ของคุณถูกส่งขึ้น Welcome Screen แล้ว ขอให้สนุกกับงานครับ</div>
     <div class="actions">
       <a class="btn accent wide" href="welcome-wall.html">ดู Welcome Wall</a>
-      <a class="btn secondary" href="slip.html">QR / แจ้ง Slip</a>
+      <a class="btn secondary" id="slipLink" href="https://liff.line.me/2006674119-vpB15mY0">QR / แจ้ง Slip</a>
       <a class="btn secondary hidden" id="gameLink" href="#">เล่นเกมชิงรางวัล</a>
     </div>
   </section>
@@ -243,7 +243,8 @@ const API_BASE = (SAVED_API_URL && !SAVED_API_URL.includes('script.google.com')
   ? SAVED_API_URL
   : 'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/, '');
 const SEATING_MAP_URL = `${API_BASE}/seating-map`;
-const LIFF_ID = localStorage.getItem('weddingCheckinLiffId') || '2006674119-opWzXpla';
+const LIFF_ID = localStorage.getItem('weddingCheckinLiffId') || '2006674119-Y1d35qvg';
+const SLIP_LIFF_URL = localStorage.getItem('weddingSlipLiffUrl') || 'https://liff.line.me/2006674119-vpB15mY0';
 const urlParams = new URLSearchParams(location.search);
 const GAME_URL = (urlParams.get('game') || localStorage.getItem('weddingGameUrl') || '').trim();
 const WALL_FRAME_KEYS = ['classic', 'single', 'bride', 'groom', 'lucky'];
@@ -261,6 +262,7 @@ const profileImg = document.getElementById('profileImg');
 const avatarFallback = document.getElementById('avatarFallback');
 const mapModal = document.getElementById('mapModal');
 const mapWrap = document.getElementById('mapWrap');
+document.getElementById('slipLink').href = SLIP_LIFF_URL;
 
 function setStatus(text, type=''){
   statusEl.textContent = text;

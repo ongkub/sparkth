@@ -7,7 +7,7 @@ const app = express();
 const port = Number(process.env.PORT || 3000);
 const databaseUrl = process.env.DATABASE_URL;
 const lineChannelToken = process.env.LINE_CHANNEL_TOKEN || '';
-const checkinLiffUrl = process.env.CHECKIN_LIFF_URL || 'https://page.sparkth.io/checkin.html';
+const checkinLiffUrl = process.env.CHECKIN_LIFF_URL || 'https://liff.line.me/2006674119-Y1d35qvg';
 
 if (!databaseUrl) {
   console.error('Missing DATABASE_URL');
@@ -83,6 +83,15 @@ async function ensureSchema() {
   );
   await pool.query(
     `ALTER TABLE slip_submissions ADD COLUMN IF NOT EXISTS side TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `ALTER TABLE slip_submissions ADD COLUMN IF NOT EXISTS line_user_id TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `ALTER TABLE slip_submissions ADD COLUMN IF NOT EXISTS display_name TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `ALTER TABLE slip_submissions ADD COLUMN IF NOT EXISTS picture_url TEXT NOT NULL DEFAULT ''`
   );
   await pool.query(
     `CREATE TABLE IF NOT EXISTS checkins (
@@ -1155,7 +1164,7 @@ async function createCheckin({
 app.get('/slip', async (_req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, nickname, side, slip_mime, submitted_at
+      `SELECT id, nickname, side, line_user_id, display_name, picture_url, slip_mime, submitted_at
        FROM slip_submissions
        ORDER BY submitted_at DESC`
     );
@@ -1173,7 +1182,7 @@ app.get('/slip/:id', async (req, res) => {
   }
   try {
     const result = await pool.query(
-      `SELECT id, nickname, side, slip_mime, slip_data, submitted_at
+      `SELECT id, nickname, side, line_user_id, display_name, picture_url, slip_mime, slip_data, submitted_at
        FROM slip_submissions WHERE id = $1`,
       [id]
     );
@@ -1191,6 +1200,9 @@ app.post('/slip', async (req, res) => {
   const data = parseBody(req.body);
   const nickname = safeText(data.nickname);
   const side = safeText(data.side);
+  const lineUserId = safeText(data.lineUserId || data.line_user_id);
+  const displayName = safeText(data.displayName || data.display_name);
+  const pictureUrl = safeText(data.pictureUrl || data.picture_url);
   const slipBase64 = typeof data.slipBase64 === 'string' ? data.slipBase64.trim() : '';
   const slipMime = safeText(data.slipMime) || 'image/jpeg';
 
@@ -1210,9 +1222,10 @@ app.post('/slip', async (req, res) => {
 
   try {
     await pool.query(
-      `INSERT INTO slip_submissions (nickname, side, slip_mime, slip_data, submitted_at)
-       VALUES ($1, $2, $3, $4, NOW())`,
-      [nickname, side, slipMime, slipBase64]
+      `INSERT INTO slip_submissions
+         (nickname, side, line_user_id, display_name, picture_url, slip_mime, slip_data, submitted_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+      [nickname, side, lineUserId, displayName, pictureUrl, slipMime, slipBase64]
     );
     res.json({ success: true });
   } catch (error) {

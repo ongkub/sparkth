@@ -66,6 +66,18 @@ CREATE TABLE IF NOT EXISTS line_webhook_events (
   received_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS slip_submissions (
+  id BIGSERIAL PRIMARY KEY,
+  nickname TEXT NOT NULL DEFAULT '',
+  side TEXT NOT NULL DEFAULT '',
+  line_user_id TEXT NOT NULL DEFAULT '',
+  display_name TEXT NOT NULL DEFAULT '',
+  picture_url TEXT NOT NULL DEFAULT '',
+  slip_mime TEXT NOT NULL DEFAULT 'image/jpeg',
+  slip_data TEXT NOT NULL DEFAULT '',
+  submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS seating_maps (
   map_key TEXT PRIMARY KEY,
   map_mime TEXT NOT NULL DEFAULT 'image/jpeg',

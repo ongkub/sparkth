@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>แจ้งการโอนเงิน — An-An & Ong</title>
+<script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <style>
@@ -224,6 +225,7 @@ label:has(input[type=radio]:checked) .hidden-check{display:flex}
 
 <script>
 const API='https://sparkth-production.up.railway.app/slip';
+const LIFF_ID=localStorage.getItem('weddingSlipLiffId')||'2006674119-vpB15mY0';
 const MAX_SIZE=5*1024*1024;
 const T={
   th:{langBtn:'EN',taskTitle:'แจ้งการโอนเงิน',taskSub:'July 3, 2026 · Chatrium Hotel Riverside Bangkok',lNickname:'ชื่อเล่นของคุณ',placeholder:'กรอกชื่อเล่น',lSide:'คุณเป็นแขกฝ่าย',descBride:'เจ้าสาว',descGroom:'เจ้าบ่าว',lSlip:'อัปโหลดสลิปโอนเงิน',uploadPrimary:'อัปโหลดสลิปการโอนเงิน',uploadSecondary:'ลากไฟล์มาวาง หรือกดเลือกไฟล์',changeBtn:'เปลี่ยนไฟล์',btnText:'ยืนยันการโอนเงิน',errNickname:'กรุณากรอกชื่อเล่นก่อนนะคะ',errSide:'กรุณาเลือกว่ามาในฝ่ายไหนนะคะ',errSlip:'กรุณาอัปโหลดสลิปโอนเงินด้วยนะคะ',errSize:'ไฟล์ใหญ่เกิน 5MB กรุณาเลือกรูปใหม่ค่ะ',errServer:'เกิดข้อผิดพลาด กรุณาลองอีกครั้งค่ะ 🙏',tyTitle:'ขอบคุณ',tySub:'ได้รับสลิปเรียบร้อยแล้วค่ะ<br>ขอบคุณสำหรับความรักและน้ำใจ<br>เจอกันในงานเร็วๆ นี้เลย ✨'},
@@ -256,7 +258,26 @@ function fmt(b){return b<1024*1024?(b/1024).toFixed(0)+' KB':(b/(1024*1024)).toF
 function showErr(id,msg){const el=q(id);el.textContent=msg;el.classList.remove('hidden');el.classList.add('flex');}
 function hideErr(id){const el=q(id);el.classList.add('hidden');el.classList.remove('flex');}
 
-let slipDataUrl=null,slipMime=null;
+let slipDataUrl=null,slipMime=null,lineProfile=null;
+
+function bestNickname(name){
+  return String(name||'').trim().split(/\s+/)[0].slice(0,50);
+}
+
+async function initSlipLIFF(){
+  if(!window.liff) return;
+  try{
+    await liff.init({liffId:LIFF_ID});
+    if(!liff.isLoggedIn()){liff.login();return;}
+    lineProfile=await liff.getProfile();
+    const nickname=q('nickname');
+    if(nickname && !nickname.value.trim()){
+      nickname.value=bestNickname(lineProfile.displayName);
+    }
+  }catch(error){
+    console.warn('LIFF init error',error);
+  }
+}
 
 function loadFile(file){
   if(!file)return;
@@ -303,7 +324,15 @@ q('submitBtn').addEventListener('click',async()=>{
 
   try{
     const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({nickname:q('nickname').value.trim(),side,slipBase64:slipDataUrl.split(',')[1],slipMime})});
+      body:JSON.stringify({
+        nickname:q('nickname').value.trim(),
+        side,
+        slipBase64:slipDataUrl.split(',')[1],
+        slipMime,
+        lineUserId:lineProfile?.userId||'',
+        displayName:lineProfile?.displayName||'',
+        pictureUrl:lineProfile?.pictureUrl||''
+      })});
     if(!res.ok)throw new Error(`HTTP ${res.status}`);
     const json=await res.json();
     if(!json.success)throw new Error(json.error||'error');
@@ -320,6 +349,7 @@ q('submitBtn').addEventListener('click',async()=>{
     btn.disabled=false;q('btnText').classList.remove('hidden');q('btnSpinner').classList.add('hidden');
   }
 });
+initSlipLIFF();
 </script>
 </body>
 </html>
