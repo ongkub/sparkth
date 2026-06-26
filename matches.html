@@ -149,7 +149,7 @@ function render(matches){
   el.innerHTML = `<div class="grid">${matches.map(m => {
     const name = displayName(m);
     const photo = bestPhoto(m);
-    const ig = m.showSocialOnWall && m.instagram ? m.instagram.replace(/^@/,'') : '';
+    const ig = m.instagram ? m.instagram.replace(/^@/,'') : '';
     const igHref = ig ? `https://instagram.com/${encodeURIComponent(ig)}` : '';
 
     return `<div class="match-card">
