@@ -1107,7 +1107,26 @@ async function lookupRsvp(lineUserId) {
      WHERE line_user_id = $1`,
     [lineUserId]
   );
-  return result.rows[0] || null;
+  if (result.rows[0]) return result.rows[0];
+
+  // Fallback: walk-in users have a checkins record but no rsvp_submissions row
+  const ci = await pool.query(
+    `SELECT line_user_id,
+            '' AS first_name, '' AS last_name,
+            COALESCE(NULLIF(nickname,''), display_name) AS nickname,
+            display_name AS full_name,
+            picture_url, table_name, checked_in_at,
+            source AS checkin_source,
+            is_single, instagram, show_social_on_wall, wall_frame,
+            NULL AS welcome_announced_at,
+            custom_photo, gender, gender_pref
+     FROM checkins
+     WHERE line_user_id = $1
+     ORDER BY checked_in_at DESC
+     LIMIT 1`,
+    [lineUserId]
+  );
+  return ci.rows[0] || null;
 }
 
 async function getCheckinRsvp(lineUserId) {
