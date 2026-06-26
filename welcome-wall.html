@@ -318,9 +318,9 @@ function makeBubble(data, isNew=false){
   const rawFrame = (data.wallFrame || data.wall_frame || (isSingle ? 'single' : 'classic')).trim();
   const frame = WALL_FRAME_KEYS.includes(rawFrame) ? rawFrame : 'classic';
   const frameTemplate = frameTemplates.get(frame);
-  const instagram = (data.instagram || '').trim().replace(/^@+/, '');
-  const showIg = Boolean(data.showSocialOnWall || data.show_social_on_wall) && instagram;
-  const instagramUrl = showIg ? `https://instagram.com/${encodeURIComponent(instagram)}` : '';
+  const instagram = '';
+  const showIg = false;
+  const instagramUrl = '';
   if(bubbles.has(id)){
     const existing = bubbles.get(id);
     existing.vx += (Math.random() - .5) * 1.2;

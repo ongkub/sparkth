@@ -136,8 +136,24 @@ async function ensureSchema() {
      ADD COLUMN IF NOT EXISTS custom_photo TEXT NOT NULL DEFAULT ''`
   );
   await pool.query(
+    `ALTER TABLE checkins
+     ADD COLUMN IF NOT EXISTS gender TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `ALTER TABLE checkins
+     ADD COLUMN IF NOT EXISTS gender_pref TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
     `ALTER TABLE rsvp_submissions
      ADD COLUMN IF NOT EXISTS custom_photo TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `ALTER TABLE rsvp_submissions
+     ADD COLUMN IF NOT EXISTS gender TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `ALTER TABLE rsvp_submissions
+     ADD COLUMN IF NOT EXISTS gender_pref TEXT NOT NULL DEFAULT ''`
   );
   await pool.query(
     `CREATE TABLE IF NOT EXISTS swipes (
@@ -937,6 +953,14 @@ function safeInstagram(value) {
   return safeText(value).replace(/^@+/, '').replace(/[^a-zA-Z0-9._]/g, '').slice(0, 30);
 }
 
+function safeGender(value) {
+  return ['male', 'female', 'other'].includes(safeText(value)) ? safeText(value) : '';
+}
+
+function safeGenderPref(value) {
+  return ['male', 'female', 'both'].includes(safeText(value)) ? safeText(value) : '';
+}
+
 function safeWallFrame(value) {
   const frame = safeText(value).toLowerCase();
   return WALL_FRAME_KEYS.has(frame) ? frame : 'classic';
@@ -1033,6 +1057,8 @@ function formatCheckin(row) {
     instagram: row.instagram || '',
     showSocialOnWall: Boolean(row.show_social_on_wall),
     wallFrame: row.wall_frame || 'classic',
+    gender: row.gender || '',
+    genderPref: row.gender_pref || '',
     checkedInAt: row.checked_in_at?.toISOString?.() || row.checked_in_at || ''
   };
 }
@@ -1050,7 +1076,8 @@ async function lookupRsvp(lineUserId) {
   const result = await pool.query(
     `SELECT line_user_id, first_name, last_name, nickname, full_name, picture_url,
             table_name, checked_in_at, checkin_source, is_single, instagram,
-            show_social_on_wall, wall_frame, welcome_announced_at, custom_photo
+            show_social_on_wall, wall_frame, welcome_announced_at, custom_photo,
+            gender, gender_pref
      FROM rsvp_submissions
      WHERE line_user_id = $1`,
     [lineUserId]
@@ -1079,6 +1106,8 @@ function formatCheckinRsvp(row) {
     instagram: row.instagram || '',
     showSocialOnWall: Boolean(row.show_social_on_wall),
     wallFrame: row.wall_frame || 'classic',
+    gender: row.gender || '',
+    genderPref: row.gender_pref || '',
     welcomeAnnouncedAt: row.welcome_announced_at?.toISOString?.() || ''
   };
 }
@@ -1460,6 +1489,17 @@ app.get('/singles', async (req, res) => {
   const userId = safeText(req.query.userId);
   if (!userId) return res.status(400).json({ success: false, error: 'userId required' });
   try {
+    const me = await lookupRsvp(userId);
+    if (!me || !me.is_single) {
+      return res.json({ success: true, singles: [], locked: true });
+    }
+    const genderPref = safeGenderPref(me.gender_pref);
+    const params = [userId];
+    let genderClause = '';
+    if (genderPref && genderPref !== 'both') {
+      params.push(genderPref);
+      genderClause = `AND c.gender = $${params.length}`;
+    }
     const result = await pool.query(
       `SELECT DISTINCT ON (c.line_user_id)
          c.line_user_id    AS "lineUserId",
@@ -1468,20 +1508,21 @@ app.get('/singles', async (req, res) => {
          c.picture_url     AS "pictureUrl",
          c.custom_photo    AS "customPhoto",
          c.instagram,
-         c.show_social_on_wall AS "showSocialOnWall"
+         c.gender,
+         c.gender_pref     AS "genderPref"
        FROM checkins c
        WHERE c.is_single = true
          AND c.line_user_id <> ''
          AND c.line_user_id <> $1
+         ${genderClause}
          AND c.line_user_id NOT IN (
            SELECT to_user_id FROM swipes WHERE from_user_id = $1
          )
        ORDER BY c.line_user_id, c.checked_in_at DESC`,
-      [userId]
+      params
     );
-    // shuffle so order isn't predictable
     const singles = result.rows.sort(() => Math.random() - 0.5);
-    res.json({ success: true, singles });
+    res.json({ success: true, singles, locked: false });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -1542,6 +1583,42 @@ app.get('/matches', async (req, res) => {
       [userId]
     );
     res.json({ success: true, matches: result.rows });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/profile', async (req, res) => {
+  const data = parseBody(req.body);
+  const lineUserId = safeText(data.lineUserId || data.userId);
+  if (!lineUserId) return res.status(400).json({ success: false, error: 'userId required' });
+  try {
+    const isSingle = Boolean(data.isSingle);
+    const gender = safeGender(data.gender);
+    const genderPref = safeGenderPref(data.genderPref);
+    const instagram = safeInstagram(data.instagram);
+    const customPhoto = safeText(data.customPhoto) || '';
+    await pool.query(
+      `UPDATE rsvp_submissions
+       SET is_single = $2, gender = $3, gender_pref = $4, instagram = $5,
+           custom_photo = CASE WHEN $6 <> '' THEN $6 ELSE custom_photo END
+       WHERE line_user_id = $1`,
+      [lineUserId, isSingle, gender, genderPref, instagram, customPhoto]
+    );
+    const updated = await pool.query(
+      `UPDATE checkins
+       SET is_single = $2, gender = $3, gender_pref = $4, instagram = $5,
+           custom_photo = CASE WHEN $6 <> '' THEN $6 ELSE custom_photo END
+       WHERE id = (
+         SELECT id FROM checkins WHERE line_user_id = $1 ORDER BY checked_in_at DESC LIMIT 1
+       )
+       RETURNING id, line_user_id, display_name, nickname, picture_url, source, beacon_type,
+                 table_name, is_single, instagram, show_social_on_wall, wall_frame,
+                 custom_photo, gender, gender_pref, checked_in_at`,
+      [lineUserId, isSingle, gender, genderPref, instagram, customPhoto]
+    );
+    if (updated.rowCount > 0) broadcastWelcome(formatCheckin(updated.rows[0]));
+    res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

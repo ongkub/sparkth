@@ -62,38 +62,7 @@ body{
   margin-top:14px;padding:11px 13px;border-radius:10px;background:rgba(251,242,237,.72);
   border:1px solid rgba(208,197,182,.55);font-size:12px;line-height:1.55;color:var(--muted);text-align:center;
 }
-.field-label{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary);font-weight:600;margin-bottom:8px;margin-top:16px}
-.single-section{margin-top:14px;padding:16px;background:var(--paper-low);border-radius:12px;border:1px solid var(--border)}
-.single-section .checkline{background:white}
-.checkline-top{margin-top:16px}
-#igInputWrap{margin-top:10px}
-#instagram{padding-left:118px}
 .event-title{font-size:18px}
-.input{
-  width:100%;border:1px solid var(--border);border-radius:10px;padding:14px 14px;
-  font:inherit;background:white;color:var(--text);outline:none;
-}
-.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(113,88,39,.12)}
-.ig-wrap{position:relative}
-.ig-prefix{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);pointer-events:none}
-.checkline{
-  display:flex;align-items:center;gap:12px;margin-top:0;font-size:14px;color:var(--text);line-height:1.5;
-  background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;
-  transition:border-color .18s,background .18s;
-}
-.checkline:has(input:checked){border-color:var(--primary);background:rgba(113,88,39,.04)}
-.checkline input{width:20px;height:20px;margin:0;accent-color:var(--primary);flex:0 0 auto;cursor:pointer}
-.checkline span{flex:1}
-.frame-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
-.frame-option{
-  border:1.5px solid var(--border);background:white;border-radius:10px;padding:12px 4px;
-  min-height:52px;cursor:pointer;font:inherit;color:var(--text);display:flex;
-  align-items:center;justify-content:center;text-align:center;transition:all .2s ease;
-}
-.frame-option.active{border-color:var(--primary);background:rgba(113,88,39,.06);box-shadow:0 4px 12px rgba(113,88,39,.12)}
-.frame-dot{display:none}
-.frame-label{font-family:'Be Vietnam Pro',sans-serif;font-size:10px;font-weight:600;line-height:1.2;color:var(--secondary)}
-.frame-option.active .frame-label{color:var(--primary)}
 .btn{
   width:100%;border:0;border-radius:999px;padding:0 20px;font:inherit;font-weight:700;font-size:15px;
   min-height:52px;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;
@@ -127,23 +96,6 @@ body{
 .map-empty{padding:42px 18px;color:var(--muted);line-height:1.7}
 .hidden{display:none!important}
 .tiny{font-size:12px;color:rgba(106,93,67,.68);text-align:center;margin-top:16px;line-height:1.6;padding:0 12px}
-.avatar-wrap{position:relative;display:inline-block;cursor:pointer;border-radius:50%;flex-shrink:0}
-.avatar-wrap .avatar,.avatar-wrap .avatar-fallback{pointer-events:none}
-.avatar-edit{
-  position:absolute;bottom:0;right:0;
-  width:22px;height:22px;border-radius:50%;
-  background:var(--primary);color:white;
-  display:grid;place-items:center;font-size:11px;line-height:1;
-  border:2px solid white;
-  transition:transform .15s;
-}
-.avatar-wrap:hover .avatar-edit{transform:scale(1.12)}
-.profile-section-sep{
-  margin:16px 0 0;padding-top:14px;
-  border-top:1px solid var(--border);
-  font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;
-  letter-spacing:.1em;text-transform:uppercase;color:var(--secondary);
-}
 @media(max-width:560px){
   .wrap{padding:20px 16px 32px}
   .panel{padding:20px}
@@ -167,18 +119,13 @@ body{
 
   <section class="panel hidden" id="guestPanel">
     <div class="profile">
-      <label class="avatar-wrap" for="photoInput" title="เปลี่ยนรูปโปรไฟล์">
-        <img class="avatar hidden" id="profileImg" alt="">
-        <div class="avatar-fallback" id="avatarFallback">A</div>
-        <div class="avatar-edit">📷</div>
-      </label>
-      <input type="file" id="photoInput" accept="image/*" class="hidden">
+      <img class="avatar hidden" id="profileImg" alt="">
+      <div class="avatar-fallback" id="avatarFallback">A</div>
       <div>
         <div class="hello" id="guestName">ยินดีต้อนรับ</div>
-        <div class="sub" id="guestSub">ตรวจข้อมูล RSVP และโต๊ะนั่งก่อนเช็กอิน</div>
+        <div class="sub" id="guestSub">ยินดีต้อนรับสู่งานแต่งงาน</div>
       </div>
     </div>
-
     <div class="info-grid">
       <button class="info table-card" id="tableCard" type="button">
         <div class="label">โต๊ะนั่ง</div>
@@ -190,51 +137,13 @@ body{
       </div>
     </div>
     <div class="note" id="tableNote">ถ้าโต๊ะยังว่าง ให้แจ้งทีมงานหน้างานเพื่ออัปเดตให้ทันที</div>
-
-    <div class="profile-section-sep">โปรไฟล์บน Welcome Screen</div>
-
-    <label class="checkline checkline-top">
-      <input type="checkbox" id="isSingle">
-      <span>ฉันโสด และอยากได้กรอบ / badge พิเศษบน Welcome Screen</span>
-    </label>
-    <div id="igSection" class="hidden single-section">
-      <label class="checkline">
-        <input type="checkbox" id="showSocial">
-        <span>ต้องการให้แสดง Instagram บน Welcome Screen</span>
-      </label>
-      <div id="igInputWrap" class="hidden">
-        <div class="ig-wrap">
-          <span class="ig-prefix">instagram.com/</span>
-          <input class="input" id="instagram" placeholder="yourname">
-        </div>
-      </div>
-      <div class="field-label">เลือกกรอบรูปบน Welcome Screen</div>
-      <div class="frame-grid" id="frameGrid" aria-label="เลือกกรอบรูป">
-        <button class="frame-option active" type="button" data-frame="classic">
-          <span class="frame-dot"></span><span class="frame-label">Classic</span>
-        </button>
-        <button class="frame-option" type="button" data-frame="single">
-          <span class="frame-dot"></span><span class="frame-label">Single</span>
-        </button>
-        <button class="frame-option" type="button" data-frame="bride">
-          <span class="frame-dot"></span><span class="frame-label">Bride</span>
-        </button>
-        <button class="frame-option" type="button" data-frame="groom">
-          <span class="frame-dot"></span><span class="frame-label">Groom</span>
-        </button>
-        <button class="frame-option" type="button" data-frame="lucky">
-          <span class="frame-dot"></span><span class="frame-label">Lucky</span>
-        </button>
-      </div>
-    </div>
-
-    <button class="btn primary" id="checkinBtn" type="button">บันทึกโปรไฟล์</button>
   </section>
 
   <section class="panel done" id="donePanel">
-    <div class="hello">เช็กอินเรียบร้อยแล้ว</div>
+    <div class="hello">เช็กอินเรียบร้อยแล้ว ✓</div>
     <div class="sub">ขอให้สนุกกับงานแต่งงานครับ</div>
     <div class="actions">
+      <a class="btn accent" id="profileLink" href="profile.html">✏️ แก้ไขโปรไฟล์</a>
       <a class="btn accent" id="singlesLink" href="singles.html">Singles Zone 💕</a>
       <a class="btn accent" id="matchesLink" href="matches.html">ดู Matches ❤️</a>
       <a class="btn secondary" href="welcome-wall.html">ดู Welcome Wall</a>
@@ -281,14 +190,11 @@ const LIFF_ID = localStorage.getItem('weddingCheckinLiffId') || '2006674119-Y1d3
 const SLIP_LIFF_URL = localStorage.getItem('weddingSlipLiffUrl') || 'https://liff.line.me/2006674119-vpB15mY0';
 const urlParams = new URLSearchParams(location.search);
 const GAME_URL = (urlParams.get('game') || localStorage.getItem('weddingGameUrl') || '').trim();
-const WALL_FRAME_KEYS = ['classic', 'single', 'bride', 'groom', 'lucky'];
 
 let profile = null;
 let rsvp = null;
 let seatingMap = null;
 let autoCheckinDone = false;
-let selectedFrame = 'classic';
-let customPhoto = null;
 
 const statusEl = document.getElementById('status');
 const guestPanel = document.getElementById('guestPanel');
@@ -317,13 +223,8 @@ function showProfile(){
   document.getElementById('tableNote').textContent = rsvp?.tableName
     ? 'กดการ์ดโต๊ะเพื่อดูแผนผังที่นั่ง และแคปหน้าจอนี้ไว้ได้'
     : 'ยังไม่มีข้อมูลโต๊ะในระบบ กรุณาแจ้งทีมงานหน้างานเพื่ออัปเดต';
-  document.getElementById('isSingle').checked = Boolean(rsvp?.isSingle);
-  document.getElementById('showSocial').checked = Boolean(rsvp?.showSocialOnWall);
-  document.getElementById('instagram').value = rsvp?.instagram || '';
-  updateIgVisibility();
-  selectFrame(rsvp?.wallFrame || (rsvp?.isSingle ? 'single' : 'classic'));
   avatarFallback.textContent = initials(name);
-  const photoSrc = customPhoto || rsvp?.customPhoto || profile?.pictureUrl || rsvp?.photo || '';
+  const photoSrc = rsvp?.customPhoto || profile?.pictureUrl || rsvp?.photo || '';
   if(photoSrc){
     profileImg.src = photoSrc;
     profileImg.classList.remove('hidden');
@@ -332,12 +233,6 @@ function showProfile(){
   guestPanel.classList.remove('hidden');
 }
 
-function selectFrame(frame){
-  selectedFrame = WALL_FRAME_KEYS.includes(frame) ? frame : 'classic';
-  document.querySelectorAll('.frame-option').forEach((option) => {
-    option.classList.toggle('active', option.dataset.frame === selectedFrame);
-  });
-}
 
 async function loadSeatingMap(){
   try{
@@ -372,6 +267,7 @@ function updateNavLinks(){
   if(!profile?.userId) return;
   const uid = encodeURIComponent(profile.userId);
   localStorage.setItem('weddingUserId', profile.userId);
+  document.getElementById('profileLink').href = `profile.html?userId=${uid}&back=${encodeURIComponent(location.href)}`;
   document.getElementById('singlesLink').href = `singles.html?userId=${uid}`;
   document.getElementById('matchesLink').href = `matches.html?userId=${uid}`;
 }
@@ -379,7 +275,6 @@ function updateNavLinks(){
 function showDone(){
   donePanel.classList.add('on');
   updateNavLinks();
-  document.getElementById('checkinBtn').textContent = 'บันทึกโปรไฟล์';
   const gameLink = document.getElementById('gameLink');
   if(GAME_URL){
     gameLink.href = GAME_URL;
@@ -388,9 +283,6 @@ function showDone(){
 }
 
 async function submitCheckin({ auto=false } = {}){
-  const btn = document.getElementById('checkinBtn');
-  btn.disabled = true;
-  btn.textContent = auto ? 'กำลังเช็กอิน...' : 'กำลังบันทึก...';
   try{
     const res = await fetch(`${API_BASE}/checkin`, {
       method:'POST',
@@ -400,24 +292,16 @@ async function submitCheckin({ auto=false } = {}){
         displayName: profile.displayName || '',
         pictureUrl: profile.pictureUrl || '',
         tableName: rsvp?.tableName || '',
-        isSingle: document.getElementById('isSingle').checked,
-        instagram: document.getElementById('instagram').value.trim(),
-        showSocialOnWall: document.getElementById('showSocial').checked,
-        wallFrame: selectedFrame,
-        customPhoto: customPhoto || undefined,
         source:'qr'
       })
     });
     const data = await res.json();
     if(!res.ok || !data.success) throw new Error(data.error || 'เช็กอินไม่สำเร็จ');
     autoCheckinDone = true;
-    setStatus(auto || !data.alreadyCheckedIn ? 'เช็กอินเรียบร้อยแล้ว ขอให้มีความสุขในงานแต่งงานของเราครับ' : 'บันทึกข้อมูลเพิ่มเติมแล้ว', 'ok');
+    setStatus('เช็กอินเรียบร้อยแล้ว ขอให้มีความสุขในงานแต่งงานของเราครับ', 'ok');
     showDone();
   }catch(error){
     setStatus(error.message || 'เช็กอินไม่สำเร็จ กรุณาลองใหม่', 'err');
-  }finally{
-    btn.disabled = false;
-    btn.textContent = autoCheckinDone ? 'บันทึกโปรไฟล์' : 'ลองเช็กอินอีกครั้ง';
   }
 }
 
@@ -437,57 +321,8 @@ function closeSeatingMap(){
   mapModal.setAttribute('aria-hidden', 'true');
 }
 
-document.getElementById('checkinBtn').addEventListener('click', () => submitCheckin({ auto: false }));
-
-const isSingleCb = document.getElementById('isSingle');
-const showSocialCb = document.getElementById('showSocial');
-const igSection = document.getElementById('igSection');
-const igInputWrap = document.getElementById('igInputWrap');
-
-function updateIgVisibility(){
-  igSection.classList.toggle('hidden', !isSingleCb.checked);
-  igInputWrap.classList.toggle('hidden', !showSocialCb.checked);
-  if(!isSingleCb.checked){
-    showSocialCb.checked = false;
-    document.getElementById('instagram').value = '';
-  }
-}
-isSingleCb.addEventListener('change', updateIgVisibility);
-showSocialCb.addEventListener('change', updateIgVisibility);
-
-function compressImage(file, maxPx, quality){
-  return new Promise((resolve) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      const scale = Math.min(maxPx / img.width, maxPx / img.height, 1);
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', quality));
-    };
-    img.src = url;
-  });
-}
-
-document.getElementById('photoInput').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if(!file) return;
-  try{
-    customPhoto = await compressImage(file, 300, 0.82);
-    profileImg.src = customPhoto;
-    profileImg.classList.remove('hidden');
-    avatarFallback.classList.add('hidden');
-  }catch(_){}
-  e.target.value = '';
-});
 document.getElementById('tableCard').addEventListener('click', openSeatingMap);
 document.getElementById('closeMapBtn').addEventListener('click', closeSeatingMap);
-document.querySelectorAll('.frame-option').forEach((option) => {
-  option.addEventListener('click', () => selectFrame(option.dataset.frame));
-});
 mapModal.addEventListener('click', (event) => {
   if(event.target === mapModal) closeSeatingMap();
 });

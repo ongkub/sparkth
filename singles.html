@@ -264,12 +264,34 @@ async function loadSingles(){
   try{
     const r = await fetch(`${API_BASE}/singles?userId=${encodeURIComponent(MY_ID)}`);
     const d = await r.json();
+    if(d.locked){
+      showLocked();
+      return;
+    }
     singles = d.singles || [];
   }catch(e){
     showEmpty('โหลดข้อมูลไม่ได้ กรุณาลองใหม่');
     return;
   }
   renderCards();
+}
+
+function showLocked(){
+  document.getElementById('cardsArea').innerHTML = '';
+  document.getElementById('actionRow').style.visibility = 'hidden';
+  document.getElementById('countBar').textContent = '';
+  // show lock overlay
+  const lo = document.createElement('div');
+  lo.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px;text-align:center;background:var(--surface);border-radius:20px';
+  lo.innerHTML = `
+    <div style="font-size:64px">🔒</div>
+    <div style="font-family:\'Playfair Display\',serif;font-size:22px;color:var(--primary)">Singles Zone</div>
+    <div style="font-size:14px;line-height:1.8;color:var(--muted)">ต้องตั้งค่าโปรไฟล์และติ๊ก<br><strong>"ฉันโสด"</strong> ก่อนถึงจะเข้าได้</div>
+    <a href="profile.html?userId=${encodeURIComponent(MY_ID)}&back=${encodeURIComponent(location.href)}"
+       style="background:linear-gradient(135deg,var(--primary),var(--primary-soft));color:white;padding:13px 28px;border-radius:999px;font-weight:700;font-size:15px;text-decoration:none;box-shadow:0 6px 20px rgba(113,88,39,.24)">
+      ไปตั้งค่าโปรไฟล์
+    </a>`;
+  document.getElementById('cardsArea').appendChild(lo);
 }
 
 function renderCards(){

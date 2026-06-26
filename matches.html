@@ -105,17 +105,31 @@ function displayName(m){ return m.nickName || m.nickname || m.displayName || 'Gu
 function bestPhoto(m){ return m.customPhoto || m.pictureUrl || '' }
 
 async function load(){
-  if(!MY_ID){
-    render([]);
-    return;
-  }
+  if(!MY_ID){ renderLocked(); return; }
   try{
+    // Check if user is single first via /singles (locked flag)
+    const singlesRes = await fetch(`${API_BASE}/singles?userId=${encodeURIComponent(MY_ID)}`);
+    const singlesData = await singlesRes.json();
+    if(singlesData.locked){ renderLocked(); return; }
+
     const r = await fetch(`${API_BASE}/matches?userId=${encodeURIComponent(MY_ID)}`);
     const d = await r.json();
     render(d.matches || []);
   }catch(_){
     document.getElementById('content').innerHTML = '<div class="loading">โหลดไม่ได้ กรุณาลองใหม่</div>';
   }
+}
+
+function renderLocked(){
+  const singlesHref = MY_ID ? `singles.html?userId=${encodeURIComponent(MY_ID)}` : 'singles.html';
+  const profileHref = MY_ID ? `profile.html?userId=${encodeURIComponent(MY_ID)}&back=${encodeURIComponent(location.href)}` : 'profile.html';
+  document.getElementById('content').innerHTML = `
+    <div class="empty">
+      <div class="empty-icon">🔒</div>
+      <div class="empty-title">Matches</div>
+      <div class="empty-sub">ต้องตั้งค่าโปรไฟล์และติ๊ก<br><strong>"ฉันโสด"</strong> ก่อนถึงจะเข้าได้</div>
+      <a class="swipe-cta" href="${profileHref}">ไปตั้งค่าโปรไฟล์</a>
+    </div>`;
 }
 
 function render(matches){

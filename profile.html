@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>โปรไฟล์ – Wedding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+:root{
+  --surface:#FFF8F5;--paper:#FFFFFF;--paper-low:#FBF2ED;--paper-high:#EFE6E2;
+  --primary:#715827;--primary-soft:#8C713D;--secondary:#6A5D43;
+  --text:#1E1B18;--muted:#7F7669;--border:#D0C5B6;
+  --ok:#4F8C6B;--danger:#BA1A1A;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Noto Sans Thai',sans-serif;color:var(--text);
+  background:radial-gradient(circle at 50% 0%, #FBF2ED 0%, var(--surface) 58%);
+  min-height:100dvh;
+}
+.wrap{width:min(520px,100%);margin:0 auto;padding:0 0 40px}
+
+/* top bar */
+.top-bar{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 16px 0;margin-bottom:4px;
+}
+.back-btn{
+  width:38px;height:38px;border:0;border-radius:50%;flex-shrink:0;
+  background:var(--paper);box-shadow:0 2px 8px rgba(113,88,39,.12);
+  color:var(--primary);font-size:18px;cursor:pointer;display:grid;place-items:center;
+}
+.page-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--primary)}
+
+/* photo area */
+.photo-area{
+  position:relative;width:100%;aspect-ratio:1;
+  background:var(--paper-high);overflow:hidden;cursor:pointer;
+}
+.photo-area img,.photo-area .photo-placeholder{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+.photo-placeholder{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;color:var(--muted);
+}
+.photo-placeholder-icon{font-size:52px;opacity:.55}
+.photo-placeholder-text{font-size:13px;font-family:'Be Vietnam Pro',sans-serif;font-weight:500}
+.photo-change-btn{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:40px 16px 16px;
+  background:linear-gradient(to top,rgba(0,0,0,.62),transparent);
+  color:white;text-align:center;
+  font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;
+  letter-spacing:.06em;
+}
+
+/* content below photo */
+.content{padding:20px 16px}
+
+.guest-name{font-family:'Playfair Display',serif;font-size:26px;color:var(--primary)}
+.guest-sub{font-size:13px;color:var(--secondary);margin-top:3px}
+
+.divider-label{
+  margin-top:22px;padding-top:18px;border-top:1px solid var(--border);
+  font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--secondary);
+  margin-bottom:14px;
+}
+
+/* toggle */
+.toggle-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:15px 16px;background:var(--paper);
+  border:1px solid var(--border);border-radius:14px;
+  cursor:pointer;margin-bottom:14px;
+}
+.toggle-label{font-size:15px;font-weight:500;color:var(--text)}
+.toggle-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.toggle-switch{
+  width:48px;height:28px;border-radius:999px;
+  background:var(--border);position:relative;
+  transition:background .2s;flex-shrink:0;
+}
+.toggle-switch.on{background:var(--primary)}
+.toggle-knob{
+  position:absolute;top:3px;left:3px;
+  width:22px;height:22px;border-radius:50%;
+  background:white;box-shadow:0 1px 4px rgba(0,0,0,.22);
+  transition:transform .2s;
+}
+.toggle-switch.on .toggle-knob{transform:translateX(20px)}
+
+/* pill groups */
+.field-label{
+  font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--secondary);
+  margin-bottom:10px;margin-top:18px;
+  display:block;
+}
+.pill-group{display:flex;gap:8px;flex-wrap:wrap}
+.pill{
+  padding:9px 20px;border-radius:999px;border:1.5px solid var(--border);
+  background:white;font:inherit;font-size:14px;font-weight:500;color:var(--secondary);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.pill.active{
+  border-color:var(--primary);background:var(--primary);color:white;
+  box-shadow:0 2px 8px rgba(113,88,39,.25);
+}
+
+/* settings section hidden when not single */
+.singles-settings{transition:opacity .2s}
+.singles-settings.disabled{opacity:.38;pointer-events:none}
+
+/* IG input */
+.ig-wrap{position:relative;margin-top:10px}
+.ig-prefix{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:13px;color:var(--muted);pointer-events:none;
+}
+.ig-input{
+  width:100%;border:1px solid var(--border);border-radius:10px;
+  padding:14px 14px 14px 128px;font:inherit;background:white;
+  color:var(--text);outline:none;font-size:15px;
+}
+.ig-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(113,88,39,.12)}
+
+/* save button */
+.save-btn{
+  width:100%;border:0;border-radius:999px;padding:0 20px;
+  font:inherit;font-weight:700;font-size:16px;min-height:54px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-soft));
+  color:white;cursor:pointer;margin-top:24px;
+  box-shadow:0 8px 20px rgba(113,88,39,.22);
+  transition:opacity .15s;
+}
+.save-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* status */
+.status{
+  padding:12px 14px;border-radius:10px;font-size:14px;
+  text-align:center;color:var(--secondary);margin-top:14px;
+  background:rgba(255,255,255,.72);border:1px solid var(--border);
+  display:none;
+}
+.status.ok{border-color:rgba(79,140,107,.35);background:rgba(79,140,107,.08);color:var(--ok);display:block}
+.status.err{border-color:rgba(184,90,90,.3);background:rgba(184,90,90,.08);color:var(--danger);display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-bar">
+    <button class="back-btn" id="backBtn">←</button>
+    <div class="page-title">โปรไฟล์</div>
+  </div>
+
+  <!-- Full-width photo -->
+  <div class="photo-area" id="photoArea">
+    <div class="photo-placeholder" id="photoPlaceholder">
+      <div class="photo-placeholder-icon">🤳</div>
+      <div class="photo-placeholder-text">กดเพื่อเพิ่มรูปโปรไฟล์</div>
+    </div>
+    <img id="photoImg" alt="" style="display:none">
+    <div class="photo-change-btn" id="photoChangeBtn">📷 เปลี่ยนรูป</div>
+  </div>
+  <input type="file" id="photoInput" accept="image/*" style="display:none">
+
+  <div class="content">
+    <div class="guest-name" id="guestName">กำลังโหลด...</div>
+    <div class="guest-sub" id="guestSub"></div>
+
+    <div class="divider-label">ตั้งค่าสำหรับ Singles Zone</div>
+
+    <div class="toggle-row" id="singleToggleRow">
+      <div>
+        <div class="toggle-label">ฉันโสด 💕</div>
+        <div class="toggle-sub">เปิดเพื่อเข้า Singles Zone และปรากฏในการ์ดของคนอื่น</div>
+      </div>
+      <div class="toggle-switch" id="singleSwitch">
+        <div class="toggle-knob"></div>
+      </div>
+    </div>
+
+    <div class="singles-settings disabled" id="singlesSettings">
+      <span class="field-label">เพศของฉัน</span>
+      <div class="pill-group" id="genderGroup">
+        <button class="pill" data-value="male">ชาย</button>
+        <button class="pill" data-value="female">หญิง</button>
+        <button class="pill" data-value="other">อื่นๆ</button>
+      </div>
+
+      <span class="field-label">ฉันสนใจ</span>
+      <div class="pill-group" id="genderPrefGroup">
+        <button class="pill" data-value="male">ชาย</button>
+        <button class="pill" data-value="female">หญิง</button>
+        <button class="pill" data-value="both">ทั้งคู่</button>
+      </div>
+
+      <span class="field-label">Instagram (สำหรับ Match เท่านั้น)</span>
+      <div class="ig-wrap">
+        <span class="ig-prefix">instagram.com/</span>
+        <input class="ig-input" id="igInput" placeholder="yourname" autocomplete="off">
+      </div>
+    </div>
+
+    <button class="save-btn" id="saveBtn">บันทึกโปรไฟล์</button>
+    <div class="status" id="statusEl"></div>
+  </div>
+</div>
+
+<script>
+const API_BASE = (localStorage.getItem('weddingApiUrl') || 'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/, '');
+const p = new URLSearchParams(location.search);
+const MY_ID = p.get('userId') || localStorage.getItem('weddingUserId') || '';
+const BACK = p.get('back') || 'checkin.html';
+
+let isSingle = false;
+let selectedGender = '';
+let selectedGenderPref = '';
+let customPhoto = null;
+let originalPhoto = '';
+
+document.getElementById('backBtn').onclick = () => location.href = BACK;
+
+// Photo
+const photoArea = document.getElementById('photoArea');
+const photoImg = document.getElementById('photoImg');
+const photoPlaceholder = document.getElementById('photoPlaceholder');
+const photoInput = document.getElementById('photoInput');
+
+photoArea.addEventListener('click', () => photoInput.click());
+
+photoInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    customPhoto = await compressImage(file, 600, 0.85);
+    showPhoto(customPhoto);
+  } catch(_) {}
+  e.target.value = '';
+});
+
+function compressImage(file, maxPx, quality) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(maxPx / img.width, maxPx / img.height, 1);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = url;
+  });
+}
+
+function showPhoto(src) {
+  photoImg.src = src;
+  photoImg.style.display = 'block';
+  photoPlaceholder.style.display = 'none';
+  document.getElementById('photoChangeBtn').style.display = '';
+}
+
+// Single toggle
+const singleSwitch = document.getElementById('singleSwitch');
+const singlesSettings = document.getElementById('singlesSettings');
+
+document.getElementById('singleToggleRow').addEventListener('click', () => {
+  isSingle = !isSingle;
+  singleSwitch.classList.toggle('on', isSingle);
+  singlesSettings.classList.toggle('disabled', !isSingle);
+});
+
+// Pill groups
+function initPills(groupId, onSelect) {
+  const group = document.getElementById(groupId);
+  group.querySelectorAll('.pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      onSelect(btn.dataset.value);
+    });
+  });
+}
+
+function setPill(groupId, value) {
+  const group = document.getElementById(groupId);
+  group.querySelectorAll('.pill').forEach(b => b.classList.toggle('active', b.dataset.value === value));
+}
+
+initPills('genderGroup', v => { selectedGender = v; });
+initPills('genderPrefGroup', v => { selectedGenderPref = v; });
+
+// Load existing profile
+async function load() {
+  if (!MY_ID) {
+    document.getElementById('guestName').textContent = 'ไม่พบข้อมูล';
+    return;
+  }
+  try {
+    const r = await fetch(`${API_BASE}/checkin?userId=${encodeURIComponent(MY_ID)}`);
+    const d = await r.json();
+    const data = d.data || {};
+    const name = data.nickName || data.nickname || data.name || data.displayName || 'Guest';
+    document.getElementById('guestName').textContent = `คุณ${name}`;
+    document.getElementById('guestSub').textContent = data.tableName ? `โต๊ะ ${data.tableName}` : '';
+
+    // Photo
+    const photoSrc = data.customPhoto || data.photo || '';
+    if (photoSrc) { showPhoto(photoSrc); originalPhoto = photoSrc; }
+
+    // Single
+    isSingle = Boolean(data.isSingle);
+    singleSwitch.classList.toggle('on', isSingle);
+    singlesSettings.classList.toggle('disabled', !isSingle);
+
+    // Gender
+    selectedGender = data.gender || '';
+    if (selectedGender) setPill('genderGroup', selectedGender);
+
+    selectedGenderPref = data.genderPref || '';
+    if (selectedGenderPref) setPill('genderPrefGroup', selectedGenderPref);
+
+    // IG
+    document.getElementById('igInput').value = data.instagram || '';
+  } catch (_) {
+    document.getElementById('guestName').textContent = 'โหลดข้อมูลไม่ได้';
+  }
+}
+
+// Save
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('saveBtn');
+  const statusEl = document.getElementById('statusEl');
+  btn.disabled = true;
+  btn.textContent = 'กำลังบันทึก...';
+  statusEl.className = 'status';
+
+  try {
+    const r = await fetch(`${API_BASE}/profile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: MY_ID,
+        isSingle,
+        gender: selectedGender,
+        genderPref: selectedGenderPref,
+        instagram: document.getElementById('igInput').value.trim(),
+        customPhoto: customPhoto || undefined,
+      })
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'บันทึกไม่สำเร็จ');
+    statusEl.textContent = 'บันทึกเรียบร้อยแล้ว ✓';
+    statusEl.className = 'status ok';
+  } catch (e) {
+    statusEl.textContent = e.message || 'บันทึกไม่สำเร็จ กรุณาลองใหม่';
+    statusEl.className = 'status err';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'บันทึกโปรไฟล์';
+  }
+});
+
+load();
+</script>
+</body>
+</html>
