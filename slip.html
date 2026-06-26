@@ -222,6 +222,7 @@ label:has(input[type=radio]:checked) .hidden-check{display:flex}
 
 <script>
 const API='https://sparkth-production.up.railway.app/slip';
+const API_BASE=(localStorage.getItem('weddingApiUrl')||'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/,'');
 const LIFF_ID=localStorage.getItem('weddingSlipLiffId')||'2006674119-vpB15mY0';
 const MAX_SIZE=5*1024*1024;
 const T={
@@ -267,9 +268,18 @@ async function initSlipLIFF(){
     await liff.init({liffId:LIFF_ID});
     if(!liff.isLoggedIn()){liff.login();return;}
     lineProfile=await liff.getProfile();
-    const nickname=q('nickname');
-    if(nickname && !nickname.value.trim()){
-      nickname.value=bestNickname(lineProfile.displayName);
+    const nicknameEl=q('nickname');
+    if(nicknameEl && !nicknameEl.value.trim()){
+      // Try to prefill from RSVP data first (more accurate than LINE display name)
+      try{
+        const r=await fetch(`${API_BASE}/checkin?userId=${encodeURIComponent(lineProfile.userId)}`);
+        const d=await r.json();
+        const rsvp=d?.data;
+        const rsvpNick=rsvp?.nickName||rsvp?.nickname||'';
+        nicknameEl.value=rsvpNick||bestNickname(lineProfile.displayName);
+      }catch(_){
+        nicknameEl.value=bestNickname(lineProfile.displayName);
+      }
     }
   }catch(error){
     console.warn('LIFF init error',error);
