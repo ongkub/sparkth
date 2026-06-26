@@ -132,6 +132,14 @@ async function ensureSchema() {
      ADD COLUMN IF NOT EXISTS wall_frame TEXT NOT NULL DEFAULT 'classic'`
   );
   await pool.query(
+    `ALTER TABLE checkins
+     ADD COLUMN IF NOT EXISTS custom_photo TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
+    `ALTER TABLE rsvp_submissions
+     ADD COLUMN IF NOT EXISTS custom_photo TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
     `CREATE TABLE IF NOT EXISTS line_webhook_events (
        id BIGSERIAL PRIMARY KEY,
        event_type TEXT NOT NULL DEFAULT '',
@@ -324,12 +332,27 @@ app.post('/checkin', async (req, res) => {
     const social = normalizeSocial(data);
     const tableName = safeText(data.tableName || data.table_name || rsvp.table_name);
     const pictureUrl = safeText(data.pictureUrl || data.photo || rsvp.picture_url);
+    const customPhoto = safeText(data.customPhoto) || '';
     if (rsvp.checked_in_at) {
       await updateRsvpCheckin(lineUserId, {
         tableName,
         source: safeText(data.source) || rsvp.checkin_source || 'qr',
-        ...social
+        ...social,
+        customPhoto
       });
+      // Broadcast profile update to welcome wall
+      const updated = await pool.query(
+        `UPDATE checkins
+         SET is_single = $2, instagram = $3, show_social_on_wall = $4, wall_frame = $5,
+             custom_photo = CASE WHEN $6 <> '' THEN $6 ELSE custom_photo END
+         WHERE id = (
+           SELECT id FROM checkins WHERE line_user_id = $1 ORDER BY checked_in_at DESC LIMIT 1
+         )
+         RETURNING id, line_user_id, display_name, nickname, picture_url, source, beacon_type,
+                   table_name, is_single, instagram, show_social_on_wall, wall_frame, custom_photo, checked_in_at`,
+        [lineUserId, social.isSingle, social.instagram, social.showSocialOnWall, social.wallFrame, customPhoto]
+      );
+      if (updated.rowCount > 0) broadcastWelcome(formatCheckin(updated.rows[0]));
       res.json({
         success: true,
         checkedIn: true,
@@ -340,7 +363,8 @@ app.post('/checkin', async (req, res) => {
           is_single: social.isSingle,
           instagram: social.instagram,
           show_social_on_wall: social.showSocialOnWall,
-          wall_frame: social.wallFrame
+          wall_frame: social.wallFrame,
+          custom_photo: customPhoto || rsvp.custom_photo
         })
       });
       return;
@@ -349,7 +373,8 @@ app.post('/checkin', async (req, res) => {
     await updateRsvpCheckin(lineUserId, {
       tableName,
       source: safeText(data.source) || 'qr',
-      ...social
+      ...social,
+      customPhoto
     });
 
     const checkin = await createCheckin({
@@ -359,7 +384,8 @@ app.post('/checkin', async (req, res) => {
       pictureUrl,
       source: safeText(data.source) || 'qr',
       tableName,
-      ...social
+      ...social,
+      customPhoto
     });
 
     res.json({ success: true, checkedIn: true, checkin });
@@ -987,6 +1013,7 @@ function formatCheckin(row) {
     nickname: row.nickname,
     pictureUrl: row.picture_url,
     photo: row.picture_url,
+    customPhoto: row.custom_photo || '',
     source: row.source,
     beaconType: row.beacon_type,
     tableName: row.table_name || '',
@@ -1011,7 +1038,7 @@ async function lookupRsvp(lineUserId) {
   const result = await pool.query(
     `SELECT line_user_id, first_name, last_name, nickname, full_name, picture_url,
             table_name, checked_in_at, checkin_source, is_single, instagram,
-            show_social_on_wall, wall_frame, welcome_announced_at
+            show_social_on_wall, wall_frame, welcome_announced_at, custom_photo
      FROM rsvp_submissions
      WHERE line_user_id = $1`,
     [lineUserId]
@@ -1032,6 +1059,7 @@ function formatCheckinRsvp(row) {
     nickname: row.nickname,
     name: row.full_name,
     photo: row.picture_url || '',
+    customPhoto: row.custom_photo || '',
     tableName: row.table_name || '',
     checkedInAt: row.checked_in_at?.toISOString?.() || '',
     checkinSource: row.checkin_source || '',
@@ -1043,7 +1071,7 @@ function formatCheckinRsvp(row) {
   };
 }
 
-async function updateRsvpCheckin(lineUserId, { tableName, source, isSingle, instagram, showSocialOnWall, wallFrame }) {
+async function updateRsvpCheckin(lineUserId, { tableName, source, isSingle, instagram, showSocialOnWall, wallFrame, customPhoto }) {
   await pool.query(
     `UPDATE rsvp_submissions
      SET table_name = $2,
@@ -1052,7 +1080,8 @@ async function updateRsvpCheckin(lineUserId, { tableName, source, isSingle, inst
          is_single = $4,
          instagram = $5,
          show_social_on_wall = $6,
-         wall_frame = $7
+         wall_frame = $7,
+         custom_photo = CASE WHEN $8 <> '' THEN $8 ELSE custom_photo END
      WHERE line_user_id = $1`,
     [
       lineUserId,
@@ -1061,7 +1090,8 @@ async function updateRsvpCheckin(lineUserId, { tableName, source, isSingle, inst
       Boolean(isSingle),
       safeInstagram(instagram),
       Boolean(showSocialOnWall),
-      safeWallFrame(wallFrame)
+      safeWallFrame(wallFrame),
+      safeText(customPhoto) || ''
     ]
   );
 }
@@ -1090,7 +1120,8 @@ async function createCheckin({
   isSingle,
   instagram,
   showSocialOnWall,
-  wallFrame
+  wallFrame,
+  customPhoto
 }) {
   const rsvp = await lookupRsvp(lineUserId);
   const rsvpPicture = safeText(rsvp?.picture_url);
@@ -1118,7 +1149,7 @@ async function createCheckin({
   if (lineUserId) {
     const recent = await pool.query(
       `SELECT id, line_user_id, display_name, nickname, picture_url, source, beacon_type,
-              table_name, is_single, instagram, show_social_on_wall, wall_frame, checked_in_at
+              table_name, is_single, instagram, show_social_on_wall, wall_frame, checked_in_at, custom_photo
        FROM checkins
        WHERE line_user_id = $1
          AND checked_in_at > NOW() - ($2::int * INTERVAL '1 millisecond')
@@ -1132,14 +1163,15 @@ async function createCheckin({
   }
 
   const shouldBroadcast = !lineUserId || !rsvp?.welcome_announced_at;
+  const resolvedCustomPhoto = safeText(customPhoto) || '';
   const result = await pool.query(
     `INSERT INTO checkins (
        line_user_id, display_name, nickname, picture_url, source, beacon_type,
-       table_name, is_single, instagram, show_social_on_wall, wall_frame, checked_in_at
+       table_name, is_single, instagram, show_social_on_wall, wall_frame, custom_photo, checked_in_at
      )
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
      RETURNING id, line_user_id, display_name, nickname, picture_url, source, beacon_type,
-               table_name, is_single, instagram, show_social_on_wall, wall_frame, checked_in_at`,
+               table_name, is_single, instagram, show_social_on_wall, wall_frame, custom_photo, checked_in_at`,
     [
       safeText(lineUserId),
       resolvedDisplayName,
@@ -1151,7 +1183,8 @@ async function createCheckin({
       resolvedIsSingle,
       resolvedInstagram,
       resolvedShowSocialOnWall,
-      resolvedWallFrame
+      resolvedWallFrame,
+      resolvedCustomPhoto
     ]
   );
 

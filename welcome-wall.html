@@ -331,7 +331,7 @@ function makeBubble(data, isNew=false){
 
   const el = document.createElement('div');
   el.className = `bubble frame-${frame}${isNew ? ' new' : ''}${isSingle || frame === 'single' ? ' single' : ''}`;
-  const picture = data.pictureUrl || data.photo || '';
+  const picture = data.customPhoto || data.pictureUrl || data.photo || '';
   el.innerHTML = `
     <div class="bubble-inner">
       <div class="avatar-ring">
