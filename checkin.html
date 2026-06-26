@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
 <style>
 :root{
@@ -64,6 +65,10 @@ body{
 .field-label{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary);font-weight:600;margin-bottom:8px;margin-top:16px}
 .single-section{margin-top:14px;padding:16px;background:var(--paper-low);border-radius:12px;border:1px solid var(--border)}
 .single-section .checkline{background:white}
+.checkline-top{margin-top:16px}
+#igInputWrap{margin-top:10px}
+#instagram{padding-left:118px}
+.event-title{font-size:18px}
 .input{
   width:100%;border:1px solid var(--border);border-radius:10px;padding:14px 14px;
   font:inherit;background:white;color:var(--text);outline:none;
@@ -165,7 +170,7 @@ body{
     </div>
     <div class="note" id="tableNote">ถ้าโต๊ะยังว่าง ให้แจ้งทีมงานหน้างานเพื่ออัปเดตให้ทันที</div>
 
-    <label class="checkline" style="margin-top:16px">
+    <label class="checkline checkline-top">
       <input type="checkbox" id="isSingle">
       <span>ฉันโสด และอยากได้กรอบ / badge พิเศษบน Welcome Screen</span>
     </label>
@@ -174,10 +179,10 @@ body{
         <input type="checkbox" id="showSocial">
         <span>ต้องการให้แสดง Instagram บน Welcome Screen</span>
       </label>
-      <div id="igInputWrap" class="hidden" style="margin-top:10px">
+      <div id="igInputWrap" class="hidden">
         <div class="ig-wrap">
           <span class="ig-prefix">instagram.com/</span>
-          <input class="input" id="instagram" placeholder="yourname" style="padding-left:118px">
+          <input class="input" id="instagram" placeholder="yourname">
         </div>
       </div>
       <div class="field-label">เลือกกรอบรูปบน Welcome Screen</div>
@@ -217,7 +222,7 @@ body{
     <div class="event-card">
       <div class="event-icon"><span class="material-symbols-outlined">calendar_today</span></div>
       <div>
-        <div class="hello" style="font-size:18px">ข้อมูลงานแต่งงาน</div>
+        <div class="hello event-title">ข้อมูลงานแต่งงาน</div>
         <div class="sub">วันศุกร์ที่ 3 กรกฎาคม 2569 · Chatrium Riverside Bangkok</div>
       </div>
     </div>

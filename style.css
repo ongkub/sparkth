@@ -1,0 +1,42 @@
+/* ─── Shared Fonts ─── */
+@font-face{
+  font-family:'Corinthia';
+  src:url('Wedding%20Card/Fonts/Corinthia-Regular.ttf') format('truetype');
+  font-weight:400;font-style:normal;font-display:swap;
+}
+@font-face{
+  font-family:'BodoniModa';
+  src:url('Wedding%20Card/Fonts/BodoniModa_9pt-Medium.ttf') format('truetype');
+  font-weight:500;font-style:normal;font-display:swap;
+}
+@font-face{
+  font-family:'BodoniModa';
+  src:url('Wedding%20Card/Fonts/BodoniModa_9pt-SemiBold.ttf') format('truetype');
+  font-weight:600;font-style:normal;font-display:swap;
+}
+@font-face{
+  font-family:'ElmsSans';
+  src:url('Wedding%20Card/Fonts/ElmsSans-Regular.ttf') format('truetype');
+  font-weight:400;font-style:normal;font-display:swap;
+}
+
+/* ─── Design Tokens — Pastel Theme (admin, rsvp, slip) ─── */
+:root{
+  --ivory:#FEFCFB;
+  --cream:#FEF0EE;
+  --golden:#FFE7AB;
+  --olive:#C5DBA9;
+  --rose:#F59C9A;
+  --peach:#FFBE98;
+  --deep:#F07070;
+  --mint:#9ECCF0;
+  --sky:#9ECCF0;
+  --text:#3A2E2C;
+  --muted:#A08880;
+  --border:#F5D8D4;
+  --white:#FFFFFF;
+  --shadow:rgba(58,46,44,.06);
+}
+
+/* ─── Utilities ─── */
+.hidden{display:none!important}
