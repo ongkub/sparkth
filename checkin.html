@@ -61,13 +61,9 @@ body{
   margin-top:14px;padding:11px 13px;border-radius:10px;background:rgba(251,242,237,.72);
   border:1px solid rgba(208,197,182,.55);font-size:12px;line-height:1.55;color:var(--muted);text-align:center;
 }
-.settings-card{border-style:dashed;border-width:2px;overflow:hidden;padding:0}
-.settings-head{background:var(--paper-high);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.settings-title{font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
-.optional{font-family:'Be Vietnam Pro',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary);font-weight:600}
-.settings-body{padding:20px}
-.field{margin-top:0}
-.field-label{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary);font-weight:600;margin-bottom:8px;margin-top:20px}
+.field-label{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary);font-weight:600;margin-bottom:8px;margin-top:16px}
+.single-section{margin-top:14px;padding:16px;background:var(--paper-low);border-radius:12px;border:1px solid var(--border)}
+.single-section .checkline{background:white}
 .input{
   width:100%;border:1px solid var(--border);border-radius:10px;padding:14px 14px;
   font:inherit;background:white;color:var(--text);outline:none;
@@ -169,51 +165,38 @@ body{
     </div>
     <div class="note" id="tableNote">ถ้าโต๊ะยังว่าง ให้แจ้งทีมงานหน้างานเพื่ออัปเดตให้ทันที</div>
 
-    <div class="panel settings-card">
-      <div class="settings-head">
-        <div class="settings-title">
-          <span class="material-symbols-outlined">photo_camera</span>
-          Welcome Screen Settings
+    <label class="checkline" style="margin-top:16px">
+      <input type="checkbox" id="isSingle">
+      <span>ฉันโสด และอยากได้กรอบ / badge พิเศษบน Welcome Screen</span>
+    </label>
+    <div id="igSection" class="hidden single-section">
+      <label class="checkline">
+        <input type="checkbox" id="showSocial">
+        <span>ต้องการให้แสดง Instagram บน Welcome Screen</span>
+      </label>
+      <div id="igInputWrap" class="hidden" style="margin-top:10px">
+        <div class="ig-wrap">
+          <span class="ig-prefix">instagram.com/</span>
+          <input class="input" id="instagram" placeholder="yourname" style="padding-left:118px">
         </div>
-        <div class="optional">Optional</div>
       </div>
-      <div class="settings-body">
-        <div class="field">
-          <label class="checkline">
-            <input type="checkbox" id="isSingle">
-            <span>ฉันโสด และอยากได้กรอบ / badge พิเศษบน Welcome Screen</span>
-          </label>
-          <div id="igSection" class="hidden" style="margin-top:14px;padding:14px;background:var(--paper-low);border-radius:10px;border:1px solid var(--border)">
-            <label class="checkline" style="margin-bottom:12px">
-              <input type="checkbox" id="showSocial">
-              <span>ต้องการให้แสดง Instagram บน Welcome Screen</span>
-            </label>
-            <div id="igInputWrap" class="hidden" style="margin-top:12px">
-              <div class="ig-wrap">
-                <span class="ig-prefix">instagram.com/</span>
-                <input class="input" id="instagram" placeholder="yourname" style="padding-left:118px">
-              </div>
-            </div>
-          </div>
-          <div class="field-label">เลือกกรอบรูปบน Welcome Screen</div>
-          <div class="frame-grid" id="frameGrid" aria-label="เลือกกรอบรูป">
-            <button class="frame-option active" type="button" data-frame="classic">
-              <span class="frame-dot"></span><span class="frame-label">Classic</span>
-            </button>
-            <button class="frame-option" type="button" data-frame="single">
-              <span class="frame-dot"></span><span class="frame-label">Single</span>
-            </button>
-            <button class="frame-option" type="button" data-frame="bride">
-              <span class="frame-dot"></span><span class="frame-label">Bride</span>
-            </button>
-            <button class="frame-option" type="button" data-frame="groom">
-              <span class="frame-dot"></span><span class="frame-label">Groom</span>
-            </button>
-            <button class="frame-option" type="button" data-frame="lucky">
-              <span class="frame-dot"></span><span class="frame-label">Lucky</span>
-            </button>
-          </div>
-        </div>
+      <div class="field-label">เลือกกรอบรูปบน Welcome Screen</div>
+      <div class="frame-grid" id="frameGrid" aria-label="เลือกกรอบรูป">
+        <button class="frame-option active" type="button" data-frame="classic">
+          <span class="frame-dot"></span><span class="frame-label">Classic</span>
+        </button>
+        <button class="frame-option" type="button" data-frame="single">
+          <span class="frame-dot"></span><span class="frame-label">Single</span>
+        </button>
+        <button class="frame-option" type="button" data-frame="bride">
+          <span class="frame-dot"></span><span class="frame-label">Bride</span>
+        </button>
+        <button class="frame-option" type="button" data-frame="groom">
+          <span class="frame-dot"></span><span class="frame-label">Groom</span>
+        </button>
+        <button class="frame-option" type="button" data-frame="lucky">
+          <span class="frame-dot"></span><span class="frame-label">Lucky</span>
+        </button>
       </div>
     </div>
 
