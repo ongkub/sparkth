@@ -401,25 +401,33 @@ const MOCK_MODE = urlParams.get('mock') === 'true';
 if(MOCK_MODE){
   const mockName = urlParams.get('name') || 'Mock User';
   const mockTable = urlParams.get('table') || '';
+  const noRsvp = urlParams.get('norsvp') === 'true';
   profile = {
     userId: urlParams.get('uid') || 'mock-uid-001',
     displayName: mockName,
     pictureUrl: ''
   };
-  rsvp = {
-    name: mockName,
-    nickName: mockName,
-    tableName: mockTable,
-    guests: parseInt(urlParams.get('guests') || '2', 10),
-    isSingle: false,
-    showSocialOnWall: false,
-    instagram: '',
-    wallFrame: 'classic'
-  };
-  loadSeatingMap().catch(() => {});
-  setStatus(mockTable ? 'เช็กอินเรียบร้อยแล้ว [Mock]' : '⚙️ Mock Mode — ไม่มีข้อมูลโต๊ะ (ใส่ ?table=3)', mockTable ? 'ok' : '');
-  showProfile();
-  if(mockTable){ autoCheckinDone = true; showDone(); }
+  if(noRsvp){
+    // Simulate walk-in (no RSVP) flow
+    setStatus('ไม่พบชื่อในระบบ — กรุณาใส่ชื่อเพื่อเช็กอินด้วยตัวเอง');
+    document.getElementById('walkInPanel').classList.remove('hidden');
+    document.getElementById('walkInName').value = mockName !== 'Mock User' ? mockName : '';
+  } else {
+    rsvp = {
+      name: mockName,
+      nickName: mockName,
+      tableName: mockTable,
+      guests: parseInt(urlParams.get('guests') || '2', 10),
+      isSingle: false,
+      showSocialOnWall: false,
+      instagram: '',
+      wallFrame: 'classic'
+    };
+    loadSeatingMap().catch(() => {});
+    setStatus(mockTable ? 'เช็กอินเรียบร้อยแล้ว [Mock]' : '⚙️ Mock Mode — ไม่มีข้อมูลโต๊ะ (ใส่ ?table=3)', mockTable ? 'ok' : '');
+    showProfile();
+    if(mockTable){ autoCheckinDone = true; showDone(); }
+  }
 } else {
   liff.init({ liffId: LIFF_ID })
     .then(async () => {
