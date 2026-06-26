@@ -465,6 +465,9 @@ tr:hover td{background:rgba(254,240,238,.4)}
     <div class="nav-item" onclick="nav('frames', this)">
       <span class="nav-icon">🖼</span>กรอบ Profile
     </div>
+    <div class="nav-item" onclick="nav('paymentqr', this)">
+      <span class="nav-icon">💳</span>QR โอนเงิน
+    </div>
     <div class="nav-item" onclick="nav('slip', this)">
       <span class="nav-icon">💸</span>สลิปโอนเงิน
     </div>
@@ -959,6 +962,32 @@ tr:hover td{background:rgba(254,240,238,.4)}
       </div>
     </div>
 
+    <!-- ═══ SECTION: PAYMENT QR ═══ -->
+    <div class="section" id="sec-paymentqr">
+      <div class="sec-title">QR โอนเงิน</div>
+      <div class="sec-sub">อัปโหลด QR Code สำหรับให้แขกสแกนโอนเงินเป็นของขวัญ</div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-h">💳 อัปโหลด QR Code</div>
+          <div class="info-box" style="margin-bottom:14px">
+            <p>รองรับไฟล์รูปภาพ JPG, PNG หรือ WebP ขนาดไม่เกิน 5 MB<br>
+            หลังอัปโหลด แขกที่กดเมนู "โอนเงินของขวัญ" จะเห็น QR Code นี้ทันที</p>
+          </div>
+          <input type="file" id="paymentQrFile" accept="image/*" class="config-inp" style="padding:9px;background:white">
+          <button class="save-btn" style="margin-top:12px" onclick="uploadPaymentQr()">อัปโหลด QR Code</button>
+          <div id="paymentQrStatus" style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-h">👁️ QR Code ปัจจุบัน</div>
+          <div id="paymentQrPreview">
+            <div class="loading-overlay">⏳ กำลังโหลด...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══ SECTION: SLIP ═══ -->
     <div class="section" id="sec-slip">
       <div class="sec-title">สลิปโอนเงิน</div>
@@ -1071,6 +1100,7 @@ const SHEET_URL = (SAVED_API_URL && !SAVED_API_URL.includes('script.google.com')
   : 'https://sparkth-production.up.railway.app/rsvp').trim();
 const API_BASE = SHEET_URL.replace(/\/rsvp$/, '');
 const SEATING_MAP_API = API_BASE + '/seating-map';
+const PAYMENT_QR_API = API_BASE + '/payment-qr';
 const SEATING_ASSIGN_API = API_BASE + '/seating/assign';
 const FRAME_TEMPLATES_API = API_BASE + '/frame-templates';
 const ADMIN_LIFF  = localStorage.getItem('weddingAdminLiffId') || '2006674119-kldPE7YA';
@@ -1108,6 +1138,7 @@ function nav(id, navItem){
   if(id==='dashboard') loadDashboard();
   if(id==='seating'){ loadSeatingMapAdmin(); loadSeatingGuests(); }
   if(id==='frames') loadFrameTemplatesAdmin();
+  if(id==='paymentqr') loadPaymentQrAdmin();
   if(id==='slip') loadSlips();
   if(id==='beacon') loadBeaconConfig();
   if(window.innerWidth <= 768) closeSidebar();
@@ -2081,6 +2112,56 @@ async function uploadFrameTemplate(frameKey){
     await loadFrameTemplatesAdmin();
   }catch(error){
     showToast('❌ อัปโหลดกรอบไม่สำเร็จ');
+  }
+}
+
+async function loadPaymentQrAdmin(){
+  const preview = document.getElementById('paymentQrPreview');
+  const status = document.getElementById('paymentQrStatus');
+  if(!preview) return;
+  preview.innerHTML = '<div class="loading-overlay">⏳ กำลังโหลด...</div>';
+  try{
+    const res = await fetch(PAYMENT_QR_API);
+    const json = await res.json();
+    if(!json.qr){
+      preview.innerHTML = '<div class="empty-state" style="padding:32px">ยังไม่ได้อัปโหลด QR Code</div>';
+      if(status) status.textContent = '';
+      return;
+    }
+    preview.innerHTML = `
+      <img src="data:${escHtml(json.qr.mime)};base64,${json.qr.data}"
+        style="width:100%;border-radius:12px;border:1px solid var(--border);background:white"
+        alt="QR Code โอนเงิน">`;
+    if(status) status.textContent = json.qr.updatedAt ? 'อัปเดตล่าสุด: ' + json.qr.updatedAt : '';
+  }catch(error){
+    preview.innerHTML = '<div class="empty-state" style="padding:32px">⚠️ โหลด QR ไม่ได้</div>';
+    if(status) status.textContent = error.message || String(error);
+  }
+}
+
+async function uploadPaymentQr(){
+  const input = document.getElementById('paymentQrFile');
+  const status = document.getElementById('paymentQrStatus');
+  const file = input?.files?.[0];
+  if(!file){ showToast('กรุณาเลือกรูป QR Code ก่อน'); return; }
+  if(!file.type.startsWith('image/')){ showToast('กรุณาอัปโหลดไฟล์รูปภาพ'); return; }
+  if(file.size > 5 * 1024 * 1024){ showToast('รูปใหญ่เกินไป กรุณาใช้ไฟล์ไม่เกิน 5 MB'); return; }
+  try{
+    if(status) status.textContent = 'กำลังอัปโหลด...';
+    const qrBase64 = await fileToBase64(file);
+    const res = await fetch(PAYMENT_QR_API, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ qrBase64, qrMime: file.type || 'image/jpeg' })
+    });
+    const json = await res.json();
+    if(!res.ok || !json.success) throw new Error(json.error || 'upload failed');
+    showToast('✅ อัปโหลด QR Code แล้ว');
+    input.value = '';
+    await loadPaymentQrAdmin();
+  }catch(error){
+    if(status) status.textContent = 'อัปโหลดไม่สำเร็จ: ' + (error.message || String(error));
+    showToast('❌ อัปโหลดไม่สำเร็จ');
   }
 }
 

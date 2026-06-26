@@ -338,6 +338,26 @@ async function load() {
 document.getElementById('saveBtn').addEventListener('click', async () => {
   const btn = document.getElementById('saveBtn');
   const statusEl = document.getElementById('statusEl');
+
+  if (isSingle) {
+    if (!selectedGender) {
+      statusEl.textContent = 'กรุณาเลือก "เพศของฉัน" ก่อนบันทึก';
+      statusEl.className = 'status err';
+      return;
+    }
+    if (!selectedGenderPref) {
+      statusEl.textContent = 'กรุณาเลือก "ฉันสนใจ" ก่อนบันทึก';
+      statusEl.className = 'status err';
+      return;
+    }
+    const igVal = document.getElementById('igInput').value.trim();
+    if (!igVal) {
+      statusEl.textContent = 'กรุณาใส่ Instagram ก่อนบันทึก (สำหรับ Match)';
+      statusEl.className = 'status err';
+      return;
+    }
+  }
+
   btn.disabled = true;
   btn.textContent = 'กำลังบันทึก...';
   statusEl.className = 'status';

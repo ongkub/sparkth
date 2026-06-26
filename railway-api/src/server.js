@@ -211,6 +211,14 @@ async function ensureSchema() {
        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
      )`
   );
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS payment_qr (
+       qr_key TEXT PRIMARY KEY,
+       qr_mime TEXT NOT NULL DEFAULT 'image/jpeg',
+       qr_data TEXT NOT NULL DEFAULT '',
+       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     )`
+  );
 }
 
 app.use(express.json({ limit: '10mb' }));
@@ -1434,6 +1442,62 @@ app.post('/frame-templates', async (req, res) => {
          frame_data = EXCLUDED.frame_data,
          updated_at = NOW()`,
       [frameKey, label, frameMime, frameBase64]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/payment-qr', async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT qr_mime, qr_data, updated_at FROM payment_qr WHERE qr_key = 'main' LIMIT 1`
+    );
+    if (result.rowCount === 0 || !result.rows[0].qr_data) {
+      res.json({ qr: null });
+      return;
+    }
+    const row = result.rows[0];
+    res.json({
+      qr: {
+        mime: row.qr_mime,
+        data: row.qr_data,
+        updatedAt: row.updated_at?.toISOString?.() || row.updated_at || ''
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/payment-qr', async (req, res) => {
+  const data = parseBody(req.body);
+  const qrBase64 = typeof data.qrBase64 === 'string' ? data.qrBase64.trim() : '';
+  const qrMime = safeText(data.qrMime) || 'image/jpeg';
+
+  if (!qrBase64) {
+    res.status(400).json({ success: false, error: 'qr image required' });
+    return;
+  }
+  if (!qrMime.startsWith('image/')) {
+    res.status(400).json({ success: false, error: 'image file required' });
+    return;
+  }
+  if (qrBase64.length > 8 * 1024 * 1024) {
+    res.status(400).json({ success: false, error: 'qr image too large' });
+    return;
+  }
+
+  try {
+    await pool.query(
+      `INSERT INTO payment_qr (qr_key, qr_mime, qr_data, updated_at)
+       VALUES ('main', $1, $2, NOW())
+       ON CONFLICT (qr_key) DO UPDATE SET
+         qr_mime = EXCLUDED.qr_mime,
+         qr_data = EXCLUDED.qr_data,
+         updated_at = NOW()`,
+      [qrMime, qrBase64]
     );
     res.json({ success: true });
   } catch (error) {

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>โอนเงินของขวัญ – Wedding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+:root{
+  --surface:#FFF8F5;--paper:#FFFFFF;--paper-low:#FBF2ED;--paper-high:#EFE6E2;
+  --primary:#715827;--primary-soft:#8C713D;--secondary:#6A5D43;
+  --text:#1E1B18;--muted:#7F7669;--border:#D0C5B6;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Noto Sans Thai',sans-serif;color:var(--text);
+  background:radial-gradient(circle at 50% 0%, #FBF2ED 0%, var(--surface) 58%);
+  min-height:100dvh;
+}
+.wrap{width:min(520px,100%);margin:0 auto;padding:20px 16px 48px}
+
+.top-bar{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+.back-btn{
+  width:38px;height:38px;border:0;border-radius:50%;flex-shrink:0;
+  background:var(--paper);box-shadow:0 2px 8px rgba(113,88,39,.12);
+  color:var(--primary);font-size:18px;cursor:pointer;display:grid;place-items:center;
+}
+.page-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--primary)}
+
+.qr-card{
+  background:var(--paper);border:1px solid var(--border);border-radius:16px;
+  box-shadow:0 4px 22px -2px rgba(113,88,39,.10);
+  padding:24px;text-align:center;margin-bottom:18px;
+}
+.qr-label{
+  font-family:'Playfair Display',serif;font-size:20px;color:var(--primary);
+  margin-bottom:6px;
+}
+.qr-sub{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px}
+
+.qr-img-wrap{
+  width:100%;max-width:320px;margin:0 auto 20px;
+  background:white;border:1px solid var(--border);border-radius:12px;
+  padding:16px;
+}
+.qr-img-wrap img{width:100%;display:block;border-radius:6px}
+.qr-empty{
+  padding:48px 16px;color:var(--muted);font-size:13px;line-height:1.8;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.qr-empty-icon{font-size:48px;opacity:.55}
+
+.divider{
+  border:none;border-top:1px solid var(--border);margin:22px 0;
+}
+
+.slip-note{
+  font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:16px;text-align:center;
+}
+
+.btn{
+  width:100%;border:0;border-radius:999px;padding:0 20px;font:inherit;font-weight:700;font-size:15px;
+  min-height:52px;cursor:pointer;text-decoration:none;display:flex;align-items:center;
+  justify-content:center;gap:8px;transition:opacity .15s;
+}
+.btn:active{opacity:.88}
+.btn-primary{
+  background:linear-gradient(135deg,var(--primary),var(--primary-soft));
+  color:white;box-shadow:0 8px 20px rgba(113,88,39,.22);
+}
+.btn-secondary{
+  background:white;color:var(--primary);border:1.5px solid var(--border);margin-top:10px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-bar">
+    <button class="back-btn" id="backBtn">←</button>
+    <div class="page-title">โอนเงินของขวัญ 💝</div>
+  </div>
+
+  <div class="qr-card">
+    <div class="qr-label">สแกน QR เพื่อโอนเงิน</div>
+    <div class="qr-sub">โอนเงินเป็นของขวัญแทนใจให้กับเจ้าบ่าวเจ้าสาวได้เลยเลย</div>
+    <div class="qr-img-wrap" id="qrImgWrap">
+      <div class="qr-empty">
+        <div class="qr-empty-icon">⏳</div>
+        <div>กำลังโหลด QR Code...</div>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="slip-note">โอนเงินเสร็จแล้ว กรุณาแจ้ง Slip<br>เพื่อให้ทีมงานยืนยันการรับเงิน</div>
+    <a class="btn btn-primary" id="slipBtn" href="#">📤 แจ้ง Slip หลังโอนเงิน</a>
+    <a class="btn btn-secondary" id="backBtn2" href="checkin.html">กลับหน้าหลัก</a>
+  </div>
+</div>
+
+<script>
+const API_BASE = (localStorage.getItem('weddingApiUrl') || 'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/, '');
+const SLIP_LIFF_URL = localStorage.getItem('weddingSlipLiffUrl') || 'https://liff.line.me/2006674119-vpB15mY0';
+const p = new URLSearchParams(location.search);
+const MY_ID = p.get('userId') || localStorage.getItem('weddingUserId') || '';
+const BACK = p.get('back') || (MY_ID ? `checkin.html?userId=${encodeURIComponent(MY_ID)}` : 'checkin.html');
+
+document.getElementById('backBtn').onclick = () => location.href = BACK;
+document.getElementById('backBtn2').href = BACK;
+document.getElementById('slipBtn').href = SLIP_LIFF_URL;
+
+async function loadQr() {
+  const wrap = document.getElementById('qrImgWrap');
+  try {
+    const res = await fetch(`${API_BASE}/payment-qr`);
+    const d = await res.json();
+    if (!d.qr || !d.qr.data) {
+      wrap.innerHTML = `<div class="qr-empty"><div class="qr-empty-icon">🖼️</div><div>ยังไม่ได้อัปโหลด QR Code<br>กรุณาติดต่อทีมงาน</div></div>`;
+      return;
+    }
+    wrap.innerHTML = `<img src="data:${d.qr.mime};base64,${d.qr.data}" alt="QR Code โอนเงิน">`;
+  } catch (_) {
+    wrap.innerHTML = `<div class="qr-empty"><div class="qr-empty-icon">⚠️</div><div>โหลด QR ไม่ได้ กรุณาลองใหม่</div></div>`;
+  }
+}
+
+loadQr();
+</script>
+</body>
+</html>
