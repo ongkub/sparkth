@@ -246,6 +246,7 @@ const SEATING_MAP_URL = `${API_BASE}/seating-map`;
 const LIFF_ID = localStorage.getItem('weddingCheckinLiffId') || '2006674119-opWzXpla';
 const urlParams = new URLSearchParams(location.search);
 const GAME_URL = (urlParams.get('game') || localStorage.getItem('weddingGameUrl') || '').trim();
+const WALL_FRAME_KEYS = ['classic', 'single', 'bride', 'groom', 'lucky'];
 
 let profile = null;
 let rsvp = null;
@@ -293,7 +294,7 @@ function showProfile(){
 }
 
 function selectFrame(frame){
-  selectedFrame = ['classic','single','bride','groom','lucky'].includes(frame) ? frame : 'classic';
+  selectedFrame = WALL_FRAME_KEYS.includes(frame) ? frame : 'classic';
   document.querySelectorAll('.frame-option').forEach((option) => {
     option.classList.toggle('active', option.dataset.frame === selectedFrame);
   });

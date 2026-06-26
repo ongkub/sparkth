@@ -462,35 +462,35 @@ tr:hover td{background:rgba(254,240,238,.4)}
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="nav-section">จัดการงาน</div>
-    <div class="nav-item active" onclick="nav('ci')">
+    <div class="nav-item active" onclick="nav('ci', this)">
       <span class="nav-icon">🎨</span>Wedding CI
     </div>
-    <div class="nav-item" onclick="nav('flex')">
+    <div class="nav-item" onclick="nav('flex', this)">
       <span class="nav-icon">📨</span>ส่งการ์ดเชิญ
     </div>
-    <div class="nav-item" onclick="nav('config')">
+    <div class="nav-item" onclick="nav('config', this)">
       <span class="nav-icon">⚙️</span>Config
     </div>
     <div class="nav-section" style="margin-top:8px">ข้อมูล RSVP</div>
-    <div class="nav-item" onclick="nav('rsvp')">
+    <div class="nav-item" onclick="nav('rsvp', this)">
       <span class="nav-icon">👥</span>RSVP List
     </div>
-    <div class="nav-item" onclick="nav('dashboard')">
+    <div class="nav-item" onclick="nav('dashboard', this)">
       <span class="nav-icon">📊</span>Dashboard
     </div>
-    <div class="nav-item" onclick="nav('seating')">
+    <div class="nav-item" onclick="nav('seating', this)">
       <span class="nav-icon">🪑</span>ผังโต๊ะ
     </div>
-    <div class="nav-item" onclick="nav('frames')">
+    <div class="nav-item" onclick="nav('frames', this)">
       <span class="nav-icon">🖼</span>กรอบ Profile
     </div>
-    <div class="nav-item" onclick="nav('slip')">
+    <div class="nav-item" onclick="nav('slip', this)">
       <span class="nav-icon">💸</span>สลิปโอนเงิน
     </div>
-    <div class="nav-item" onclick="nav('setup')">
+    <div class="nav-item" onclick="nav('setup', this)">
       <span class="nav-icon">🔧</span>Setup Guide
     </div>
-    <div class="nav-item" onclick="nav('script')">
+    <div class="nav-item" onclick="nav('script', this)">
       <span class="nav-icon">📋</span>Apps Script
     </div>
   </div>
@@ -1124,7 +1124,7 @@ let allRsvpData   = [];
 let currentFilter = 'all';
 let seatingFilter = 'all';
 let frameTemplates = {};
-const FRAME_PRESETS = [
+let FRAME_PRESETS = [
   { key:'classic', label:'Classic' },
   { key:'single', label:'Single' },
   { key:'bride', label:'Bride Side' },
@@ -1135,11 +1135,11 @@ const FRAME_PRESETS = [
 // ══════════════════════════════════════
 //  NAVIGATION
 // ══════════════════════════════════════
-function nav(id){
+function nav(id, navItem){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('sec-'+id).classList.add('active');
-  event.currentTarget.classList.add('active');
+  navItem?.classList.add('active');
   if(id==='rsvp') loadRSVP();
   if(id==='dashboard') loadDashboard();
   if(id==='seating'){ loadSeatingMapAdmin(); loadSeatingGuests(); }
@@ -2283,6 +2283,14 @@ async function loadFrameTemplatesAdmin(){
     const res = await fetch(FRAME_TEMPLATES_API);
     const json = await res.json();
     frameTemplates = {};
+    if(Array.isArray(json.presets) && json.presets.length){
+      FRAME_PRESETS = json.presets
+        .filter((preset) => preset && preset.key)
+        .map((preset) => ({
+          key: String(preset.key),
+          label: preset.label ? String(preset.label) : String(preset.key)
+        }));
+    }
     (json.templates || []).forEach((template) => {
       frameTemplates[template.frameKey] = template;
     });

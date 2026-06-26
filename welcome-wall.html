@@ -202,6 +202,7 @@ body{
 <script>
 const API_URL = (localStorage.getItem('weddingApiUrl') || 'https://sparkth-production.up.railway.app/rsvp').replace(/\/rsvp$/, '');
 const FRAME_TEMPLATES_URL = `${API_URL}/frame-templates`;
+const WALL_FRAME_KEYS = ['classic', 'single', 'bride', 'groom', 'lucky'];
 const stage = document.getElementById('stage');
 const statusEl = document.getElementById('status');
 const bgVideo = document.getElementById('bgVideo');
@@ -315,7 +316,7 @@ function makeBubble(data, isNew=false){
   const name = displayNameOf(data);
   const isSingle = Boolean(data.isSingle || data.is_single);
   const rawFrame = (data.wallFrame || data.wall_frame || (isSingle ? 'single' : 'classic')).trim();
-  const frame = ['classic','single','bride','groom','lucky'].includes(rawFrame) ? rawFrame : 'classic';
+  const frame = WALL_FRAME_KEYS.includes(rawFrame) ? rawFrame : 'classic';
   const frameTemplate = frameTemplates.get(frame);
   const instagram = (data.instagram || '').trim().replace(/^@+/, '');
   const showIg = Boolean(data.showSocialOnWall || data.show_social_on_wall) && instagram;

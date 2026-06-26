@@ -24,6 +24,15 @@ const pool = new Pool({
 
 const welcomeClients = new Set();
 const checkinCooldownMs = Number(process.env.CHECKIN_COOLDOWN_MS || 5 * 60 * 1000);
+const WALL_FRAME_PRESETS = [
+  { key: 'classic', label: 'Classic' },
+  { key: 'single', label: 'Single' },
+  { key: 'bride', label: 'Bride Side' },
+  { key: 'groom', label: 'Groom Side' },
+  { key: 'lucky', label: 'Lucky / Game' }
+];
+const WALL_FRAME_KEYS = new Set(WALL_FRAME_PRESETS.map((preset) => preset.key));
+const WALL_FRAME_LABELS = new Map(WALL_FRAME_PRESETS.map((preset) => [preset.key, preset.label]));
 
 async function ensureSchema() {
   await pool.query(
@@ -876,7 +885,7 @@ function safeInstagram(value) {
 
 function safeWallFrame(value) {
   const frame = safeText(value).toLowerCase();
-  return ['classic', 'single', 'bride', 'groom', 'lucky'].includes(frame) ? frame : 'classic';
+  return WALL_FRAME_KEYS.has(frame) ? frame : 'classic';
 }
 
 function normalizeSocial(data) {
@@ -1277,14 +1286,19 @@ app.get('/frame-templates', async (_req, res) => {
        FROM frame_templates
        ORDER BY frame_key`
     );
+    const templatesByKey = new Map(result.rows.map((row) => [row.frame_key, row]));
     res.json({
-      templates: result.rows.map((row) => ({
-        frameKey: row.frame_key,
-        label: row.frame_label || row.frame_key,
-        mime: row.frame_mime,
-        data: row.frame_data,
-        updatedAt: row.updated_at?.toISOString?.() || row.updated_at || ''
-      }))
+      presets: WALL_FRAME_PRESETS,
+      templates: WALL_FRAME_PRESETS.map((preset) => {
+        const row = templatesByKey.get(preset.key);
+        return {
+          frameKey: preset.key,
+          label: row?.frame_label || preset.label,
+          mime: row?.frame_mime || 'image/png',
+          data: row?.frame_data || '',
+          updatedAt: row?.updated_at?.toISOString?.() || row?.updated_at || ''
+        };
+      })
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -1294,7 +1308,10 @@ app.get('/frame-templates', async (_req, res) => {
 app.post('/frame-templates', async (req, res) => {
   const data = parseBody(req.body);
   const frameKey = safeWallFrame(data.frameKey || data.frame_key);
-  const label = safeText(data.label || data.frameLabel || data.frame_label) || frameKey;
+  const label =
+    safeText(data.label || data.frameLabel || data.frame_label) ||
+    WALL_FRAME_LABELS.get(frameKey) ||
+    frameKey;
   const frameBase64 = typeof data.frameBase64 === 'string' ? data.frameBase64.trim() : '';
   const frameMime = safeText(data.frameMime) || 'image/png';
 
