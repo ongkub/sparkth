@@ -361,6 +361,23 @@ app.post('/checkin', async (req, res) => {
   try {
     const rsvp = await getCheckinRsvp(lineUserId);
     if (!rsvp) {
+      if (safeText(data.source) === 'walkin') {
+        const nickname = safeText(data.nickName || data.nickname || data.displayName);
+        if (!nickname) {
+          res.status(400).json({ success: false, error: 'displayName required for walk-in' });
+          return;
+        }
+        const checkin = await createCheckin({
+          lineUserId,
+          displayName: nickname,
+          nickname,
+          pictureUrl: safeText(data.pictureUrl || data.photo),
+          source: 'walkin',
+          tableName: '',
+        });
+        res.json({ success: true, checkedIn: true, walkIn: true, checkin });
+        return;
+      }
       res.status(404).json({ success: false, error: 'rsvp_not_found' });
       return;
     }

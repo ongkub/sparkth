@@ -96,6 +96,19 @@ body{
 .map-empty{padding:42px 18px;color:var(--muted);line-height:1.7}
 .hidden{display:none!important}
 .tiny{font-size:12px;color:rgba(106,93,67,.68);text-align:center;margin-top:16px;line-height:1.6;padding:0 12px}
+.badge{
+  min-width:20px;height:20px;border-radius:999px;
+  background:#E8546A;color:white;
+  font-size:12px;font-weight:700;line-height:20px;
+  padding:0 6px;display:inline-block;text-align:center;
+  margin-left:6px;vertical-align:middle;
+}
+.input-field{
+  width:100%;border:1.5px solid var(--border);border-radius:10px;
+  padding:14px;font:inherit;font-size:15px;color:var(--text);
+  background:var(--paper-low);outline:none;margin-top:4px;
+}
+.input-field:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(113,88,39,.10)}
 @media(max-width:560px){
   .wrap{padding:20px 16px 32px}
   .panel{padding:20px}
@@ -139,13 +152,21 @@ body{
     <div class="note" id="tableNote">ถ้าโต๊ะยังว่าง ให้แจ้งทีมงานหน้างานเพื่ออัปเดตให้ทันที</div>
   </section>
 
+  <section class="panel hidden" id="walkInPanel">
+    <div class="hello">เช็กอินด้วยตัวเอง</div>
+    <div class="sub" style="margin-bottom:18px">ไม่พบชื่อในระบบ RSVP — ใส่ชื่อเพื่อเช็กอิน แล้วแจ้งทีมงานเรื่องโต๊ะนั่ง</div>
+    <label class="label" style="display:block;margin-bottom:6px">ชื่อเล่น</label>
+    <input class="input-field" id="walkInName" type="text" placeholder="ชื่อเล่นของคุณ" maxlength="50" autocomplete="off">
+    <button class="btn primary" id="walkInBtn" style="margin-top:14px">เช็กอินเลย →</button>
+  </section>
+
   <section class="panel done" id="donePanel">
     <div class="hello">เช็กอินเรียบร้อยแล้ว ✓</div>
     <div class="sub">ขอให้สนุกกับงานแต่งงานครับ</div>
     <div class="actions">
       <a class="btn accent" id="profileLink" href="profile.html">✏️ แก้ไขโปรไฟล์</a>
-      <a class="btn accent" id="singlesLink" href="singles.html">Singles Zone 💕</a>
-      <a class="btn accent" id="matchesLink" href="matches.html">ดู Matches ❤️</a>
+      <a class="btn accent" id="singlesLink" href="singles.html">Dating Zone 💕</a>
+      <a class="btn accent" id="matchesLink" href="matches.html">ดู Matches ❤️<span class="badge hidden" id="matchBadge"></span></a>
       <a class="btn secondary" id="qrPayLink" href="qr-payment.html">💳 โอนเงินของขวัญ / แจ้ง Slip</a>
       <a class="btn secondary hidden" id="gameLink" href="#">เล่นเกมชิงรางวัล</a>
     </div>
@@ -248,7 +269,11 @@ async function loadCheckin(){
   const data = await res.json();
   if(!res.ok || !data.success) throw new Error(data.error || 'โหลดข้อมูลไม่ได้');
   if(!data.submitted){
-    setStatus('ยังไม่พบ RSVP ของบัญชี LINE นี้ กรุณาติดต่อทีมงานเพื่อ check-in แบบ manual', 'err');
+    setStatus('ไม่พบชื่อในระบบ — กรุณาใส่ชื่อเพื่อเช็กอินด้วยตัวเอง');
+    document.getElementById('walkInPanel').classList.remove('hidden');
+    // Pre-fill with LINE display name if available
+    const nameEl = document.getElementById('walkInName');
+    if(profile?.displayName) nameEl.value = profile.displayName.split(' ')[0];
     return;
   }
   rsvp = data.data;
@@ -260,6 +285,47 @@ async function loadCheckin(){
   }
   showProfile();
   await submitCheckin({ auto: true });
+}
+
+async function submitWalkIn(){
+  const name = document.getElementById('walkInName').value.trim();
+  if(!name){ document.getElementById('walkInName').focus(); return; }
+  const btn = document.getElementById('walkInBtn');
+  btn.disabled = true; btn.textContent = 'กำลังเช็กอิน...';
+  try{
+    const res = await fetch(`${API_BASE}/checkin`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        lineUserId: profile.userId,
+        displayName: name,
+        nickName: name,
+        pictureUrl: profile.pictureUrl || '',
+        source: 'walkin'
+      })
+    });
+    const data = await res.json();
+    if(!res.ok || !data.success) throw new Error(data.error || 'เช็กอินไม่สำเร็จ');
+    document.getElementById('walkInPanel').classList.add('hidden');
+    rsvp = { nickName: name, nickname: name, name, tableName: '', guests: '' };
+    showProfile();
+    document.getElementById('tableNote').textContent = 'ติดต่อทีมงานหน้างานเพื่อรับข้อมูลโต๊ะนั่งครับ';
+    setStatus('เช็กอินเรียบร้อยแล้ว ขอให้สนุกกับงาน ✓', 'ok');
+    showDone();
+  }catch(err){
+    setStatus(err.message || 'เช็กอินไม่สำเร็จ กรุณาลองใหม่', 'err');
+    btn.disabled = false; btn.textContent = 'เช็กอินเลย →';
+  }
+}
+
+async function loadMatchBadge(){
+  if(!profile?.userId) return;
+  try{
+    const r = await fetch(`${API_BASE}/matches?userId=${encodeURIComponent(profile.userId)}`);
+    const d = await r.json();
+    const count = (d.matches || []).length;
+    const badge = document.getElementById('matchBadge');
+    if(count > 0 && badge){ badge.textContent = count; badge.classList.remove('hidden'); }
+  }catch(_){}
 }
 
 function updateNavLinks(){
@@ -280,6 +346,7 @@ function showDone(){
     gameLink.href = GAME_URL;
     gameLink.classList.remove('hidden');
   }
+  loadMatchBadge();
 }
 
 async function submitCheckin({ auto=false } = {}){
@@ -321,6 +388,8 @@ function closeSeatingMap(){
   mapModal.setAttribute('aria-hidden', 'true');
 }
 
+document.getElementById('walkInBtn').addEventListener('click', submitWalkIn);
+document.getElementById('walkInName').addEventListener('keydown', e => { if(e.key === 'Enter') submitWalkIn(); });
 document.getElementById('tableCard').addEventListener('click', openSeatingMap);
 document.getElementById('closeMapBtn').addEventListener('click', closeSeatingMap);
 mapModal.addEventListener('click', (event) => {
