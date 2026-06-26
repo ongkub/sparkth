@@ -339,9 +339,9 @@ app.post('/checkin/manual', async (req, res) => {
            line_user_id, first_name, last_name, nickname, full_name, phone, side,
            relationship, guests, dietary, message, session, picture_url, submitted_at,
            table_name, checked_in_at, checkin_source, is_single, instagram,
-           show_social_on_wall, welcome_announced_at
+           show_social_on_wall
          )
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,NOW(),$14,NOW(),$15,$16,$17,$18,NOW())
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,NOW(),$14,NOW(),$15,$16,$17,$18)
          ON CONFLICT (line_user_id) DO UPDATE SET
            first_name = CASE WHEN EXCLUDED.first_name <> '' THEN EXCLUDED.first_name ELSE rsvp_submissions.first_name END,
            last_name = CASE WHEN EXCLUDED.last_name <> '' THEN EXCLUDED.last_name ELSE rsvp_submissions.last_name END,
@@ -360,8 +360,7 @@ app.post('/checkin/manual', async (req, res) => {
            checkin_source = EXCLUDED.checkin_source,
            is_single = EXCLUDED.is_single,
            instagram = EXCLUDED.instagram,
-           show_social_on_wall = EXCLUDED.show_social_on_wall,
-           welcome_announced_at = COALESCE(rsvp_submissions.welcome_announced_at, NOW())`,
+           show_social_on_wall = EXCLUDED.show_social_on_wall`,
         [
           lineUserId,
           firstName,
@@ -944,8 +943,7 @@ async function updateRsvpCheckin(lineUserId, { tableName, source, isSingle, inst
          checkin_source = $3,
          is_single = $4,
          instagram = $5,
-         show_social_on_wall = $6,
-         welcome_announced_at = COALESCE(welcome_announced_at, NOW())
+         show_social_on_wall = $6
      WHERE line_user_id = $1`,
     [
       lineUserId,
@@ -1021,6 +1019,7 @@ async function createCheckin({
     }
   }
 
+  const shouldBroadcast = !lineUserId || !rsvp?.welcome_announced_at;
   const result = await pool.query(
     `INSERT INTO checkins (
        line_user_id, display_name, nickname, picture_url, source, beacon_type,
@@ -1044,7 +1043,17 @@ async function createCheckin({
   );
 
   const checkin = formatCheckin(result.rows[0]);
-  broadcastWelcome(checkin);
+  if (shouldBroadcast) {
+    broadcastWelcome(checkin);
+    if (lineUserId) {
+      await pool.query(
+        `UPDATE rsvp_submissions
+         SET welcome_announced_at = COALESCE(welcome_announced_at, NOW())
+         WHERE line_user_id = $1`,
+        [lineUserId]
+      );
+    }
+  }
   return checkin;
 }
 
