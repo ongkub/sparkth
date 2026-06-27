@@ -6,6 +6,7 @@
 <title>ชิงโชค · An-An &amp; Ong</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{
@@ -250,14 +251,15 @@ body::before{
 </div>
 
 <script>
-const API_BASE = 'https://sparkth-production.up.railway.app';
+const API_BASE      = 'https://sparkth-production.up.railway.app';
+const SCRATCH_LIFF_ID = localStorage.getItem('weddingScratchLiffId') || '';
 const _qs = new URLSearchParams(location.search);
 
-// Identity: URL params (from checkin.html) or localStorage fallback
-const MY_UID  = (_qs.get('uid') || _qs.get('line_uid') || localStorage.getItem('weddingUserId') || '').trim();
-const MY_NAME = decodeURIComponent(_qs.get('display_name') || '').trim();
-const MY_PIC  = decodeURIComponent(_qs.get('picture_url') || '').trim();
-const BACK    = _qs.get('back') || 'checkin.html';
+// Identity — populated by URL params (from checkin.html) or LIFF
+let MY_UID  = (_qs.get('uid') || _qs.get('line_uid') || localStorage.getItem('weddingUserId') || '').trim();
+let MY_NAME = decodeURIComponent(_qs.get('display_name') || '').trim();
+let MY_PIC  = decodeURIComponent(_qs.get('picture_url') || '').trim();
+const BACK  = _qs.get('back') || 'checkin.html';
 
 document.getElementById('backBtn').href = BACK;
 
@@ -332,9 +334,10 @@ function handleScratch(x, y) {
   if (now - lastCheckTime > 150) {
     lastCheckTime = now;
     const pct = getScratchedPct();
-    document.getElementById('scratchBar').style.width = Math.min(pct, 100) + '%';
-    document.getElementById('scratchPct').textContent = pct >= 5 ? Math.round(pct) + '%' : '';
-    if (pct >= 50 && !claimed) {
+    const displayPct = Math.min(Math.round(pct / 90 * 100), 100);
+    document.getElementById('scratchBar').style.width = displayPct + '%';
+    document.getElementById('scratchPct').textContent = pct >= 5 ? displayPct + '%' : '';
+    if (pct >= 90 && !claimed) {
       claimed = true;
       claimPrize();
     }
@@ -489,8 +492,30 @@ function launchConfetti() {
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ── Boot ──────────────────────────────────────────────────
-pollStatus();
-pollTimer = setInterval(pollStatus, 2500);
+async function boot() {
+  // If no UID from URL params and LIFF is configured, try to get LINE identity
+  if (!MY_UID && SCRATCH_LIFF_ID) {
+    try {
+      await liff.init({ liffId: SCRATCH_LIFF_ID });
+      if (liff.isInClient()) {
+        if (liff.isLoggedIn()) {
+          const profile = await liff.getProfile();
+          MY_UID  = profile.userId;
+          MY_NAME = profile.displayName || '';
+          MY_PIC  = profile.pictureUrl  || '';
+        } else {
+          liff.login(); // redirect to LINE login — page will reload after
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('LIFF init failed:', err);
+    }
+  }
+  pollStatus();
+  pollTimer = setInterval(pollStatus, 2500);
+}
+boot();
 </script>
 </body>
 </html>

@@ -1121,9 +1121,17 @@ tr:hover td{background:rgba(254,240,238,.4)}
 
       <div class="card" style="margin-top:0">
         <div class="card-h">📱 QR Code สำหรับแสดงในพิธีการ</div>
-        <div style="margin-top:12px;background:var(--cream);border-radius:10px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
-          <div>URL สำหรับแขก: <strong id="scratchUrl" style="color:var(--rose);word-break:break-all"></strong></div>
-          <div style="margin-top:6px;font-size:12px;color:var(--muted)">แขกที่เคย Check-in แล้ว → กดปุ่ม "ชิงโชค" จากหน้าหลักได้เลย (UID จะถูกส่งมาอัตโนมัติ)</div>
+        <div class="config-field" style="margin-top:14px">
+          <label class="config-label">Scratch LIFF ID <span style="color:var(--muted);font-weight:400">(สร้างใน LINE Developers → endpoint: /scratch.html — แขกสแกนแล้วรู้จัก LINE ID อัตโนมัติ)</span></label>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <input type="text" id="scratchLiffId" class="config-inp" placeholder="2006674119-xxxxxxxx" style="flex:1;font-size:13px">
+            <button onclick="saveScratchLiffId()" style="background:var(--rose);color:#fff;border:none;border-radius:10px;padding:10px 16px;font:inherit;font-size:13px;font-weight:700;cursor:pointer">💾</button>
+          </div>
+        </div>
+        <div style="margin-top:12px;background:var(--cream);border-radius:10px;padding:14px;font-size:13px;line-height:1.9;color:var(--text)">
+          <div>URL ตรง: <strong id="scratchUrl" style="color:var(--rose);word-break:break-all"></strong></div>
+          <div id="scratchLiffUrlRow" style="display:none">LIFF URL: <strong id="scratchLiffUrl" style="color:var(--rose);word-break:break-all"></strong> <span style="font-size:11px;color:#16a34a;font-weight:700">← แนะนำ ระบุตัวตนอัตโนมัติ</span></div>
+          <div style="margin-top:4px;font-size:12px;color:var(--muted)">แขกที่เคย Check-in แล้ว → กดปุ่ม "ชิงโชค" จากหน้าหลักได้เลย (UID จะถูกส่งมาอัตโนมัติ)</div>
         </div>
       </div>
     </div>
@@ -2412,8 +2420,30 @@ async function saveBeaconConfig(){
 
 document.getElementById('beaconMessage')?.addEventListener('input', updateBeaconPreview);
 
+function updateScratchLiffUrl(id) {
+  const row   = document.getElementById('scratchLiffUrlRow');
+  const urlEl = document.getElementById('scratchLiffUrl');
+  if (id) {
+    urlEl.textContent  = 'https://liff.line.me/' + id;
+    row.style.display  = 'block';
+  } else {
+    row.style.display  = 'none';
+  }
+}
+
+function saveScratchLiffId() {
+  const id = (document.getElementById('scratchLiffId').value || '').trim();
+  if (id) localStorage.setItem('weddingScratchLiffId', id);
+  else    localStorage.removeItem('weddingScratchLiffId');
+  updateScratchLiffUrl(id);
+  showToast('💾 บันทึก Scratch LIFF ID แล้ว');
+}
+
 async function loadScratchAdmin(){
   document.getElementById('scratchUrl').textContent = location.origin + '/scratch.html';
+  const savedLiffId = localStorage.getItem('weddingScratchLiffId') || '';
+  document.getElementById('scratchLiffId').value = savedLiffId;
+  updateScratchLiffUrl(savedLiffId);
   try{
     const res = await fetch(`${API_BASE}/scratch/admin/info`);
     const d = await res.json();
