@@ -90,18 +90,22 @@ body::before{
   position:absolute;inset:0;
   background:linear-gradient(135deg,#0f0720,#1e0a3c);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;
+  gap:8px;overflow:hidden;
 }
-.p-mystery{font-size:28px;letter-spacing:12px;color:rgba(249,215,126,.35);user-select:none}
-.p-win{display:none;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:0 12px}
+#prizeImage{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;display:none;z-index:0;
+}
+.p-mystery{font-size:28px;letter-spacing:12px;color:rgba(249,215,126,.35);user-select:none;position:relative;z-index:1}
+.p-win{display:none;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:0 12px;position:relative;z-index:1}
 .p-win-icon{font-size:48px;animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
-.p-win-title{font-size:18px;font-weight:900;color:#fde68a;line-height:1.2}
-.p-win-label{font-size:13px;color:rgba(255,255,255,.85);font-weight:600}
-.p-lose{display:none;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:0 12px}
+.p-win-title{font-size:18px;font-weight:900;color:#fde68a;line-height:1.2;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.p-win-label{font-size:13px;color:rgba(255,255,255,.9);font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+.p-lose{display:none;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:0 12px;position:relative;z-index:1}
 .p-lose-icon{font-size:44px}
-.p-lose-title{font-size:17px;font-weight:800;color:rgba(255,255,255,.9)}
-.p-lose-winner{font-size:12px;color:rgba(255,255,255,.55)}
+.p-lose-title{font-size:17px;font-weight:800;color:rgba(255,255,255,.9);text-shadow:0 1px 4px rgba(0,0,0,.5)}
+.p-lose-winner{font-size:12px;color:rgba(255,255,255,.7)}
 
 /* Scratch canvas */
 #scratchCanvas{
@@ -210,6 +214,7 @@ body::before{
     <div class="card-body">
       <div class="scratch-wrap">
         <div class="prize-content">
+          <img id="prizeImage" src="" alt="">
           <div class="p-mystery" id="pMystery">✦ ✦ ✦</div>
           <div class="p-win" id="pWin">
             <div class="p-win-icon">🎉</div>
@@ -264,11 +269,12 @@ const BACK  = _qs.get('back') || 'checkin.html';
 document.getElementById('backBtn').href = BACK;
 
 // ── State ─────────────────────────────────────────────────
-let gameState = 'waiting'; // waiting | ready | scratching | claiming | done
-let claimed   = false;
-let pollTimer = null;
+let gameState    = 'waiting'; // waiting | ready | scratching | claiming | done
+let claimed      = false;
+let pollTimer    = null;
 let prizeLabelText = 'ของรางวัลพิเศษ';
-let isDragging = false;
+let cardImageUrl = '';
+let isDragging   = false;
 let lastCheckTime = 0;
 
 // ── Canvas ────────────────────────────────────────────────
@@ -371,6 +377,7 @@ async function pollStatus() {
     const d = await r.json();
     if (!d.success) return;
     prizeLabelText = d.prize_label || 'ของรางวัลพิเศษ';
+    cardImageUrl   = d.card_image_url || '';
     document.getElementById('prizeLabel').textContent = prizeLabelText;
 
     if (d.is_active && gameState === 'waiting') {
@@ -387,6 +394,15 @@ function activateGame() {
   gameEl.style.display = 'block';
   gameEl.style.animation = 'fadeUp .5s cubic-bezier(.34,1.2,.64,1)';
   document.getElementById('prizeLabel').textContent = prizeLabelText;
+
+  if (cardImageUrl) {
+    const img = document.getElementById('prizeImage');
+    img.src = cardImageUrl;
+    img.style.display = 'block';
+    document.querySelector('.prize-content').style.background = 'none';
+    document.getElementById('pMystery').style.display = 'none';
+  }
+
   setTimeout(setupCanvas, 50); // let DOM paint first
 }
 

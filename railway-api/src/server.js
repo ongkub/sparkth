@@ -249,6 +249,7 @@ async function ensureSchema() {
        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
      )`
   );
+  await pool.query(`ALTER TABLE scratch_lottery ADD COLUMN IF NOT EXISTS card_image_url TEXT`);
   await pool.query(`INSERT INTO scratch_lottery (id) VALUES (1) ON CONFLICT DO NOTHING`);
 }
 
@@ -1765,6 +1766,7 @@ app.get('/scratch/status', async (_req, res) => {
       success: true,
       is_active: row.is_active,
       prize_label: row.prize_label,
+      card_image_url: row.card_image_url || null,
       has_winner: !!row.winner_uid,
       winner_display_name: row.winner_display_name || null,
     });
@@ -1815,13 +1817,22 @@ app.get('/scratch/admin/info', async (_req, res) => {
 // ── Scratch admin: POST /scratch/admin/setup ──────────────
 app.post('/scratch/admin/setup', async (req, res) => {
   const data = parseBody(req.body);
-  const isActive   = Boolean(data.is_active);
-  const prizeLabel = safeText(data.prize_label || 'ของรางวัลพิเศษ') || 'ของรางวัลพิเศษ';
+  const isActive    = Boolean(data.is_active);
+  const prizeLabel  = safeText(data.prize_label || 'ของรางวัลพิเศษ') || 'ของรางวัลพิเศษ';
+  const hasImage    = 'card_image_url' in data;
+  const cardImage   = hasImage ? (data.card_image_url || null) : undefined;
   try {
-    await pool.query(
-      `UPDATE scratch_lottery SET is_active = $1, prize_label = $2, updated_at = NOW() WHERE id = 1`,
-      [isActive, prizeLabel]
-    );
+    if (hasImage) {
+      await pool.query(
+        `UPDATE scratch_lottery SET is_active = $1, prize_label = $2, card_image_url = $3, updated_at = NOW() WHERE id = 1`,
+        [isActive, prizeLabel, cardImage]
+      );
+    } else {
+      await pool.query(
+        `UPDATE scratch_lottery SET is_active = $1, prize_label = $2, updated_at = NOW() WHERE id = 1`,
+        [isActive, prizeLabel]
+      );
+    }
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
