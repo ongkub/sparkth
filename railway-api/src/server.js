@@ -219,6 +219,24 @@ async function ensureSchema() {
        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
      )`
   );
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS wedding_run_plays (
+       id BIGSERIAL PRIMARY KEY,
+       line_uid TEXT NOT NULL,
+       display_name TEXT,
+       picture_url TEXT,
+       score INTEGER NOT NULL DEFAULT 0,
+       hearts_collected INTEGER NOT NULL DEFAULT 0,
+       collisions INTEGER NOT NULL DEFAULT 0,
+       elapsed_seconds NUMERIC(10,2) NOT NULL DEFAULT 0,
+       difficulty TEXT NOT NULL DEFAULT 'normal',
+       completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     )`
+  );
+  await pool.query(
+    `CREATE INDEX IF NOT EXISTS idx_wedding_run_plays_line_uid
+     ON wedding_run_plays (line_uid, score DESC)`
+  );
 }
 
 app.use(express.json({ limit: '10mb' }));
@@ -1719,6 +1737,87 @@ app.post('/profile', async (req, res) => {
     );
     if (updated.rowCount > 0) broadcastWelcome(formatCheckin(updated.rows[0]));
     res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ── Game: POST /game/finish ───────────────────────────────
+app.post('/game/finish', async (req, res) => {
+  const data = parseBody(req.body);
+  const lineUid = safeText(data.line_uid || data.lineUid || '');
+  if (!lineUid) return res.status(400).json({ success: false, error: 'line_uid required' });
+
+  const score = Number(data.score ?? 0);
+  if (!Number.isFinite(score) || score < 0) return res.status(400).json({ success: false, error: 'invalid score' });
+
+  try {
+    await pool.query(
+      `INSERT INTO wedding_run_plays
+         (line_uid, display_name, picture_url, score, hearts_collected, collisions, elapsed_seconds, difficulty)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [
+        lineUid,
+        safeText(data.display_name || '') || null,
+        safeText(data.picture_url || '') || null,
+        Math.round(score),
+        Number(data.hearts_collected ?? 0),
+        Number(data.collisions ?? 0),
+        Number(data.elapsed_seconds ?? 0),
+        ['normal','hard'].includes(data.difficulty) ? data.difficulty : 'normal',
+      ]
+    );
+    const bestRes = await pool.query(
+      `SELECT MAX(score) AS best FROM wedding_run_plays WHERE line_uid = $1`,
+      [lineUid]
+    );
+    const bestScore = Number(bestRes.rows[0]?.best ?? score);
+    res.json({ success: true, score: Math.round(score), best_score: bestScore });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ── Game: GET /game/leaderboard ───────────────────────────
+app.get('/game/leaderboard', async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT DISTINCT ON (line_uid)
+         line_uid, display_name, picture_url, score, difficulty, completed_at
+       FROM wedding_run_plays
+       ORDER BY line_uid, score DESC, completed_at DESC`
+    );
+    const ranked = result.rows
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 50)
+      .map((r, i) => ({
+        rank: i + 1,
+        line_uid: r.line_uid,
+        display_name: r.display_name || '',
+        picture_url: r.picture_url || '',
+        score: r.score,
+        difficulty: r.difficulty,
+        completed_at: r.completed_at?.toISOString?.() || '',
+      }));
+    res.json({ success: true, leaderboard: ranked });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ── Game: GET /game/status ────────────────────────────────
+app.get('/game/status', async (req, res) => {
+  const lineUid = safeText(req.query.line_uid || req.query.uid || '');
+  if (!lineUid) return res.status(400).json({ success: false, error: 'line_uid required' });
+  try {
+    const result = await pool.query(
+      `SELECT MAX(score) AS best, COUNT(*)::int AS plays
+       FROM wedding_run_plays WHERE line_uid = $1`,
+      [lineUid]
+    );
+    const best = Number(result.rows[0]?.best ?? 0);
+    const plays = Number(result.rows[0]?.plays ?? 0);
+    res.json({ success: true, best_score: best, plays, already_played: plays > 0 });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

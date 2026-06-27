@@ -336,16 +336,20 @@ function updateNavLinks(){
   document.getElementById('singlesLink').href = `singles.html?userId=${uid}`;
   document.getElementById('matchesLink').href = `matches.html?userId=${uid}`;
   document.getElementById('qrPayLink').href = `qr-payment.html?userId=${uid}`;
+  const gameLink = document.getElementById('gameLink');
+  const gameParams = new URLSearchParams({
+    uid: profile.userId,
+    display_name: profile.displayName || '',
+    picture_url: profile.pictureUrl || '',
+    back: location.href,
+  });
+  gameLink.href = `game.html?${gameParams.toString()}`;
+  gameLink.classList.remove('hidden');
 }
 
 function showDone(){
   donePanel.classList.add('on');
   updateNavLinks();
-  const gameLink = document.getElementById('gameLink');
-  if(GAME_URL){
-    gameLink.href = GAME_URL;
-    gameLink.classList.remove('hidden');
-  }
   loadMatchBadge();
 }
 

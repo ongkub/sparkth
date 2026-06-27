@@ -474,6 +474,9 @@ tr:hover td{background:rgba(254,240,238,.4)}
     <div class="nav-item" onclick="nav('beacon', this)">
       <span class="nav-icon">📡</span>Beacon Setup
     </div>
+    <div class="nav-item" onclick="nav('gameboard', this)">
+      <span class="nav-icon">🏆</span>Game Leaderboard
+    </div>
   </div>
 
   <!-- MAIN -->
@@ -1078,6 +1081,19 @@ tr:hover td{background:rgba(254,240,238,.4)}
       </div>
     </div>
 
+    <!-- ═══ SECTION: GAME LEADERBOARD ═══ -->
+    <div class="section" id="sec-gameboard">
+      <div class="sec-title">Wedding Run – Leaderboard 🏆</div>
+      <div class="sec-sub">คะแนนสูงสุดของแต่ละคน · อัปเดตเรียลไทม์</div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div class="card-h" style="margin:0">🎮 Top Scores</div>
+          <button onclick="loadGameLeaderboard()" style="background:var(--rose);color:#fff;border:none;border-radius:8px;padding:8px 16px;font:inherit;font-size:13px;cursor:pointer;font-weight:600">🔄 Refresh</button>
+        </div>
+        <div id="gameLeaderboardContent" style="font-size:14px;color:var(--muted);text-align:center;padding:24px">กำลังโหลด...</div>
+      </div>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /page -->
 
@@ -1141,6 +1157,7 @@ function nav(id, navItem){
   if(id==='paymentqr') loadPaymentQrAdmin();
   if(id==='slip') loadSlips();
   if(id==='beacon') loadBeaconConfig();
+  if(id==='gameboard') loadGameLeaderboard();
   if(window.innerWidth <= 768) closeSidebar();
 }
 
@@ -2346,6 +2363,54 @@ async function saveBeaconConfig(){
 }
 
 document.getElementById('beaconMessage')?.addEventListener('input', updateBeaconPreview);
+
+async function loadGameLeaderboard(){
+  const el = document.getElementById('gameLeaderboardContent');
+  if(!el) return;
+  el.innerHTML = '<div style="padding:24px;color:var(--muted)">กำลังโหลด...</div>';
+  try{
+    const res = await fetch(`${API_BASE}/game/leaderboard`);
+    const data = await res.json();
+    if(!data.success) throw new Error(data.error || 'load failed');
+    const rows = data.leaderboard || [];
+    if(rows.length === 0){
+      el.innerHTML = '<div style="padding:32px;color:var(--muted)">ยังไม่มีข้อมูล — รอให้แขกเล่นเกมก่อนนะ 🎮</div>';
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    el.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border)">
+            <th style="text-align:left;padding:8px 4px;color:var(--muted);font-weight:600">#</th>
+            <th style="text-align:left;padding:8px 4px;color:var(--muted);font-weight:600">ชื่อ</th>
+            <th style="text-align:right;padding:8px 4px;color:var(--muted);font-weight:600">คะแนน</th>
+            <th style="text-align:center;padding:8px 4px;color:var(--muted);font-weight:600">ระดับ</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map((r,i) => `
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px 4px;font-weight:700;color:var(--primary)">${medals[i] || (i+1)}</td>
+              <td style="padding:10px 4px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  ${r.picture_url ? `<img src="${escHtml(r.picture_url)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover" onerror="this.style.display='none'">` : ''}
+                  <span style="font-weight:600">${escHtml(r.display_name || 'Guest')}</span>
+                </div>
+              </td>
+              <td style="padding:10px 4px;text-align:right;font-weight:800;font-size:15px;color:var(--rose)">${Number(r.score).toLocaleString()}</td>
+              <td style="padding:10px 4px;text-align:center">
+                <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${r.difficulty==='hard'?'#fee2e2':'#dcfce7'};color:${r.difficulty==='hard'?'#dc2626':'#15803d'}">${r.difficulty==='hard'?'Hard 🔥':'Normal'}</span>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      <div style="margin-top:12px;font-size:11px;color:var(--muted);text-align:right">แสดง ${rows.length} คน · อัปเดตล่าสุด ${new Date().toLocaleTimeString('th-TH')}</div>`;
+  }catch(e){
+    el.innerHTML = `<div style="padding:24px;color:#dc2626">โหลดไม่สำเร็จ: ${escHtml(e.message)}</div>`;
+  }
+}
 
 </script>
 </body>

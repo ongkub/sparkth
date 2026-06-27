@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>Wedding Run – An-An &amp; Ong</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:'Courier New',monospace;display:flex;align-items:center;justify-content:center}
+#c{display:block;touch-action:none;image-rendering:pixelated;image-rendering:crisp-edges;position:relative}
+#overlay{
+  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.8);z-index:99;flex-direction:column;gap:16px;
+  text-align:center;padding:24px
+}
+#overlay.show{display:flex}
+#start-overlay{
+  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(2,6,23,.74);z-index:98;flex-direction:column;gap:14px;
+  text-align:center;padding:24px;
+}
+#start-overlay.show{display:flex}
+.win-box{
+  background:#fff;border:4px solid #f472b6;border-radius:20px;
+  padding:36px 28px;max-width:320px;width:100%
+}
+.start-box{
+  background:#fff;border:4px solid #60a5fa;border-radius:20px;
+  padding:28px 24px;max-width:340px;width:100%
+}
+.win-title{font-size:22px;font-weight:900;color:#be185d;margin-bottom:6px;line-height:1.3}
+.start-title{font-size:24px;font-weight:900;color:#1d4ed8;margin-bottom:8px;line-height:1.25}
+.win-score-total{font-size:42px;font-weight:900;color:#be185d;letter-spacing:-1px}
+.win-score-label{font-size:11px;color:#94a3b8;margin-bottom:14px}
+.score-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:13px}
+.score-table td{padding:5px 4px;color:#334155}
+.score-table td:last-child{text-align:right;font-weight:700;font-family:'Courier New',monospace}
+.score-table tr:not(:last-child) td{border-bottom:1px solid #f1f5f9}
+.penalty-row td{color:#dc2626}
+.mult-row td{color:#7c3aed;font-weight:900;border-top:2px solid #e2e8f0;padding-top:8px}
+.start-sub{font-size:13px;color:#64748b;margin-bottom:18px}
+.difficulty{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.diff-card{
+  display:flex;align-items:center;gap:14px;padding:14px 16px;
+  border:2px solid #e2e8f0;border-radius:14px;cursor:pointer;
+  text-align:left;transition:border-color .15s,background .15s;background:#f8fafc
+}
+.diff-card:has(input:checked){border-color:#2563eb;background:#eff6ff}
+.diff-card input{accent-color:#2563eb;width:18px;height:18px;flex-shrink:0}
+.diff-card-body{flex:1}
+.diff-name{font-size:15px;font-weight:800;color:#1e293b;margin-bottom:3px}
+.diff-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px}
+.diff-tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+.tag-green{background:#dcfce7;color:#15803d}
+.tag-red{background:#fee2e2;color:#dc2626}
+.tag-score{background:#ede9fe;color:#7c3aed}
+.diff-hint{font-size:11px;color:#94a3b8}
+.btn-restart{
+  background:#be185d;color:#fff;border:none;border-radius:10px;
+  padding:14px 32px;font-size:16px;font-weight:700;cursor:pointer;width:100%;
+  font-family:'Courier New',monospace;letter-spacing:1px
+}
+.btn-restart:active{opacity:.8}
+.btn-start{
+  background:#2563eb;color:#fff;border:none;border-radius:10px;
+  padding:13px 22px;font-size:16px;font-weight:800;cursor:pointer;width:100%;
+  font-family:'Courier New',monospace;letter-spacing:1px
+}
+.btn-start:active{opacity:.85}
+.btn-back{
+  position:fixed;top:12px;left:12px;z-index:200;
+  background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.3);
+  border-radius:10px;padding:8px 14px;font-size:14px;font-weight:700;
+  cursor:pointer;font-family:'Courier New',monospace;text-decoration:none;
+  backdrop-filter:blur(4px);
+}
+</style>
+</head>
+<body>
+<a id="backBtn" class="btn-back" href="checkin.html">← กลับ</a>
+<canvas id="c"></canvas>
+
+<div id="start-overlay" class="show">
+  <div class="start-box">
+    <div class="start-title">Wedding Run 💍</div>
+    <div class="start-sub">An-An &amp; Ong · เลือกความยาก แล้วกด Start</div>
+    <div id="start-mode-note" style="font-size:12px;color:#334155;background:#f1f5f9;border-radius:10px;padding:8px 10px;margin-bottom:12px"></div>
+    <div class="difficulty">
+      <label class="diff-card">
+        <input type="radio" name="difficulty" value="normal" checked/>
+        <div class="diff-card-body">
+          <div class="diff-name">Normal</div>
+          <div class="diff-tags">
+            <span class="diff-tag tag-green">เดินเร็ว</span>
+            <span class="diff-tag tag-green">BM ช้า</span>
+            <span class="diff-tag tag-score">คะแนน ×1.0</span>
+          </div>
+          <div class="diff-hint">เหมาะสำหรับผู้เล่นใหม่</div>
+        </div>
+      </label>
+      <label class="diff-card">
+        <input type="radio" name="difficulty" value="hard"/>
+        <div class="diff-card-body">
+          <div class="diff-name">Hard 🔥</div>
+          <div class="diff-tags">
+            <span class="diff-tag tag-red">เดินช้า</span>
+            <span class="diff-tag tag-red">BM เร็วมาก</span>
+            <span class="diff-tag tag-score">คะแนน ×1.8</span>
+          </div>
+          <div class="diff-hint">ยากกว่า แต่ได้คะแนนสูงกว่าเกือบ 2 เท่า</div>
+        </div>
+      </label>
+    </div>
+    <button class="btn-start" onclick="startGame()">▶ Start Game</button>
+  </div>
+</div>
+
+<div id="overlay">
+  <div class="win-box">
+    <div class="win-title">Happy Wedding! An-An &amp; Ong 💒</div>
+    <div class="win-score-total" id="win-score-total">0</div>
+    <div class="win-score-label">คะแนนรวม</div>
+    <table class="score-table">
+      <tr><td>🏁 จบเกม</td>         <td id="win-score-base">+1000</td></tr>
+      <tr><td>💍 สะสม</td>          <td id="win-score-hearts">+0</td></tr>
+      <tr><td>⏱ Time bonus</td>     <td id="win-score-time">+0</td></tr>
+      <tr class="penalty-row"><td>💥 ชนอุปสรรค</td><td id="win-score-hits">-0</td></tr>
+      <tr class="mult-row"><td>🎯 Difficulty</td><td id="win-score-mult">×1.0</td></tr>
+    </table>
+    <div id="result-meta" style="font-size:12px;color:#475569;margin-bottom:12px;min-height:20px"></div>
+    <button class="btn-restart" onclick="restartGame()">▶ เล่นอีกครั้ง</button>
+  </div>
+</div>
+
+<script>
+const SPRITES = {
+  player:     "img/game/ong.png",
+  bride:      "img/game/anan.png",
+  bridesmaid: "img/game/bm.png",
+  heart:      "img/game/ring.png",
+  bg:         "img/game/bg.png",
+  finishArch: "img/game/arch.png",
+};
+
+const C = {
+  player:     "#1d4ed8",
+  bride:      "#fdf4ff",
+  bridesmaid: "#f472b6",
+  heart:      "#ef4444",
+  bg:         "#4ade80",
+  path:       "#86efac",
+};
+
+const GROOM_NAME  = "Ong";
+const BRIDE_NAME  = "An-An";
+const COIN_LABEL  = "💍";
+const BG_RENDER_MODE = "tile";
+const API_BASE = "https://sparkth-production.up.railway.app";
+const SUBMIT_URL      = API_BASE + "/game/finish";
+const LEADERBOARD_URL = API_BASE + "/game/leaderboard";
+const STATUS_URL      = API_BASE + "/game/status";
+const LIFF_ID         = null;
+const GAME_MODE       = "top_score";
+const REWARD_MIN_SCORE = 0;
+
+// ── Scoring Config ──────────────────────────────────────
+const SCORE_CFG = {
+  base:             1000,
+  perHeart:         100,
+  timeBonusMax:     500,
+  timeBonusDecay:   8,
+  collisionPenalty: 150,
+};
+
+// ── Constants ────────────────────────────────────────────
+const MAP_W     = 390;
+const MAP_H     = 3200;
+const DPAD_H    = 190;
+const BASE_CHAR_W = 28;
+const BASE_CHAR_H = 44;
+const PLAYER_SCALE = 2.4;
+const NPC_SCALE    = 2.2;
+const PLAYER_W = Math.round(BASE_CHAR_W * PLAYER_SCALE);
+const PLAYER_H = Math.round(BASE_CHAR_H * PLAYER_SCALE);
+const NPC_W    = Math.round(BASE_CHAR_W * NPC_SCALE);
+const NPC_H    = Math.round(BASE_CHAR_H * NPC_SCALE);
+const RING_SIZE = 60;
+const DIFFICULTY = {
+  normal: { playerSpeed: 210, npcSpeedMult: 0.75, bounceDist: 55,  scoreMultiplier: 1.0 },
+  hard:   { playerSpeed: 145, npcSpeedMult: 1.90, bounceDist: 110, scoreMultiplier: 1.8 },
+};
+
+// ── Canvas & scale ────────────────────────────────────────
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+let CW, CH, VIEWPORT_H, displayScale;
+
+function resize() {
+  const sw = window.innerWidth;
+  const sh = window.innerHeight;
+  const scaleByW = sw / MAP_W;
+  const scaleByH = sh / (MAP_W * 2.05);
+  displayScale   = Math.min(scaleByW, scaleByH, 2.5);
+  const displayW = Math.round(MAP_W * displayScale);
+  const displayH = Math.round(sh);
+  CW = MAP_W;
+  CH = Math.ceil(sh / displayScale);
+  VIEWPORT_H = CH - DPAD_H;
+  canvas.width  = CW;
+  canvas.height = CH;
+  canvas.style.width  = displayW + 'px';
+  canvas.style.height = displayH + 'px';
+}
+resize();
+window.addEventListener('resize', () => { resize(); });
+
+// ── Preload images ────────────────────────────────────────
+const imgs = {};
+function loadImg(key, url) {
+  if (!url) return;
+  const i = new Image();
+  i.onload  = () => { imgs[key] = i; };
+  i.onerror = () => { console.warn('[sprite] failed:', key, url); };
+  i.src = url;
+}
+Object.entries(SPRITES).forEach(([k,v]) => loadImg(k, v));
+
+// ── Game state ────────────────────────────────────────────
+let state, heartsCollected, collisions, elapsedTime, cameraY, player, bride, bridesmaids, hearts, lastTime, animTick, difficultyMode, currentDifficulty;
+let submittedRound = false;
+let playerIdentity = { line_uid: '', display_name: '', picture_url: '' };
+
+function initGame() {
+  state           = 'ready';
+  submittedRound  = false;
+  heartsCollected = 0;
+  collisions      = 0;
+  elapsedTime     = 0;
+  animTick        = 0;
+  lastTime        = 0;
+  currentDifficulty = DIFFICULTY[difficultyMode];
+
+  player = {
+    x: MAP_W / 2 - PLAYER_W / 2,
+    y: MAP_H - 240,
+    w: PLAYER_W, h: PLAYER_H,
+    speed: currentDifficulty.playerSpeed,
+    facing: 'up',
+    step: 0, stepTimer: 0,
+    bouncing: 0,
+  };
+
+  bride = { x: MAP_W / 2 - NPC_W / 2, y: 110, w: NPC_W, h: NPC_H };
+
+  cameraY = MAP_H - VIEWPORT_H;
+
+  bridesmaids = [
+    bm(MAP_W*.50 - NPC_W / 2, 2750,  30, 220,  75),
+    bm(MAP_W*.30 - NPC_W / 2, 2350,  15, 190, -65),
+    bm(MAP_W*.65 - NPC_W / 2, 1900,  50, 240,  90),
+    bm(MAP_W*.20 - NPC_W / 2, 1500,  20, 210, -70),
+    bm(MAP_W*.70 - NPC_W / 2, 1050,  45, 235,  80),
+    bm(MAP_W*.40 - NPC_W / 2,  620,  10, 260, -88),
+  ];
+  for (const b of bridesmaids) b.speed *= currentDifficulty.npcSpeedMult;
+
+  const hPos = [
+    [MAP_W*.35, 2950], [MAP_W*.60, 2830], [MAP_W*.50, 2620],
+    [MAP_W*.22, 2450], [MAP_W*.72, 2280], [MAP_W*.45, 2080],
+    [MAP_W*.60, 1930], [MAP_W*.28, 1720], [MAP_W*.68, 1580],
+    [MAP_W*.50, 1330], [MAP_W*.18, 1180], [MAP_W*.78, 1060],
+    [MAP_W*.38, 840],  [MAP_W*.62, 730],  [MAP_W*.30, 530],
+    [MAP_W*.70, 440],  [MAP_W*.50, 330],  [MAP_W*.42, 240],
+  ];
+  hearts = hPos.map(([hx, hy]) => ({
+    x: hx - RING_SIZE / 2, y: hy, w: RING_SIZE, h: RING_SIZE, collected: false,
+  }));
+
+  document.getElementById('overlay').classList.remove('show');
+  const meta = document.getElementById('result-meta');
+  if (meta) meta.textContent = '';
+}
+
+function bm(x, y, xMin, xMax, speed) {
+  return { x, y, w: NPC_W, h: NPC_H, xMin, xMax, speed: Math.abs(speed), dir: speed > 0 ? 1 : -1 };
+}
+
+// ── Input ─────────────────────────────────────────────────
+const keys = { up:false, down:false, left:false, right:false };
+const dpad = { up:false, down:false, left:false, right:false };
+
+document.addEventListener('keydown', e => {
+  if (e.key==='ArrowUp'   ||e.key==='w') keys.up    = true;
+  if (e.key==='ArrowDown' ||e.key==='s') keys.down  = true;
+  if (e.key==='ArrowLeft' ||e.key==='a') keys.left  = true;
+  if (e.key==='ArrowRight'||e.key==='d') keys.right = true;
+});
+document.addEventListener('keyup', e => {
+  if (e.key==='ArrowUp'   ||e.key==='w') keys.up    = false;
+  if (e.key==='ArrowDown' ||e.key==='s') keys.down  = false;
+  if (e.key==='ArrowLeft' ||e.key==='a') keys.left  = false;
+  if (e.key==='ArrowRight'||e.key==='d') keys.right = false;
+});
+
+function dpadRects() {
+  const cx  = CW / 2;
+  const cy  = VIEWPORT_H + DPAD_H / 2 + 4;
+  const btn = 58;
+  const gap = 4;
+  return {
+    up:    { x: cx - btn/2,       y: cy - btn - gap, w: btn, h: btn },
+    down:  { x: cx - btn/2,       y: cy + gap,       w: btn, h: btn },
+    left:  { x: cx - btn*1.5-gap, y: cy - btn/2,     w: btn, h: btn },
+    right: { x: cx + btn/2 + gap, y: cy - btn/2,     w: btn, h: btn },
+  };
+}
+
+function inRect(tx, ty, r) {
+  return tx >= r.x && tx <= r.x+r.w && ty >= r.y && ty <= r.y+r.h;
+}
+
+canvas.addEventListener('touchstart', onTouch, { passive:false });
+canvas.addEventListener('touchmove',  onTouch, { passive:false });
+canvas.addEventListener('touchend',   onTouchEnd, { passive:false });
+
+function onTouch(e) {
+  e.preventDefault();
+  const rects = dpadRects();
+  dpad.up = dpad.down = dpad.left = dpad.right = false;
+  const br = canvas.getBoundingClientRect();
+  for (const t of e.touches) {
+    const tx = (t.clientX - br.left) / displayScale;
+    const ty = (t.clientY - br.top)  / displayScale;
+    if (inRect(tx, ty, rects.up))    dpad.up    = true;
+    if (inRect(tx, ty, rects.down))  dpad.down  = true;
+    if (inRect(tx, ty, rects.left))  dpad.left  = true;
+    if (inRect(tx, ty, rects.right)) dpad.right = true;
+  }
+}
+function onTouchEnd(e) {
+  e.preventDefault();
+  if (e.touches.length === 0) {
+    dpad.up = dpad.down = dpad.left = dpad.right = false;
+  } else {
+    onTouch(e);
+  }
+}
+
+const up    = () => keys.up    || dpad.up;
+const down  = () => keys.down  || dpad.down;
+const left  = () => keys.left  || dpad.left;
+const right = () => keys.right || dpad.right;
+
+function setResultMeta(text, isError = false) {
+  const el = document.getElementById('result-meta');
+  if (!el) return;
+  el.style.color = isError ? '#dc2626' : '#475569';
+  el.innerHTML = text;
+}
+
+function renderStartModeNote() {
+  const el = document.getElementById('start-mode-note');
+  if (!el) return;
+  el.innerHTML = 'โหมด High Score: เล่นได้หลายครั้ง และคะแนนสูงสุดจะขึ้น Leaderboard';
+}
+
+async function loadIdentity() {
+  try {
+    const qs = new URLSearchParams(window.location.search);
+    playerIdentity.line_uid = (qs.get('uid') || qs.get('line_uid') || '').trim();
+    playerIdentity.display_name = decodeURIComponent(qs.get('display_name') || '').trim();
+    playerIdentity.picture_url  = decodeURIComponent(qs.get('picture_url') || '').trim();
+  } catch (err) {
+    console.warn('[wedding-run] identity load failed', err);
+  }
+}
+
+async function submitResult(scoreObj) {
+  if (!SUBMIT_URL || submittedRound) return;
+  submittedRound = true;
+
+  if (!playerIdentity.line_uid) {
+    setResultMeta('เล่นได้ แต่ยังไม่บันทึกคะแนน (ไม่พบ LINE UID)', true);
+    return;
+  }
+
+  try {
+    setResultMeta('กำลังบันทึกคะแนน...');
+    const res = await fetch(SUBMIT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        line_uid: playerIdentity.line_uid,
+        display_name: playerIdentity.display_name || null,
+        picture_url: playerIdentity.picture_url || null,
+        score: scoreObj.total,
+        hearts_collected: heartsCollected,
+        collisions,
+        elapsed_seconds: Math.round(elapsedTime * 100) / 100,
+        difficulty: difficultyMode,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      setResultMeta('บันทึกคะแนนไม่สำเร็จ', true);
+      return;
+    }
+
+    const best = Number(data.best_score ?? scoreObj.total);
+    setResultMeta('บันทึกแล้ว 🏆 คะแนนสูงสุดของคุณ: ' + best.toLocaleString());
+  } catch (err) {
+    console.error('[wedding-run] submit error', err);
+    setResultMeta('บันทึกคะแนนไม่สำเร็จ', true);
+  }
+}
+
+// ── Collision ─────────────────────────────────────────────
+function overlaps(a, b) {
+  return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+}
+
+function hitbox(ent, insetXRatio = 0.2, insetYRatio = 0.2) {
+  const ix = ent.w * insetXRatio;
+  const iy = ent.h * insetYRatio;
+  return { x: ent.x + ix, y: ent.y + iy, w: ent.w - ix * 2, h: ent.h - iy * 2 };
+}
+
+// ── Update ────────────────────────────────────────────────
+function update(dt) {
+  if (state !== 'playing') return;
+  animTick    += dt;
+  elapsedTime += dt;
+
+  for (const b of bridesmaids) {
+    b.x += b.speed * b.dir * dt;
+    if (b.x <= b.xMin) { b.x = b.xMin; b.dir =  1; }
+    if (b.x >= b.xMax) { b.x = b.xMax; b.dir = -1; }
+  }
+
+  if (player.bouncing > 0) {
+    player.bouncing -= dt * 1000;
+  } else {
+    let dx = 0, dy = 0, moving = false;
+    if (up())    { dy = -1; player.facing = 'up';    moving = true; }
+    if (down())  { dy =  1; player.facing = 'down';  moving = true; }
+    if (left())  { dx = -1; player.facing = 'left';  moving = true; }
+    if (right()) { dx =  1; player.facing = 'right'; moving = true; }
+    if (dx && dy) { dx *= 0.707; dy *= 0.707; }
+
+    player.x = Math.max(8, Math.min(MAP_W - player.w - 8, player.x + dx * player.speed * dt));
+    player.y = Math.max(0, Math.min(MAP_H - player.h,     player.y + dy * player.speed * dt));
+
+    if (moving) {
+      player.stepTimer += dt * 1000;
+      if (player.stepTimer > 140) { player.step = 1 - player.step; player.stepTimer = 0; }
+    } else {
+      player.step = 0; player.stepTimer = 0;
+    }
+  }
+
+  for (const h of hearts) {
+    if (!h.collected && overlaps(hitbox(player, 0.28, 0.30), hitbox(h, 0.25, 0.25))) {
+      h.collected = true;
+      heartsCollected++;
+    }
+  }
+
+  const bounceDist = currentDifficulty?.bounceDist ?? 84;
+  const bounceDir = { up:[0,bounceDist], down:[0,-bounceDist], left:[bounceDist,0], right:[-bounceDist,0] };
+  for (const b of bridesmaids) {
+    if (overlaps(hitbox(player, 0.24, 0.26), hitbox(b, 0.26, 0.26)) && player.bouncing <= 0) {
+      const [ox, oy] = bounceDir[player.facing] ?? [0, 50];
+      player.x = Math.max(8, Math.min(MAP_W - player.w - 8, player.x + ox));
+      player.y = Math.max(0, Math.min(MAP_H - player.h,     player.y + oy));
+      player.bouncing = 350;
+      collisions++;
+    }
+  }
+
+  if (overlaps(player, bride)) {
+    state = 'won';
+    const s = calcScore();
+    const totalHearts = hearts.length;
+    document.getElementById('win-score-total').textContent   = s.total.toLocaleString();
+    document.getElementById('win-score-base').textContent    = '+' + s.base;
+    document.getElementById('win-score-hearts').textContent  = '+' + s.heartPts + ' (' + heartsCollected + '/' + totalHearts + ' 💍)';
+    document.getElementById('win-score-time').textContent    = '+' + s.timeBonus + ' (' + Math.floor(elapsedTime) + 's)';
+    document.getElementById('win-score-hits').textContent    = '-' + s.colPenalty + ' (' + collisions + ' ครั้ง)';
+    document.getElementById('win-score-mult').textContent    = '×' + s.mult.toFixed(1) + ' (' + difficultyMode.toUpperCase() + ')';
+    document.getElementById('overlay').classList.add('show');
+    submitResult(s);
+    return;
+  }
+
+  const targetCam = player.y - VIEWPORT_H * 0.55;
+  cameraY += (targetCam - cameraY) * Math.min(dt * 7, 1);
+  cameraY  = Math.max(0, Math.min(MAP_H - VIEWPORT_H, cameraY));
+}
+
+function calcScore(t = elapsedTime) {
+  const mult       = currentDifficulty?.scoreMultiplier ?? 1;
+  const heartPts   = Math.round(heartsCollected * SCORE_CFG.perHeart * mult);
+  const timeBonus  = Math.max(0, Math.round((SCORE_CFG.timeBonusMax - t * SCORE_CFG.timeBonusDecay) * mult));
+  const colPenalty = Math.round(collisions * SCORE_CFG.collisionPenalty * mult);
+  const base       = Math.round(SCORE_CFG.base * mult);
+  const total      = Math.max(0, base + heartPts + timeBonus - colPenalty);
+  return { base, heartPts, timeBonus, colPenalty, total, mult };
+}
+
+// ── Draw helpers ──────────────────────────────────────────
+function w2s(wx, wy) { return [wx, wy - cameraY]; }
+
+function drawChar(x, y, w, h, color, label) {
+  const hd = Math.round(h * 0.32);
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fillRect(x + 4, y + h - 4, w - 8, 6);
+  ctx.fillStyle = color;
+  ctx.fillRect(x + 4, y + hd, w - 8, h - hd);
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(x + 5, y + h - 10, (w-10)/2, 10);
+  ctx.fillRect(x + 5 + (w-10)/2, y + h - 10, (w-10)/2, 10);
+  ctx.fillStyle = '#fcd5b0';
+  ctx.fillRect(x + 5, y, w - 10, hd + 3);
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(x + 8, y + 7, 3, 3);
+  ctx.fillRect(x + w - 11, y + 7, 3, 3);
+  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  const tw = ctx.measureText(label).width + 6;
+  ctx.fillRect(x + w/2 - tw/2, y - 16, tw, 13);
+  ctx.fillStyle = '#fff';
+  ctx.font = '9px "Courier New"';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x + w/2, y - 9);
+  ctx.textBaseline = 'alphabetic';
+}
+
+function drawHeart(x, y, w, h) {
+  if (imgs.heart) { ctx.drawImage(imgs.heart, x, y, w, h); return; }
+  const s = Math.max(2, Math.floor(w / 5));
+  ctx.fillStyle = C.heart;
+  ctx.fillRect(x + s,     y,       s*2, s);
+  ctx.fillRect(x + s*3,   y,       s*2, s);
+  ctx.fillRect(x,         y + s,   s*5, s*2);
+  ctx.fillRect(x + s,     y + s*3, s*3, s);
+  ctx.fillRect(x + s*2,   y + s*4, s,   s);
+}
+
+function rr(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,   x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h, x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,   x,y+h-r);
+  ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,     x+r,y);
+  ctx.closePath();
+}
+
+function drawBg() {
+  if (imgs.bg) {
+    if (BG_RENDER_MODE === 'single') {
+      const iw = imgs.bg.width || 1;
+      const ih = imgs.bg.height || 1;
+      const scale = CW / iw;
+      const srcH = Math.min(ih, Math.max(1, VIEWPORT_H / scale));
+      const maxSrcY = Math.max(0, ih - srcH);
+      const camRatio = MAP_H > VIEWPORT_H ? cameraY / (MAP_H - VIEWPORT_H) : 0;
+      const srcY = Math.max(0, Math.min(maxSrcY, camRatio * maxSrcY));
+      ctx.drawImage(imgs.bg, 0, srcY, iw, srcH, 0, 0, CW, VIEWPORT_H);
+      return;
+    }
+    const pat = ctx.createPattern(imgs.bg, 'repeat');
+    if (pat) {
+      ctx.save();
+      ctx.translate(0, -cameraY % imgs.bg.height);
+      ctx.fillStyle = pat;
+      ctx.fillRect(0, 0, CW, VIEWPORT_H + imgs.bg.height);
+      ctx.restore();
+      return;
+    }
+  }
+  ctx.fillStyle = C.bg;
+  ctx.fillRect(0, 0, CW, VIEWPORT_H);
+  ctx.fillStyle = '#7dd3fc';
+  ctx.fillRect(0, 0, 28, VIEWPORT_H);
+  ctx.fillStyle = '#bae6fd';
+  ctx.fillRect(6, 0, 10, VIEWPORT_H);
+  ctx.fillStyle = '#fff';
+  const sparkSeed = Math.floor(cameraY / 48);
+  for (let i = 0; i < 6; i++) {
+    const sy = ((sparkSeed * 23 + i * 77) % (VIEWPORT_H - 4));
+    ctx.fillRect(8 + (i%3)*4, sy, 2, 2);
+  }
+  ctx.fillStyle = '#7dd3fc';
+  ctx.fillRect(CW - 28, 0, 28, VIEWPORT_H);
+  ctx.fillStyle = '#bae6fd';
+  ctx.fillRect(CW - 16, 0, 10, VIEWPORT_H);
+  ctx.fillStyle = C.path;
+  ctx.fillRect(CW/2 - 38, 0, 76, VIEWPORT_H);
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.fillRect(CW/2 - 38, 0, 3, VIEWPORT_H);
+  ctx.fillRect(CW/2 + 35, 0, 3, VIEWPORT_H);
+  ctx.fillStyle = '#fde68a';
+  for (let i = 0; i < 24; i++) {
+    const fx = ((sparkSeed * 19 + i * 131) % (CW - 60)) + 30;
+    const fy = ((sparkSeed * 37 + i * 89)  % (VIEWPORT_H - 8)) + 4;
+    if (fx > CW/2 - 46 && fx < CW/2 + 46) continue;
+    if (fx < 30 || fx > CW - 30) continue;
+    ctx.fillRect(fx, fy, 4, 4);
+    ctx.fillStyle = '#86efac';
+    ctx.fillRect(fx - 2, fy + 2, 2, 2);
+    ctx.fillRect(fx + 4, fy + 2, 2, 2);
+    ctx.fillStyle = '#fde68a';
+  }
+}
+
+function drawFinishMarker() {
+  if (!bride) return;
+  const [cx, cy] = w2s(bride.x + bride.w / 2, bride.y + bride.h - 8);
+  if (cy > VIEWPORT_H + 140 || cy < -140) return;
+
+  if (imgs.finishArch) {
+    const w = Math.round(bride.w * 3.0);
+    const h = Math.round(bride.h * 3.0);
+    const x = Math.round(cx - w / 2);
+    const y = Math.round(cy - h + Math.round(bride.h * 0.72));
+    ctx.drawImage(imgs.finishArch, x, y, w, h);
+    return;
+  }
+
+  const pulse = 0.65 + Math.sin(animTick * 3.2) * 0.35;
+  const g = ctx.createRadialGradient(cx, cy, 8, cx, cy, 74);
+  g.addColorStop(0, 'rgba(251,191,36,' + (0.28 * pulse) + ')');
+  g.addColorStop(0.6, 'rgba(244,114,182,' + (0.16 * pulse) + ')');
+  g.addColorStop(1, 'rgba(244,114,182,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 74, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(251,191,36,' + (0.75 + 0.2 * pulse) + ')';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, 30, 12, 0, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+function drawHUD() {
+  ctx.fillStyle = 'rgba(15,23,42,0.75)';
+  ctx.fillRect(0, 0, CW, 38);
+  const scoreIconSize = 20;
+  if (imgs.heart) {
+    ctx.drawImage(imgs.heart, 10, 9, scoreIconSize, scoreIconSize);
+  } else {
+    ctx.font = 'bold 13px "Courier New"';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#f9a8d4';
+    ctx.fillText(COIN_LABEL, 12, 19);
+  }
+  ctx.font = 'bold 14px "Courier New"';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#f9a8d4';
+  ctx.fillText(String(heartsCollected), 36, 19);
+  const liveScore = calcScore().total;
+  ctx.font = 'bold 13px "Courier New"';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#fde68a';
+  ctx.fillText('★ ' + liveScore, CW / 2, 19);
+  const mins = Math.floor(elapsedTime / 60);
+  const secs = Math.floor(elapsedTime % 60);
+  const timerStr = mins > 0 ? mins + ':' + String(secs).padStart(2,'0') : secs + 's';
+  ctx.font = '11px "Courier New"';
+  ctx.fillStyle = '#94a3b8';
+  ctx.textAlign = 'right';
+  ctx.fillText(timerStr, CW - 8, 19);
+  ctx.textBaseline = 'alphabetic';
+}
+
+function drawDpad() {
+  const rects = dpadRects();
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(0, VIEWPORT_H, CW, DPAD_H);
+  const dirs = [
+    { key:'up',    r:rects.up,    lbl:'▲' },
+    { key:'down',  r:rects.down,  lbl:'▼' },
+    { key:'left',  r:rects.left,  lbl:'◀' },
+    { key:'right', r:rects.right, lbl:'▶' },
+  ];
+  for (const {key, r, lbl} of dirs) {
+    const active = dpad[key] || keys[key];
+    ctx.fillStyle = active ? '#0f172a' : '#1e293b';
+    rr(r.x+2, r.y+4, r.w, r.h, 12); ctx.fill();
+    ctx.fillStyle = active ? '#475569' : '#334155';
+    rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
+    ctx.strokeStyle = active ? '#94a3b8' : '#475569';
+    ctx.lineWidth = 2;
+    rr(r.x, r.y, r.w, r.h, 12); ctx.stroke();
+    ctx.fillStyle = active ? '#f1f5f9' : '#94a3b8';
+    ctx.font = 'bold 24px "Courier New"';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(lbl, r.x + r.w/2, r.y + r.h/2 + 1);
+  }
+  ctx.textBaseline = 'alphabetic';
+}
+
+function draw() {
+  ctx.clearRect(0, 0, CW, CH);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, CW, VIEWPORT_H);
+  ctx.clip();
+
+  drawBg();
+  drawFinishMarker();
+
+  for (const h of hearts) {
+    if (h.collected) continue;
+    const [sx, sy] = w2s(h.x, h.y);
+    if (sy < -25 || sy > VIEWPORT_H + 10) continue;
+    const bob = Math.sin(animTick * 2.8 + h.x * 0.05) * 3;
+    drawHeart(sx, sy + bob, h.w, h.h);
+  }
+
+  {
+    const [bx, by] = w2s(bride.x, bride.y);
+    if (by > -bride.h && by < VIEWPORT_H + 10) {
+      const pulse = Math.sin(animTick * 2) * 1.5;
+      if (imgs.bride) {
+        ctx.drawImage(imgs.bride, bx, by + pulse, bride.w, bride.h);
+      } else {
+        drawChar(bx, by + pulse, bride.w, bride.h, C.bride, BRIDE_NAME);
+      }
+    }
+  }
+
+  for (const b of bridesmaids) {
+    const [sx, sy] = w2s(b.x, b.y);
+    if (sy < -b.h || sy > VIEWPORT_H + 10) continue;
+    const bob = Math.sin(animTick * 3.5 + b.xMin * 0.1) * 2;
+    if (imgs.bridesmaid) {
+      ctx.drawImage(imgs.bridesmaid, sx, sy + bob, b.w, b.h);
+    } else {
+      drawChar(sx, sy + bob, b.w, b.h, C.bridesmaid, '💃');
+    }
+  }
+
+  {
+    const [px, py] = w2s(player.x, player.y);
+    const walkBob = player.step === 1 ? -2 : 0;
+    if (imgs.player) {
+      ctx.drawImage(imgs.player, px, py + walkBob, player.w, player.h);
+    } else {
+      drawChar(px, py + walkBob, player.w, player.h, C.player, GROOM_NAME);
+    }
+    if (player.bouncing > 0) {
+      ctx.fillStyle = 'rgba(239,68,68,0.35)';
+      ctx.fillRect(px, py, player.w, player.h);
+    }
+  }
+
+  ctx.restore();
+  drawHUD();
+  drawDpad();
+}
+
+function loop(ts) {
+  if (!lastTime) lastTime = ts;
+  const dt = Math.min((ts - lastTime) / 1000, 0.05);
+  lastTime = ts;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function restartGame() {
+  submittedRound = false;
+  initGame();
+  state = 'playing';
+}
+
+async function startGame() {
+  const picked = document.querySelector('input[name="difficulty"]:checked')?.value === 'hard' ? 'hard' : 'normal';
+  difficultyMode = picked;
+  currentDifficulty = DIFFICULTY[difficultyMode];
+  initGame();
+  state = 'playing';
+  document.getElementById('start-overlay').classList.remove('show');
+}
+
+// ── Init ──────────────────────────────────────────────────
+const _qs = new URLSearchParams(location.search);
+const _back = _qs.get('back') || localStorage.getItem('weddingCheckinUrl') || 'checkin.html';
+document.getElementById('backBtn').href = _back;
+
+difficultyMode = 'normal';
+currentDifficulty = DIFFICULTY.normal;
+renderStartModeNote();
+loadIdentity();
+initGame();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
