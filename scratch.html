@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>ชิงโชค · An-An &amp; Ong</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  width:100%;height:100%;overflow:hidden;
+  background:linear-gradient(150deg,#1a0533 0%,#2d1060 50%,#1a0533 100%);
+  font-family:'Noto Sans Thai',sans-serif;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+
+/* ── Stars bg ── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 20%, rgba(255,255,255,.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 10% 80%, rgba(255,255,255,.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 45% 10%, rgba(255,255,255,.45) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 50%, rgba(255,255,255,.3) 0%, transparent 100%);
+  pointer-events:none;z-index:0;
+}
+
+/* ── Waiting ── */
+#waiting{
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+  text-align:center;padding:32px;z-index:1;
+}
+.wait-icon{font-size:72px;animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.wait-crown{font-size:16px;letter-spacing:4px;color:#f9d77e;font-weight:700;text-transform:uppercase}
+.wait-title{font-size:26px;font-weight:900;color:#fff;line-height:1.2}
+.wait-sub{font-size:15px;color:rgba(255,255,255,.65);line-height:1.8}
+.wait-dots span{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:#f9d77e;margin:0 4px;
+  animation:dotPulse 1.2s ease-in-out infinite;
+}
+.wait-dots span:nth-child(2){animation-delay:.2s}
+.wait-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dotPulse{0%,80%,100%{transform:scale(0.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* ── Game card ── */
+#game{
+  display:none;width:min(400px,calc(100vw - 24px));
+  z-index:1;
+}
+.card-outer{
+  border-radius:28px;overflow:hidden;
+  box-shadow:
+    0 0 0 3px #f59e0b,
+    0 0 0 6px rgba(245,158,11,.25),
+    0 28px 60px rgba(0,0,0,.55);
+}
+
+/* Header */
+.card-head{
+  background:linear-gradient(135deg,#9d174d 0%,#be185d 60%,#9d174d 100%);
+  padding:22px 20px 30px;text-align:center;position:relative;
+}
+.card-head::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:20px;
+  background:linear-gradient(180deg,#fdf4ff,#fdf4ff);
+  clip-path:ellipse(60% 100% at 50% 100%);
+}
+.ch-eyebrow{font-size:11px;letter-spacing:3px;color:rgba(255,255,255,.75);font-weight:700;text-transform:uppercase;margin-bottom:6px}
+.ch-title{font-size:28px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:4px}
+.ch-sub{font-size:13px;color:rgba(255,255,255,.8)}
+
+/* Body */
+.card-body{background:linear-gradient(180deg,#fdf4ff 0%,#fff 100%);padding:28px 20px 20px}
+
+/* Scratch area */
+.scratch-wrap{
+  width:100%;height:180px;border-radius:18px;
+  position:relative;overflow:hidden;
+  border:3px solid #f59e0b;
+  box-shadow:0 4px 20px rgba(245,158,11,.2);
+}
+/* Under canvas */
+.prize-content{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,#0f0720,#1e0a3c);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;
+}
+.p-mystery{font-size:28px;letter-spacing:12px;color:rgba(249,215,126,.35);user-select:none}
+.p-win{display:none;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:0 12px}
+.p-win-icon{font-size:48px;animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.p-win-title{font-size:18px;font-weight:900;color:#fde68a;line-height:1.2}
+.p-win-label{font-size:13px;color:rgba(255,255,255,.85);font-weight:600}
+.p-lose{display:none;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:0 12px}
+.p-lose-icon{font-size:44px}
+.p-lose-title{font-size:17px;font-weight:800;color:rgba(255,255,255,.9)}
+.p-lose-winner{font-size:12px;color:rgba(255,255,255,.55)}
+
+/* Scratch canvas */
+#scratchCanvas{
+  position:absolute;inset:0;
+  width:100%!important;height:100%!important;
+  touch-action:none;cursor:crosshair;
+  transition:opacity .9s ease;
+}
+
+/* Progress bar */
+.scratch-meta{margin-top:12px;display:flex;align-items:center;gap:10px}
+.scratch-hint{font-size:13px;color:#94a3b8;flex:1}
+.scratch-pct{font-size:12px;font-weight:700;color:#be185d;min-width:34px;text-align:right}
+.scratch-progress{
+  height:5px;background:#f1f5f9;border-radius:999px;overflow:hidden;margin-top:6px;
+}
+.scratch-bar{
+  height:100%;background:linear-gradient(90deg,#be185d,#f472b6);
+  border-radius:999px;width:0%;transition:width .1s linear;
+}
+
+/* Footer */
+.card-foot{
+  background:#fff;padding:12px 20px;
+  border-top:1px solid #f1f5f9;text-align:center;
+}
+.card-foot-note{font-size:11px;color:#94a3b8;line-height:1.6}
+
+/* ── Result overlay ── */
+#resultOverlay{
+  display:none;position:fixed;inset:0;z-index:50;
+  background:rgba(0,0,0,.88);
+  flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;
+}
+#resultOverlay.show{display:flex;animation:fadeUp .45s cubic-bezier(.34,1.2,.64,1)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+.result-box{
+  background:#fff;border-radius:28px;padding:40px 28px 32px;
+  max-width:340px;width:100%;text-align:center;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);
+}
+.r-icon{font-size:72px;display:block;margin-bottom:12px}
+.r-title{font-size:26px;font-weight:900;margin-bottom:8px;line-height:1.2}
+.r-title.win{color:#be185d}
+.r-title.lose{color:#475569}
+.r-sub{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:16px}
+.r-prize{
+  background:linear-gradient(135deg,#fef3c7,#fde68a);
+  border:2px solid #f59e0b;border-radius:14px;
+  padding:13px 20px;font-size:16px;font-weight:800;
+  color:#92400e;margin-bottom:16px;display:none;
+}
+.r-winner{
+  display:none;align-items:center;justify-content:center;gap:10px;
+  font-size:13px;color:#64748b;margin-bottom:16px;
+}
+.r-winner img{width:36px;height:36px;border-radius:50%;object-fit:cover}
+.r-winner strong{color:#334155}
+.btn-ok{
+  background:linear-gradient(135deg,#be185d,#9d174d);color:#fff;
+  border:none;border-radius:14px;padding:14px 32px;font-size:15px;
+  font-weight:800;cursor:pointer;width:100%;font-family:inherit;
+}
+.btn-ok:active{opacity:.85}
+
+/* ── Confetti ── */
+.confetti{
+  position:fixed;width:10px;height:16px;top:-20px;
+  border-radius:2px;pointer-events:none;z-index:60;
+  animation:cfFall linear forwards;
+}
+@keyframes cfFall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+/* ── Back btn ── */
+.back-btn{
+  position:fixed;top:16px;left:16px;z-index:100;
+  background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);
+  border:1.5px solid rgba(255,255,255,.25);border-radius:10px;
+  padding:8px 14px;font-size:14px;font-weight:700;
+  text-decoration:none;backdrop-filter:blur(4px);font-family:inherit;
+}
+</style>
+</head>
+<body>
+
+<a id="backBtn" class="back-btn" href="checkin.html">← กลับ</a>
+
+<!-- WAITING -->
+<div id="waiting">
+  <div class="wait-icon">🎁</div>
+  <div class="wait-crown">💍 Wedding Lucky Draw</div>
+  <div class="wait-title">An-An &amp; Ong</div>
+  <div class="wait-sub" id="waitSub">เกมชิงโชคยังไม่เริ่ม<br>กรุณารอประกาศจากพิธีกร</div>
+  <div class="wait-dots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- GAME -->
+<div id="game">
+  <div class="card-outer">
+    <div class="card-head">
+      <div class="ch-eyebrow">💍 Wedding Lucky Draw</div>
+      <div class="ch-title">An-An &amp; Ong</div>
+      <div class="ch-sub">ถูบัตรเพื่อดูผลโชคชะตาของคุณ</div>
+    </div>
+    <div class="card-body">
+      <div class="scratch-wrap">
+        <div class="prize-content">
+          <div class="p-mystery" id="pMystery">✦ ✦ ✦</div>
+          <div class="p-win" id="pWin">
+            <div class="p-win-icon">🎉</div>
+            <div class="p-win-title">คุณเป็นผู้โชคดี!</div>
+            <div class="p-win-label" id="prizeLabel">ของรางวัลพิเศษ</div>
+          </div>
+          <div class="p-lose" id="pLose">
+            <div class="p-lose-icon">💐</div>
+            <div class="p-lose-title">ขอบคุณที่ร่วมสนุก</div>
+            <div class="p-lose-winner" id="loseWinner"></div>
+          </div>
+        </div>
+        <canvas id="scratchCanvas"></canvas>
+      </div>
+      <div class="scratch-meta">
+        <div class="scratch-hint" id="scratchHint">👆 ถูบัตรเพื่อดูผล</div>
+        <div class="scratch-pct" id="scratchPct"></div>
+      </div>
+      <div class="scratch-progress">
+        <div class="scratch-bar" id="scratchBar"></div>
+      </div>
+    </div>
+    <div class="card-foot">
+      <div class="card-foot-note">3 July 2026 · Chatrium Riverside Bangkok</div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT OVERLAY -->
+<div id="resultOverlay">
+  <div class="result-box">
+    <span class="r-icon" id="rIcon">🎉</span>
+    <div class="r-title" id="rTitle">คุณเป็นผู้โชคดี!</div>
+    <div class="r-sub" id="rSub"></div>
+    <div class="r-prize" id="rPrize"></div>
+    <div class="r-winner" id="rWinner"></div>
+    <button class="btn-ok" onclick="document.getElementById('resultOverlay').classList.remove('show')">ตกลง</button>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://sparkth-production.up.railway.app';
+const _qs = new URLSearchParams(location.search);
+
+// Identity: URL params (from checkin.html) or localStorage fallback
+const MY_UID  = (_qs.get('uid') || _qs.get('line_uid') || localStorage.getItem('weddingUserId') || '').trim();
+const MY_NAME = decodeURIComponent(_qs.get('display_name') || '').trim();
+const MY_PIC  = decodeURIComponent(_qs.get('picture_url') || '').trim();
+const BACK    = _qs.get('back') || 'checkin.html';
+
+document.getElementById('backBtn').href = BACK;
+
+// ── State ─────────────────────────────────────────────────
+let gameState = 'waiting'; // waiting | ready | scratching | claiming | done
+let claimed   = false;
+let pollTimer = null;
+let prizeLabelText = 'ของรางวัลพิเศษ';
+let isDragging = false;
+let lastCheckTime = 0;
+
+// ── Canvas ────────────────────────────────────────────────
+const canvas   = document.getElementById('scratchCanvas');
+const ctx      = canvas.getContext('2d');
+const wrapEl   = document.querySelector('.scratch-wrap');
+
+function setupCanvas() {
+  canvas.width  = wrapEl.offsetWidth;
+  canvas.height = wrapEl.offsetHeight;
+
+  // Metallic silver fill
+  const g = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  g.addColorStop(0,   '#b0b0b0');
+  g.addColorStop(0.3, '#e0e0e0');
+  g.addColorStop(0.6, '#c8c8c8');
+  g.addColorStop(1,   '#b0b0b0');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Coin-like shimmer dots
+  ctx.fillStyle = 'rgba(200,200,200,.6)';
+  for (let i = 0; i < 40; i++) {
+    ctx.beginPath();
+    ctx.arc(
+      4 + (i % 8) * (canvas.width / 8),
+      4 + Math.floor(i / 8) * (canvas.height / 5),
+      2, 0, Math.PI * 2
+    );
+    ctx.fill();
+  }
+
+  // "ถูที่นี่" hint text
+  ctx.fillStyle = 'rgba(80,80,80,.5)';
+  ctx.font = `bold ${Math.round(canvas.height * 0.17)}px 'Noto Sans Thai', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('✦ ถูที่นี่ ✦', canvas.width / 2, canvas.height / 2);
+}
+
+function getScratchedPct() {
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  let transparent = 0;
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i] < 20) transparent++;
+  }
+  return (transparent / (canvas.width * canvas.height)) * 100;
+}
+
+function drawEraser(x, y) {
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.beginPath();
+  ctx.arc(x, y, 26, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function handleScratch(x, y) {
+  if (gameState !== 'ready' && gameState !== 'scratching') return;
+  gameState = 'scratching';
+  drawEraser(x, y);
+
+  const now = Date.now();
+  if (now - lastCheckTime > 150) {
+    lastCheckTime = now;
+    const pct = getScratchedPct();
+    document.getElementById('scratchBar').style.width = Math.min(pct, 100) + '%';
+    document.getElementById('scratchPct').textContent = pct >= 5 ? Math.round(pct) + '%' : '';
+    if (pct >= 50 && !claimed) {
+      claimed = true;
+      claimPrize();
+    }
+  }
+}
+
+function canvasCoord(e, isTouch) {
+  const r  = canvas.getBoundingClientRect();
+  const sx = canvas.width  / r.width;
+  const sy = canvas.height / r.height;
+  const src = isTouch ? e.touches[0] : e;
+  return [(src.clientX - r.left) * sx, (src.clientY - r.top) * sy];
+}
+
+canvas.addEventListener('mousedown',  e => { isDragging=true;  const [x,y]=canvasCoord(e,false); handleScratch(x,y); });
+canvas.addEventListener('mousemove',  e => { if(!isDragging||e.buttons===0){isDragging=false;return;} const [x,y]=canvasCoord(e,false); handleScratch(x,y); });
+canvas.addEventListener('mouseup',    () => isDragging=false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); const [x,y]=canvasCoord(e,true); handleScratch(x,y); },{passive:false});
+canvas.addEventListener('touchmove',  e => { e.preventDefault(); const [x,y]=canvasCoord(e,true); handleScratch(x,y); },{passive:false});
+canvas.addEventListener('touchend',   () => {});
+
+// ── Reveal canvas (fade out) ──────────────────────────────
+function fadeOutCanvas() {
+  canvas.style.opacity = '0';
+}
+
+// ── Poll game status ──────────────────────────────────────
+async function pollStatus() {
+  try {
+    const r = await fetch(`${API_BASE}/scratch/status`);
+    const d = await r.json();
+    if (!d.success) return;
+    prizeLabelText = d.prize_label || 'ของรางวัลพิเศษ';
+    document.getElementById('prizeLabel').textContent = prizeLabelText;
+
+    if (d.is_active && gameState === 'waiting') {
+      activateGame();
+    }
+  } catch (_) {}
+}
+
+function activateGame() {
+  clearInterval(pollTimer);
+  gameState = 'ready';
+  document.getElementById('waiting').style.display = 'none';
+  const gameEl = document.getElementById('game');
+  gameEl.style.display = 'block';
+  gameEl.style.animation = 'fadeUp .5s cubic-bezier(.34,1.2,.64,1)';
+  document.getElementById('prizeLabel').textContent = prizeLabelText;
+  setTimeout(setupCanvas, 50); // let DOM paint first
+}
+
+// ── Claim ─────────────────────────────────────────────────
+async function claimPrize() {
+  gameState = 'claiming';
+  document.getElementById('scratchHint').textContent = '⏳ กำลังตรวจผล...';
+  document.getElementById('scratchPct').textContent = '';
+  fadeOutCanvas();
+
+  try {
+    const res = await fetch(`${API_BASE}/scratch/claim`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        uid:          MY_UID  || null,
+        display_name: MY_NAME || null,
+        picture_url:  MY_PIC  || null,
+      }),
+    });
+    const d = await res.json();
+    if (!res.ok) throw new Error();
+
+    gameState = 'done';
+    if (d.won) {
+      showWin(d.prize_label || prizeLabelText);
+    } else {
+      showLose(d.winner_display_name || '', d.winner_picture_url || '');
+    }
+  } catch {
+    gameState = 'done';
+    showLose('', '');
+  }
+}
+
+// ── Show win ──────────────────────────────────────────────
+function showWin(prize) {
+  document.getElementById('pMystery').style.display = 'none';
+  const pw = document.getElementById('pWin');
+  pw.style.display = 'flex';
+  document.getElementById('prizeLabel').textContent = prize;
+  document.getElementById('scratchHint').textContent = '🎉 คุณชนะรางวัล!';
+
+  setTimeout(() => {
+    document.getElementById('rIcon').textContent   = '🎉';
+    document.getElementById('rTitle').textContent  = 'คุณเป็นผู้โชคดี!';
+    document.getElementById('rTitle').className    = 'r-title win';
+    document.getElementById('rSub').textContent    = 'ยินดีด้วย! กรุณาแจ้งทีมงานทันทีเพื่อรับรางวัล';
+    const rp = document.getElementById('rPrize');
+    rp.textContent  = '🎁 ' + prize;
+    rp.style.display = 'block';
+    document.getElementById('rWinner').style.display = 'none';
+    document.getElementById('resultOverlay').classList.add('show');
+    launchConfetti();
+  }, 600);
+}
+
+// ── Show lose ─────────────────────────────────────────────
+function showLose(winnerName, winnerPic) {
+  document.getElementById('pMystery').style.display = 'none';
+  const pl = document.getElementById('pLose');
+  pl.style.display = 'flex';
+  document.getElementById('loseWinner').textContent = winnerName ? winnerName + ' เป็นผู้โชคดี' : 'มีผู้โชคดีไปแล้ว';
+  document.getElementById('scratchHint').textContent = 'มีผู้โชคดีไปแล้ว';
+
+  setTimeout(() => {
+    document.getElementById('rIcon').textContent  = '💐';
+    document.getElementById('rTitle').textContent = 'ขอบคุณที่ร่วมสนุก!';
+    document.getElementById('rTitle').className   = 'r-title lose';
+    document.getElementById('rSub').textContent   = 'ยังมีความสุขและของขวัญพิเศษอีกในงาน ขอให้สนุกนะครับ! 😊';
+    document.getElementById('rPrize').style.display = 'none';
+    const rw = document.getElementById('rWinner');
+    if (winnerName) {
+      rw.innerHTML = `${winnerPic ? `<img src="${esc(winnerPic)}" onerror="this.style.display='none'">` : ''}<span>ผู้โชคดี: <strong>${esc(winnerName)}</strong></span>`;
+      rw.style.display = 'flex';
+    } else {
+      rw.style.display = 'none';
+    }
+    document.getElementById('resultOverlay').classList.add('show');
+  }, 600);
+}
+
+// ── Confetti ──────────────────────────────────────────────
+function launchConfetti() {
+  const colors = ['#be185d','#f472b6','#fde68a','#f59e0b','#a78bfa','#60a5fa','#fff'];
+  for (let i = 0; i < 90; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    const size = 7 + Math.random() * 9;
+    el.style.cssText = `
+      left:${Math.random()*100}vw;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${1.4+Math.random()*2}s;
+      animation-delay:${Math.random()*.9}s;
+      transform:rotate(${Math.random()*360}deg);
+      width:${size}px;height:${size*1.6}px;
+    `;
+    document.body.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Boot ──────────────────────────────────────────────────
+pollStatus();
+pollTimer = setInterval(pollStatus, 2500);
+</script>
+</body>
+</html>

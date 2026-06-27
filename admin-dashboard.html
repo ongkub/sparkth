@@ -477,6 +477,9 @@ tr:hover td{background:rgba(254,240,238,.4)}
     <div class="nav-item" onclick="nav('gameboard', this)">
       <span class="nav-icon">🏆</span>Game Leaderboard
     </div>
+    <div class="nav-item" onclick="nav('scratch', this)">
+      <span class="nav-icon">🎁</span>ชิงโชค
+    </div>
   </div>
 
   <!-- MAIN -->
@@ -1081,6 +1084,50 @@ tr:hover td{background:rgba(254,240,238,.4)}
       </div>
     </div>
 
+    <!-- ═══ SECTION: SCRATCH LOTTERY ═══ -->
+    <div class="section" id="sec-scratch">
+      <div class="sec-title">ชิงโชค Scratch Card 🎁</div>
+      <div class="sec-sub">จัดการเกมบัตรขูดชิงโชคในพิธีการ · มีผู้ชนะได้คนเดียวต่อรอบ</div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-h">⚙️ ตั้งค่าเกม</div>
+          <div class="config-field" style="margin-top:16px">
+            <label class="config-label">ของรางวัล</label>
+            <input type="text" id="scratchPrizeLabel" class="config-inp" placeholder="เช่น บัตรกำนัล 500 บาท" maxlength="80">
+          </div>
+          <div class="config-field" style="margin-top:14px">
+            <label class="config-label">สถานะเกม</label>
+            <label style="display:flex;align-items:center;gap:10px;margin-top:8px;cursor:pointer">
+              <input type="checkbox" id="scratchActive" style="width:18px;height:18px;accent-color:var(--rose)">
+              <span style="font-size:14px;font-weight:600">เปิดเกม (แขกสแกนแล้วเล่นได้ทันที)</span>
+            </label>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:18px;align-items:center">
+            <button onclick="saveScratchSetup()" style="flex:1;background:var(--rose);color:#fff;border:none;border-radius:10px;padding:11px;font:inherit;font-size:14px;font-weight:700;cursor:pointer">💾 บันทึก</button>
+            <span id="scratchSaveStatus" style="font-size:13px;color:var(--muted)"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h">🏆 ผู้โชคดี</div>
+          <div id="scratchWinnerBox" style="margin-top:14px;min-height:80px;display:flex;align-items:center;justify-content:center">
+            <div style="color:var(--muted);font-size:13px">โหลดข้อมูล...</div>
+          </div>
+          <button onclick="resetScratch()" style="width:100%;margin-top:14px;background:#fff;color:var(--rose);border:2px solid var(--rose);border-radius:10px;padding:10px;font:inherit;font-size:14px;font-weight:700;cursor:pointer">🔄 รีเซ็ต (เริ่มรอบใหม่)</button>
+          <div id="scratchResetStatus" style="font-size:12px;color:var(--muted);margin-top:6px;text-align:center"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:0">
+        <div class="card-h">📱 QR Code สำหรับแสดงในพิธีการ</div>
+        <div style="margin-top:12px;background:var(--cream);border-radius:10px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+          <div>URL สำหรับแขก: <strong id="scratchUrl" style="color:var(--rose);word-break:break-all"></strong></div>
+          <div style="margin-top:6px;font-size:12px;color:var(--muted)">แขกที่เคย Check-in แล้ว → กดปุ่ม "ชิงโชค" จากหน้าหลักได้เลย (UID จะถูกส่งมาอัตโนมัติ)</div>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══ SECTION: GAME LEADERBOARD ═══ -->
     <div class="section" id="sec-gameboard">
       <div class="sec-title">Wedding Run – Leaderboard 🏆</div>
@@ -1158,6 +1205,7 @@ function nav(id, navItem){
   if(id==='slip') loadSlips();
   if(id==='beacon') loadBeaconConfig();
   if(id==='gameboard') loadGameLeaderboard();
+  if(id==='scratch') loadScratchAdmin();
   if(window.innerWidth <= 768) closeSidebar();
 }
 
@@ -2363,6 +2411,71 @@ async function saveBeaconConfig(){
 }
 
 document.getElementById('beaconMessage')?.addEventListener('input', updateBeaconPreview);
+
+async function loadScratchAdmin(){
+  document.getElementById('scratchUrl').textContent = location.origin + '/scratch.html';
+  try{
+    const res = await fetch(`${API_BASE}/scratch/admin/info`);
+    const d = await res.json();
+    if(!d.success) return;
+    document.getElementById('scratchPrizeLabel').value = d.prize_label || '';
+    document.getElementById('scratchActive').checked  = !!d.is_active;
+    renderScratchWinner(d);
+  }catch(e){ console.error('loadScratchAdmin',e); }
+}
+
+function renderScratchWinner(d){
+  const box = document.getElementById('scratchWinnerBox');
+  if(d.winner_uid || d.winner_display_name){
+    const wonAt = d.won_at ? new Date(d.won_at).toLocaleString('th-TH') : '';
+    box.innerHTML = `
+      <div style="text-align:center;width:100%">
+        ${d.winner_picture_url ? `<img src="${escHtml(d.winner_picture_url)}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;margin-bottom:8px;border:3px solid var(--rose)">` : '<div style="font-size:48px;margin-bottom:8px">🎉</div>'}
+        <div style="font-size:17px;font-weight:800;color:var(--rose)">${escHtml(d.winner_display_name||'ผู้โชคดี')}</div>
+        ${wonAt ? `<div style="font-size:12px;color:var(--muted);margin-top:4px">${wonAt}</div>` : ''}
+        <div style="margin-top:8px;background:var(--cream);border-radius:8px;padding:8px;font-size:13px;font-weight:700;color:#92400e">🎁 ${escHtml(d.prize_label||'ของรางวัลพิเศษ')}</div>
+      </div>`;
+  } else {
+    box.innerHTML = `<div style="color:var(--muted);font-size:13px;text-align:center">${d.is_active ? '⏳ รอผู้โชคดี...' : '🔒 เกมยังไม่เปิด'}</div>`;
+  }
+}
+
+async function saveScratchSetup(){
+  const status = document.getElementById('scratchSaveStatus');
+  status.textContent = '⏳ กำลังบันทึก...';
+  try{
+    const res = await fetch(`${API_BASE}/scratch/admin/setup`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        is_active:  document.getElementById('scratchActive').checked,
+        prize_label:document.getElementById('scratchPrizeLabel').value.trim()||'ของรางวัลพิเศษ',
+      })
+    });
+    const d = await res.json();
+    if(!d.success) throw new Error(d.error||'failed');
+    status.textContent = '✅ บันทึกแล้ว';
+    setTimeout(()=>{ status.textContent=''; },3000);
+    loadScratchAdmin();
+  }catch(e){
+    status.textContent = '❌ '+e.message;
+  }
+}
+
+async function resetScratch(){
+  if(!confirm('รีเซ็ตผู้โชคดีและเริ่มรอบใหม่?')) return;
+  const status = document.getElementById('scratchResetStatus');
+  status.textContent = '⏳ กำลังรีเซ็ต...';
+  try{
+    const res = await fetch(`${API_BASE}/scratch/admin/reset`,{method:'POST'});
+    const d = await res.json();
+    if(!d.success) throw new Error(d.error||'failed');
+    status.textContent = '✅ รีเซ็ตแล้ว — พร้อมรอบใหม่';
+    setTimeout(()=>{ status.textContent=''; },4000);
+    loadScratchAdmin();
+  }catch(e){
+    status.textContent = '❌ '+e.message;
+  }
+}
 
 async function loadGameLeaderboard(){
   const el = document.getElementById('gameLeaderboardContent');

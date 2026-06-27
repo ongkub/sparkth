@@ -168,7 +168,8 @@ body{
       <a class="btn accent" id="singlesLink" href="singles.html">Dating Zone 💕</a>
       <a class="btn accent" id="matchesLink" href="matches.html">ดู Matches ❤️<span class="badge hidden" id="matchBadge"></span></a>
       <a class="btn secondary" id="qrPayLink" href="qr-payment.html">💳 โอนเงินของขวัญ / แจ้ง Slip</a>
-      <a class="btn secondary hidden" id="gameLink" href="#">เล่นเกมชิงรางวัล</a>
+      <a class="btn secondary hidden" id="gameLink" href="#">🎮 เล่น Wedding Run</a>
+      <a class="btn secondary hidden" id="scratchLink" href="#">🎁 ชิงโชค</a>
     </div>
   </section>
 
@@ -336,15 +337,18 @@ function updateNavLinks(){
   document.getElementById('singlesLink').href = `singles.html?userId=${uid}`;
   document.getElementById('matchesLink').href = `matches.html?userId=${uid}`;
   document.getElementById('qrPayLink').href = `qr-payment.html?userId=${uid}`;
-  const gameLink = document.getElementById('gameLink');
-  const gameParams = new URLSearchParams({
+  const identityParams = new URLSearchParams({
     uid: profile.userId,
     display_name: profile.displayName || '',
     picture_url: profile.pictureUrl || '',
     back: location.href,
   });
-  gameLink.href = `game.html?${gameParams.toString()}`;
+  const gameLink = document.getElementById('gameLink');
+  gameLink.href = `game.html?${identityParams.toString()}`;
   gameLink.classList.remove('hidden');
+  const scratchLink = document.getElementById('scratchLink');
+  scratchLink.href = `scratch.html?${identityParams.toString()}`;
+  scratchLink.classList.remove('hidden');
 }
 
 function showDone(){

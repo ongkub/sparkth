@@ -237,6 +237,19 @@ async function ensureSchema() {
     `CREATE INDEX IF NOT EXISTS idx_wedding_run_plays_line_uid
      ON wedding_run_plays (line_uid, score DESC)`
   );
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS scratch_lottery (
+       id INTEGER PRIMARY KEY,
+       is_active BOOLEAN NOT NULL DEFAULT false,
+       prize_label TEXT NOT NULL DEFAULT 'ของรางวัลพิเศษ',
+       winner_uid TEXT,
+       winner_display_name TEXT,
+       winner_picture_url TEXT,
+       won_at TIMESTAMPTZ,
+       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     )`
+  );
+  await pool.query(`INSERT INTO scratch_lottery (id) VALUES (1) ON CONFLICT DO NOTHING`);
 }
 
 app.use(express.json({ limit: '10mb' }));
@@ -1736,6 +1749,94 @@ app.post('/profile', async (req, res) => {
       [lineUserId, isSingle, gender, genderPref, instagram, customPhoto]
     );
     if (updated.rowCount > 0) broadcastWelcome(formatCheckin(updated.rows[0]));
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ── Scratch: GET /scratch/status ─────────────────────────
+app.get('/scratch/status', async (_req, res) => {
+  try {
+    const r = await pool.query(`SELECT * FROM scratch_lottery WHERE id = 1`);
+    const row = r.rows[0];
+    if (!row) return res.json({ success: true, is_active: false, prize_label: 'ของรางวัลพิเศษ', has_winner: false });
+    res.json({
+      success: true,
+      is_active: row.is_active,
+      prize_label: row.prize_label,
+      has_winner: !!row.winner_uid,
+      winner_display_name: row.winner_display_name || null,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ── Scratch: POST /scratch/claim ──────────────────────────
+app.post('/scratch/claim', async (req, res) => {
+  const data = parseBody(req.body);
+  const uid         = safeText(data.uid || '');
+  const displayName = safeText(data.display_name || '') || null;
+  const pictureUrl  = safeText(data.picture_url || '') || null;
+  try {
+    // Atomic: only update if game is active and no winner yet
+    const claim = await pool.query(
+      `UPDATE scratch_lottery
+       SET winner_uid = $1, winner_display_name = $2, winner_picture_url = $3,
+           won_at = NOW(), updated_at = NOW()
+       WHERE id = 1 AND is_active = true AND winner_uid IS NULL
+       RETURNING prize_label`,
+      [uid || null, displayName, pictureUrl]
+    );
+    if (claim.rowCount > 0) {
+      return res.json({ success: true, won: true, prize_label: claim.rows[0].prize_label });
+    }
+    // Already has a winner — return their name
+    const cur = await pool.query(`SELECT winner_display_name, winner_picture_url FROM scratch_lottery WHERE id = 1`);
+    const w = cur.rows[0] || {};
+    res.json({ success: true, won: false, winner_display_name: w.winner_display_name || null, winner_picture_url: w.winner_picture_url || null });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ── Scratch admin: GET /scratch/admin/info ────────────────
+app.get('/scratch/admin/info', async (_req, res) => {
+  try {
+    const r = await pool.query(`SELECT * FROM scratch_lottery WHERE id = 1`);
+    const row = r.rows[0] || {};
+    res.json({ success: true, ...row });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ── Scratch admin: POST /scratch/admin/setup ──────────────
+app.post('/scratch/admin/setup', async (req, res) => {
+  const data = parseBody(req.body);
+  const isActive   = Boolean(data.is_active);
+  const prizeLabel = safeText(data.prize_label || 'ของรางวัลพิเศษ') || 'ของรางวัลพิเศษ';
+  try {
+    await pool.query(
+      `UPDATE scratch_lottery SET is_active = $1, prize_label = $2, updated_at = NOW() WHERE id = 1`,
+      [isActive, prizeLabel]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ── Scratch admin: POST /scratch/admin/reset ──────────────
+app.post('/scratch/admin/reset', async (_req, res) => {
+  try {
+    await pool.query(
+      `UPDATE scratch_lottery
+       SET winner_uid = NULL, winner_display_name = NULL, winner_picture_url = NULL,
+           won_at = NULL, updated_at = NOW()
+       WHERE id = 1`
+    );
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
