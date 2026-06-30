@@ -104,21 +104,29 @@ function initials(n){ return (n||'G').trim().slice(0,2).toUpperCase() }
 function displayName(m){ return m.nickName || m.nickname || m.displayName || 'Guest' }
 function bestPhoto(m){ return m.customPhoto || m.pictureUrl || '' }
 
+let lastMatchCount = -1;
+
 async function load(){
   if(!MY_ID){ renderLocked(); return; }
   try{
-    // Check if user is single first via /singles (locked flag)
     const singlesRes = await fetch(`${API_BASE}/singles?userId=${encodeURIComponent(MY_ID)}`);
     const singlesData = await singlesRes.json();
     if(singlesData.locked){ renderLocked(); return; }
 
     const r = await fetch(`${API_BASE}/matches?userId=${encodeURIComponent(MY_ID)}`);
     const d = await r.json();
-    render(d.matches || []);
+    const matches = d.matches || [];
+    if(matches.length !== lastMatchCount){
+      lastMatchCount = matches.length;
+      render(matches);
+    }
   }catch(_){
-    document.getElementById('content').innerHTML = '<div class="loading">โหลดไม่ได้ กรุณาลองใหม่</div>';
+    if(lastMatchCount === -1)
+      document.getElementById('content').innerHTML = '<div class="loading">โหลดไม่ได้ กรุณาลองใหม่</div>';
   }
 }
+
+setInterval(load, 8000);
 
 function renderLocked(){
   const singlesHref = MY_ID ? `singles.html?userId=${encodeURIComponent(MY_ID)}` : 'singles.html';

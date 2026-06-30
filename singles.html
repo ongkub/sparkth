@@ -464,10 +464,32 @@ document.getElementById('matchContinue').onclick = () => {
 };
 
 function showEmpty(msg){
+  if(!msg){
+    // natural depletion — try re-fetching in case new singles joined
+    reloadSingles();
+    return;
+  }
   document.getElementById('emptyState').classList.add('on');
   document.getElementById('actionRow').style.visibility = 'hidden';
   document.getElementById('countBar').textContent = '';
-  if(msg) document.getElementById('emptyState').querySelector('.empty-sub').textContent = msg;
+  document.getElementById('emptyState').querySelector('.empty-sub').textContent = msg;
+}
+
+async function reloadSingles(){
+  try{
+    const r = await fetch(`${API_BASE}/singles?userId=${encodeURIComponent(MY_ID)}`);
+    const d = await r.json();
+    if(!d.locked && d.singles && d.singles.length > 0){
+      singles = d.singles;
+      idx = 0;
+      renderCards();
+      return;
+    }
+  }catch(_){}
+  // truly empty
+  document.getElementById('emptyState').classList.add('on');
+  document.getElementById('actionRow').style.visibility = 'hidden';
+  document.getElementById('countBar').textContent = '';
 }
 
 function updateCount(){
