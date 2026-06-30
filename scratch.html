@@ -271,7 +271,6 @@ document.getElementById('backBtn').href = BACK;
 // ── State ─────────────────────────────────────────────────
 let gameState    = 'waiting'; // waiting | ready | scratching | claiming | done
 let claimed      = false;
-let pollTimer    = null;
 let prizeLabelText = 'ของรางวัลพิเศษ';
 let cardImageUrl = '';
 let isDragging   = false;
@@ -528,9 +527,33 @@ async function boot() {
       console.warn('LIFF init failed:', err);
     }
   }
-  pollStatus();
-  pollTimer = setInterval(pollStatus, 2500);
+  // Initial fetch to get current state
+  await pollStatus();
+  // SSE for instant activation — no polling needed
+  connectScratchStream();
 }
+
+function connectScratchStream() {
+  const es = new EventSource(`${API_BASE}/scratch-stream`);
+  es.addEventListener('update', async (e) => {
+    const d = JSON.parse(e.data);
+    if (d.prize_label) {
+      prizeLabelText = d.prize_label;
+      document.getElementById('prizeLabel').textContent = prizeLabelText;
+    }
+    if (d.is_active && gameState === 'waiting') {
+      // fetch once to get card_image_url before activating
+      await pollStatus();
+    } else if (!d.is_active && gameState === 'waiting') {
+      document.getElementById('waitSub').textContent = 'เกมชิงโชคยังไม่เริ่ม\nกรุณารอประกาศจากพิธีกร';
+    }
+  });
+  es.onerror = () => {
+    es.close();
+    setTimeout(connectScratchStream, 5000);
+  };
+}
+
 boot();
 </script>
 </body>

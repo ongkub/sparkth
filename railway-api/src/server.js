@@ -25,6 +25,8 @@ const pool = new Pool({
 const welcomeClients = new Set();
 // per-user SSE clients for match notifications: Map<userId, Set<res>>
 const matchClients = new Map();
+// broadcast SSE clients waiting for scratch game activation
+const scratchClients = new Set();
 const checkinCooldownMs = Number(process.env.CHECKIN_COOLDOWN_MS || 5 * 60 * 1000);
 const WALL_FRAME_PRESETS = [
   { key: 'classic', label: 'Classic' },
@@ -345,6 +347,22 @@ app.get('/match-stream', (req, res) => {
       clients.delete(res);
       if (clients.size === 0) matchClients.delete(userId);
     }
+  });
+});
+
+app.get('/scratch-stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.write('event: ready\n');
+  res.write(`data: ${JSON.stringify({ ok: true })}\n\n`);
+
+  scratchClients.add(res);
+  const heartbeat = setInterval(() => res.write(':ping\n\n'), 25000);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    scratchClients.delete(res);
   });
 });
 
@@ -1164,6 +1182,14 @@ function broadcastMatch(userId) {
   }
 }
 
+function broadcastScratch(data) {
+  const payload = JSON.stringify(data);
+  for (const client of scratchClients) {
+    client.write('event: update\n');
+    client.write(`data: ${payload}\n\n`);
+  }
+}
+
 async function lookupRsvp(lineUserId) {
   if (!lineUserId) return null;
   const result = await pool.query(
@@ -1873,6 +1899,7 @@ app.post('/scratch/admin/setup', async (req, res) => {
         [isActive, prizeLabel]
       );
     }
+    broadcastScratch({ is_active: isActive, prize_label: prizeLabel });
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -1888,6 +1915,7 @@ app.post('/scratch/admin/reset', async (_req, res) => {
            won_at = NULL, updated_at = NOW()
        WHERE id = 1`
     );
+    broadcastScratch({ is_active: false, prize_label: null });
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
