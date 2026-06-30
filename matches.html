@@ -104,8 +104,6 @@ function initials(n){ return (n||'G').trim().slice(0,2).toUpperCase() }
 function displayName(m){ return m.nickName || m.nickname || m.displayName || 'Guest' }
 function bestPhoto(m){ return m.customPhoto || m.pictureUrl || '' }
 
-let lastMatchCount = -1;
-
 async function load(){
   if(!MY_ID){ renderLocked(); return; }
   try{
@@ -115,18 +113,22 @@ async function load(){
 
     const r = await fetch(`${API_BASE}/matches?userId=${encodeURIComponent(MY_ID)}`);
     const d = await r.json();
-    const matches = d.matches || [];
-    if(matches.length !== lastMatchCount){
-      lastMatchCount = matches.length;
-      render(matches);
-    }
+    render(d.matches || []);
   }catch(_){
-    if(lastMatchCount === -1)
-      document.getElementById('content').innerHTML = '<div class="loading">โหลดไม่ได้ กรุณาลองใหม่</div>';
+    document.getElementById('content').innerHTML = '<div class="loading">โหลดไม่ได้ กรุณาลองใหม่</div>';
   }
 }
 
-setInterval(load, 8000);
+function connectMatchStream(){
+  if(!MY_ID) return;
+  const es = new EventSource(`${API_BASE}/match-stream?userId=${encodeURIComponent(MY_ID)}`);
+  es.addEventListener('match', () => load());
+  es.onerror = () => {
+    es.close();
+    // reconnect after 5s if SSE drops (e.g. server restart)
+    setTimeout(connectMatchStream, 5000);
+  };
+}
 
 function renderLocked(){
   const singlesHref = MY_ID ? `singles.html?userId=${encodeURIComponent(MY_ID)}` : 'singles.html';
@@ -174,6 +176,7 @@ function render(matches){
 }
 
 load();
+connectMatchStream();
 </script>
 </body>
 </html>

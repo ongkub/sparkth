@@ -23,6 +23,8 @@ const pool = new Pool({
 });
 
 const welcomeClients = new Set();
+// per-user SSE clients for match notifications: Map<userId, Set<res>>
+const matchClients = new Map();
 const checkinCooldownMs = Number(process.env.CHECKIN_COOLDOWN_MS || 5 * 60 * 1000);
 const WALL_FRAME_PRESETS = [
   { key: 'classic', label: 'Classic' },
@@ -318,6 +320,31 @@ app.get('/welcome-stream', (req, res) => {
   req.on('close', () => {
     clearInterval(heartbeat);
     welcomeClients.delete(res);
+  });
+});
+
+app.get('/match-stream', (req, res) => {
+  const userId = safeText(req.query.userId);
+  if (!userId) return res.status(400).end();
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.write('event: ready\n');
+  res.write(`data: ${JSON.stringify({ ok: true })}\n\n`);
+
+  if (!matchClients.has(userId)) matchClients.set(userId, new Set());
+  matchClients.get(userId).add(res);
+
+  const heartbeat = setInterval(() => res.write(':ping\n\n'), 25000);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    const clients = matchClients.get(userId);
+    if (clients) {
+      clients.delete(res);
+      if (clients.size === 0) matchClients.delete(userId);
+    }
   });
 });
 
@@ -1128,6 +1155,15 @@ function broadcastWelcome(checkin) {
   }
 }
 
+function broadcastMatch(userId) {
+  const clients = matchClients.get(userId);
+  if (!clients) return;
+  for (const client of clients) {
+    client.write('event: match\n');
+    client.write(`data: ${JSON.stringify({ userId })}\n\n`);
+  }
+}
+
 async function lookupRsvp(lineUserId) {
   if (!lineUserId) return null;
   const result = await pool.query(
@@ -1683,6 +1719,10 @@ app.post('/swipe', async (req, res) => {
         [toUserId, fromUserId]
       );
       matched = check.rowCount > 0;
+      if (matched) {
+        broadcastMatch(fromUserId);
+        broadcastMatch(toUserId);
+      }
     }
     res.json({ success: true, matched });
   } catch (error) {
