@@ -2003,6 +2003,25 @@ app.get('/game/status', async (req, res) => {
   }
 });
 
+app.post('/admin/reset-all', async (_req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const checkins = await client.query('DELETE FROM checkins');
+    const swipes = await client.query('DELETE FROM swipes');
+    await client.query(
+      `UPDATE rsvp_submissions SET checked_in_at = NULL, checkin_source = '', welcome_announced_at = NULL`
+    );
+    await client.query('COMMIT');
+    res.json({ success: true, deletedCheckins: checkins.rowCount, deletedSwipes: swipes.rowCount });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ success: false, error: error.message });
+  } finally {
+    client.release();
+  }
+});
+
 ensureSchema()
   .then(() => {
     app.listen(port, () => {
