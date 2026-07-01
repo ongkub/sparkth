@@ -386,7 +386,6 @@ async function pollStatus() {
 }
 
 function activateGame() {
-  clearInterval(pollTimer);
   gameState = 'ready';
   document.getElementById('waiting').style.display = 'none';
   const gameEl = document.getElementById('game');
