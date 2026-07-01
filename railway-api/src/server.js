@@ -2003,6 +2003,15 @@ app.get('/game/status', async (req, res) => {
   }
 });
 
+app.post('/admin/reset-leaderboard', async (_req, res) => {
+  try {
+    const result = await pool.query('DELETE FROM wedding_run_plays');
+    res.json({ success: true, deleted: result.rowCount });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.post('/admin/reset-all', async (_req, res) => {
   const client = await pool.connect();
   try {
