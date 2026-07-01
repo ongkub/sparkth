@@ -858,6 +858,7 @@ tr:hover td{background:rgba(254,240,238,.4)}
               <div class="filter-pill active" onclick="setFilter('all',this)">ทั้งหมด</div>
               <div class="filter-pill" onclick="setFilter('submitted',this)">กรอกแล้ว</div>
               <div class="filter-pill" onclick="setFilter('visited',this)">ยังไม่กรอก</div>
+              <div class="filter-pill" onclick="setFilter('checkedin',this)">เช็กอินแล้ว</div>
             </div>
           </div>
           <button class="refresh-btn" onclick="loadRSVP()"><span id="refreshIcon">🔄</span> รีเฟรช</button>
@@ -1863,7 +1864,8 @@ function renderTable(rows){
   }
   const q = (document.getElementById('rsvpSearch')||{}).value||'';
   const filtered = rows.filter(r=>{
-    const matchFilter = currentFilter==='all' || r.status===currentFilter;
+    const matchFilter = currentFilter==='all'
+      || (currentFilter==='checkedin' ? !!r.checkedInAt : r.status===currentFilter);
     const matchSearch = !q || ((r.name||'')+(r.firstName||'')+(r.lastName||'')+(r.nickName||'')+(r.nickname||'')+(r.phone||'')).toLowerCase().includes(q.toLowerCase());
     return matchFilter && matchSearch;
   });
@@ -1913,7 +1915,7 @@ function renderTable(rows){
 
 function setFilter(f, el){
   currentFilter = f;
-  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#sec-rsvp .filter-pill').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   renderTable(allRsvpData);
 }
