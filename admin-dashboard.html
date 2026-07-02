@@ -1179,7 +1179,7 @@ tr:hover td{background:rgba(254,240,238,.4)}
     <!-- ═══ SECTION: KAHOOT QUIZ ═══ -->
     <div class="section" id="sec-kahoot">
       <div class="sec-title">🎯 Kahoot Quiz</div>
-      <div class="sec-sub">จัดการคลังคำถามและควบคุมเกม · เปิด <a href="kahoot-host.html" target="_blank" style="color:var(--rose)">หน้าฉาย</a> · ผู้เล่นเปิด <a href="kahoot-play.html" target="_blank" style="color:var(--rose)">หน้าตอบ</a></div>
+      <div class="sec-sub">จัดการคลังคำถามและควบคุมเกม · เปิด <a href="quiz-host.html" target="_blank" style="color:var(--rose)">หน้าฉาย</a> · ผู้เล่นเปิด <a href="quiz-play.html" target="_blank" style="color:var(--rose)">หน้าตอบ</a></div>
 
       <!-- Game Controls -->
       <div class="card" style="margin-bottom:20px">
@@ -2920,7 +2920,7 @@ async function kahootStart() {
     const r = await fetch(`${API_BASE}/kahoot/admin/start`, { method:'POST' });
     const d = await r.json();
     if (!d.success) throw new Error(d.error || 'ไม่สำเร็จ');
-    showToast('▶ เริ่มเกมแล้ว — เปิด kahoot-host.html บนจอฉาย');
+    showToast('▶ เริ่มเกมแล้ว — เปิด quiz-host.html บนจอฉาย');
   } catch(e) { showToast('❌ ' + e.message); }
 }
 

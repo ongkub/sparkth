@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Wedding Quiz – Host</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;font-family:'Segoe UI',Tahoma,sans-serif;background:#1a1a2e;color:#fff;overflow:hidden}
@@ -19,6 +20,21 @@
   .subtitle{font-size:1.4rem;opacity:.75;margin-top:12px}
   .pulse{animation:pulse 1.5s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  /* lobby */
+  .lobby-split{display:flex;align-items:flex-start;justify-content:center;gap:60px;flex-wrap:wrap;width:100%}
+  .qr-wrap{background:#fff;padding:14px;border-radius:16px;display:inline-block;flex-shrink:0}
+  .player-count{font-size:1.3rem;font-weight:700;opacity:.8;margin-top:12px}
+  .player-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:1100px;margin-top:20px;max-height:240px;overflow:hidden}
+
+  @keyframes pop-in{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.15) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+  .player-chip{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    animation:pop-in .35s cubic-bezier(.34,1.56,.64,1) forwards;
+    width:72px;
+  }
+  .player-chip img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.4)}
+  .player-chip span{font-size:11px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}
 
   /* question layout */
   #screen-question{gap:16px}
@@ -91,11 +107,19 @@
 </div>
 
 <!-- Lobby -->
-<div id="screen-lobby" class="screen">
-  <div class="big-logo">📱</div>
-  <div class="big-title">เข้าร่วมเกม</div>
-  <div class="subtitle" style="font-size:1.6rem;margin-top:20px">เปิด LINE แล้วกด "Wedding Quiz"</div>
-  <div class="subtitle pulse" style="margin-top:24px">รอผู้เล่นเข้าร่วม...</div>
+<div id="screen-lobby" class="screen" style="gap:0;justify-content:flex-start;padding-top:36px">
+  <div class="lobby-split">
+    <div style="text-align:center">
+      <div style="font-size:1rem;opacity:.7;margin-bottom:10px;letter-spacing:1px">สแกนเพื่อเข้าร่วม</div>
+      <div class="qr-wrap" id="qr-container"></div>
+    </div>
+    <div style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div class="big-logo" style="margin-bottom:8px">🎊</div>
+      <div class="big-title">WEDDING QUIZ</div>
+      <div id="player-count" class="player-count" style="margin-top:14px">0 คนเข้าร่วม</div>
+    </div>
+  </div>
+  <div class="player-grid" id="player-grid"></div>
 </div>
 
 <!-- Question -->
@@ -140,27 +164,57 @@
 
 <script>
 const API = 'https://sparkth-production.up.railway.app';
+const PLAY_URL = 'https://page.sparkth.io/quiz-play.html';
 const SHAPES = { A:'▲', B:'◆', C:'●', D:'★' };
 const COLORS = { A:'#e74c3c', B:'#3498db', C:'#f39c12', D:'#27ae60' };
 
 let timerInterval = null;
 let sse = null;
 let confettiActive = false;
+let qrGenerated = false;
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  if (id === 'screen-lobby' && !qrGenerated) generateQR();
+}
+
+function generateQR() {
+  qrGenerated = true;
+  new QRCode(document.getElementById('qr-container'), {
+    text: PLAY_URL,
+    width: 200, height: 200,
+    colorDark: '#1a1a2e',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M,
+  });
 }
 
 function connectSSE() {
   if (sse) sse.close();
   sse = new EventSource(`${API}/kahoot-stream`);
   sse.addEventListener('game-state', e => handleState(JSON.parse(e.data)));
+  sse.addEventListener('player-joined', e => {
+    const { player, totalPlayers } = JSON.parse(e.data);
+    addPlayerChip(player);
+    const el = document.getElementById('player-count');
+    if (el) el.textContent = `${totalPlayers} คนเข้าร่วม`;
+  });
   sse.onopen = () => { document.getElementById('conn-badge').textContent = '⚡ เชื่อมต่อ'; };
   sse.onerror = () => {
     document.getElementById('conn-badge').textContent = '🔴 ขาดการเชื่อมต่อ';
     setTimeout(connectSSE, 3000);
   };
+}
+
+function addPlayerChip(player) {
+  const grid = document.getElementById('player-grid');
+  if (!grid || document.getElementById('chip-' + player.lineUserId)) return;
+  const chip = document.createElement('div');
+  chip.className = 'player-chip';
+  chip.id = 'chip-' + player.lineUserId;
+  chip.innerHTML = `<img src="${escHtml(player.pictureUrl)}" alt="" onerror="this.src=''"><span>${escHtml(player.displayName)}</span>`;
+  grid.appendChild(chip);
 }
 
 function handleState(state) {
@@ -171,6 +225,12 @@ function handleState(state) {
     showScreen('screen-idle');
   } else if (phase === 'lobby') {
     clearTimerInterval();
+    // Re-populate player grid from full state (handles reconnect)
+    const grid = document.getElementById('player-grid');
+    if (grid) grid.innerHTML = '';
+    for (const p of (state.players || [])) addPlayerChip(p);
+    const countEl = document.getElementById('player-count');
+    if (countEl) countEl.textContent = `${(state.players || []).length} คนเข้าร่วม`;
     showScreen('screen-lobby');
   } else if (phase === 'question' && question) {
     showQuestionScreen(question, currentIdx, totalQuestions, remainingSec);

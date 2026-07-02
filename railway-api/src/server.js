@@ -39,16 +39,23 @@ let kahootState = {
   revealTimer: null,       // clearTimeout handle
 };
 
+// Players who joined the current lobby: Map<lineUserId, { displayName, pictureUrl }>
+let quizPlayers = new Map();
+
 function kahootCurrentQuestion() {
   return kahootState.questions[kahootState.currentIdx] || null;
 }
 
-function broadcastKahoot(data) {
+function broadcastKahootEvent(event, data) {
   const payload = JSON.stringify(data);
   for (const client of kahootClients) {
-    client.write('event: game-state\n');
+    client.write(`event: ${event}\n`);
     client.write(`data: ${payload}\n\n`);
   }
+}
+
+function broadcastKahoot(data) {
+  broadcastKahootEvent('game-state', data);
 }
 const checkinCooldownMs = Number(process.env.CHECKIN_COOLDOWN_MS || 5 * 60 * 1000);
 const WALL_FRAME_PRESETS = [
@@ -2125,6 +2132,7 @@ function buildGameStatePayload(extra = {}) {
       hasImage: !!q.image_data,
     } : null,
     remainingSec: remaining,
+    players: Array.from(quizPlayers.values()),
     ...extra,
   };
 }
@@ -2162,6 +2170,20 @@ async function getAnswerCounts(sessionId, questionId) {
   for (const row of result.rows) counts[row.chosen_option] = row.cnt;
   return counts;
 }
+
+// ─── Quiz join endpoint ────────────────────────────────────────────────────────
+
+app.post('/quiz/join', (req, res) => {
+  const { lineUserId, displayName, pictureUrl } = req.body || {};
+  if (!lineUserId) return res.status(400).json({ success: false, error: 'lineUserId required' });
+  if (kahootState.phase === 'idle' || kahootState.phase === 'ended') {
+    return res.status(409).json({ success: false, error: 'no active game' });
+  }
+  const player = { lineUserId, displayName: displayName || '', pictureUrl: pictureUrl || '' };
+  quizPlayers.set(lineUserId, player);
+  broadcastKahootEvent('player-joined', { player, totalPlayers: quizPlayers.size });
+  res.json({ success: true, totalPlayers: quizPlayers.size });
+});
 
 // ─── Kahoot public endpoints ───────────────────────────────────────────────────
 
@@ -2296,6 +2318,7 @@ app.post('/kahoot/admin/start', async (_req, res) => {
     kahootState.questionStartedAt = null;
     if (kahootState.revealTimer) clearTimeout(kahootState.revealTimer);
     kahootState.revealTimer = null;
+    quizPlayers.clear();
 
     broadcastKahoot(buildGameStatePayload());
     res.json({ success: true, sessionId: kahootState.sessionId });

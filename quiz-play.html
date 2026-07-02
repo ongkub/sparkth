@@ -58,6 +58,18 @@
   .lb-pts{font-size:.95rem;font-weight:700;color:#f1c40f}
 
   .big-emoji{font-size:5rem;line-height:1}
+
+  .join-btn{
+    background:linear-gradient(135deg,#e74c3c,#f39c12);
+    color:#fff;border:none;border-radius:50px;
+    padding:18px 48px;font-size:1.2rem;font-weight:800;
+    cursor:pointer;letter-spacing:1px;margin-top:8px;
+    box-shadow:0 6px 24px rgba(231,76,60,.4);
+    transition:transform .15s,box-shadow .15s;
+  }
+  .join-btn:active{transform:scale(.95);box-shadow:0 2px 12px rgba(231,76,60,.3)}
+  .join-btn:disabled{opacity:.5;cursor:default;transform:none}
+  .joined-badge{background:rgba(46,204,113,.2);border:1.5px solid #2ecc71;color:#2ecc71;border-radius:50px;padding:10px 28px;font-size:1rem;font-weight:700;display:none}
   .title{font-size:1.6rem;font-weight:800}
   .subtitle{font-size:1rem;opacity:.75}
 
@@ -81,9 +93,9 @@
 <div id="screen-lobby" class="screen">
   <img id="user-avatar" class="avatar" src="" alt="">
   <div id="user-name" class="display-name"></div>
-  <div class="big-emoji pulse">⏳</div>
-  <div class="title">รอเริ่มเกม</div>
-  <div class="status-text">กรุณารอพิธีกรเริ่มเกม</div>
+  <button class="join-btn" id="join-btn" onclick="joinGame()">🎯 เข้าร่วมเกม</button>
+  <div class="joined-badge" id="joined-badge">✓ เข้าร่วมแล้ว</div>
+  <div id="lobby-status" class="status-text pulse" style="display:none">รอพิธีกรเริ่มตอบคำถาม...</div>
 </div>
 
 <!-- Question -->
@@ -160,6 +172,7 @@ let profile = null;
 let currentSession = null;
 let currentQuestionId = null;
 let hasAnswered = false;
+let hasJoined = false;
 let myAnswer = null;
 let myPts = 0;
 let myTotalPts = 0;
@@ -196,10 +209,18 @@ function handleState(state) {
   if (sessionId !== currentSession) {
     currentSession = sessionId;
     hasAnswered = false;
+    hasJoined = false;
     myAnswer = null;
     myPts = 0;
     myTotalPts = 0;
     currentQuestionId = null;
+    // Reset join button
+    const joinBtn = document.getElementById('join-btn');
+    const joinedBadge = document.getElementById('joined-badge');
+    const lobbyStatus = document.getElementById('lobby-status');
+    if (joinBtn) { joinBtn.style.display = ''; joinBtn.disabled = false; }
+    if (joinedBadge) joinedBadge.style.display = 'none';
+    if (lobbyStatus) lobbyStatus.style.display = 'none';
   }
 
   if (phase === 'idle') {
@@ -370,6 +391,33 @@ function startTimer(remainingSec, totalSec) {
 
 function clearTimerInterval() {
   if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+async function joinGame() {
+  if (hasJoined || !profile) return;
+  const btn = document.getElementById('join-btn');
+  if (btn) btn.disabled = true;
+  try {
+    const r = await fetch(`${API}/quiz/join`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lineUserId: profile.userId,
+        displayName: profile.displayName,
+        pictureUrl: profile.pictureUrl || '',
+      }),
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'join failed');
+    hasJoined = true;
+    if (btn) btn.style.display = 'none';
+    const badge = document.getElementById('joined-badge');
+    const status = document.getElementById('lobby-status');
+    if (badge) badge.style.display = 'block';
+    if (status) status.style.display = 'block';
+  } catch (_) {
+    if (btn) btn.disabled = false;
+  }
 }
 
 async function submitAnswer(option) {
