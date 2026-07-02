@@ -30,7 +30,6 @@
   @keyframes pop-in{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.15) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
 
   .player-chip{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;width:72px}
-  .player-chip.drifting{transition:left 4s ease-in-out,top 4s ease-in-out}
   .player-chip img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.4)}
   .player-chip span{font-size:11px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}
 
@@ -206,7 +205,12 @@ function toggleMute() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  if (id === 'screen-lobby' && !qrGenerated) generateQR();
+  if (id === 'screen-lobby') {
+    if (!qrGenerated) generateQR();
+    startLobbyAnim();
+  } else {
+    stopLobbyAnim();
+  }
 }
 
 function generateQR() {
@@ -245,18 +249,35 @@ function connectSSE() {
   };
 }
 
-// ── Lobby drift ────────────────────────────────────────────────────────────────
-function randomPos() { return { l: 2 + Math.random() * 88, t: 2 + Math.random() * 82 }; }
-function driftLoop(chip) {
-  if (!chip.isConnected) return;
-  const p = randomPos();
-  chip.style.left = p.l + '%';
-  chip.style.top  = p.t + '%';
-  chip.addEventListener('transitionend', function onEnd(e) {
-    if (e.propertyName !== 'top') return;
-    chip.removeEventListener('transitionend', onEnd);
-    driftLoop(chip);
-  });
+// ── Lobby bounce animation ─────────────────────────────────────────────────────
+const CHIP_W = 76, CHIP_H = 80;
+const chipVels = new Map();
+let lobbyRaf = null;
+
+function startLobbyAnim() {
+  if (lobbyRaf) return;
+  const grid = document.getElementById('player-grid');
+  function loop() {
+    const W = grid.offsetWidth, H = grid.offsetHeight;
+    chipVels.forEach((v, chip) => {
+      if (!chip.isConnected) { chipVels.delete(chip); return; }
+      let x = parseFloat(chip.style.left) + v.dx;
+      let y = parseFloat(chip.style.top)  + v.dy;
+      if (x <= 0)        { x = 0;        v.dx =  Math.abs(v.dx); }
+      if (x >= W-CHIP_W) { x = W-CHIP_W; v.dx = -Math.abs(v.dx); }
+      if (y <= 0)        { y = 0;        v.dy =  Math.abs(v.dy); }
+      if (y >= H-CHIP_H) { y = H-CHIP_H; v.dy = -Math.abs(v.dy); }
+      chip.style.left = x + 'px';
+      chip.style.top  = y + 'px';
+    });
+    lobbyRaf = requestAnimationFrame(loop);
+  }
+  lobbyRaf = requestAnimationFrame(loop);
+}
+
+function stopLobbyAnim() {
+  cancelAnimationFrame(lobbyRaf);
+  lobbyRaf = null;
 }
 
 // ── Player chips ───────────────────────────────────────────────────────────────
@@ -268,12 +289,17 @@ function addPlayerChip(player) {
   chip.id = 'chip-' + player.lineUserId;
   chip.innerHTML = `<img src="${escHtml(player.pictureUrl)}" alt="" onerror="this.src=''"><span>${escHtml(player.displayName)}</span>`;
 
-  const p = randomPos();
-  chip.style.left = p.l + '%';
-  chip.style.top  = p.t + '%';
+  const W = grid.offsetWidth || window.innerWidth;
+  const H = grid.offsetHeight || window.innerHeight;
+  chip.style.left = (Math.random() * (W - CHIP_W)) + 'px';
+  chip.style.top  = (Math.random() * (H - CHIP_H)) + 'px';
+
+  const speed = 1.2 + Math.random() * 0.8;
+  const angle = Math.random() * Math.PI * 2;
+  chipVels.set(chip, { dx: Math.cos(angle) * speed, dy: Math.sin(angle) * speed });
+
   chip.style.animation = `pop-in .35s cubic-bezier(.34,1.56,.64,1) forwards`;
   grid.appendChild(chip);
-  setTimeout(() => { chip.classList.add('drifting'); driftLoop(chip); }, 400);
 }
 
 // ── Game state handler ─────────────────────────────────────────────────────────
