@@ -28,10 +28,6 @@
   .lobby-split{position:relative;z-index:3}
 
   @keyframes pop-in{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.15) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
-  @keyframes float-a{0%,100%{transform:translateY(0px)}50%{transform:translateY(-24px)}}
-  @keyframes float-b{0%,100%{transform:translateY(-10px) rotate(-2deg)}50%{transform:translateY(16px) rotate(2deg)}}
-  @keyframes float-c{0%,100%{transform:translateY(0px) rotate(2.5deg)}50%{transform:translateY(-20px) rotate(-2.5deg)}}
-  @keyframes float-d{0%,100%{transform:translateY(10px)}50%{transform:translateY(-20px)}}
 
   .player-chip{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;width:72px}
   .player-chip.drifting{transition:left 4s ease-in-out,top 4s ease-in-out}
@@ -165,7 +161,6 @@
 const API = 'https://sparkth-production.up.railway.app';
 const PLAY_URL = 'https://page.sparkth.io/quiz-play.html';
 const SHAPES = { A:'▲', B:'◆', C:'●', D:'★' };
-const FLOAT_ANIMS = ['float-a','float-b','float-c','float-d'];
 
 let timerInterval = null;
 let sse = null;
@@ -211,12 +206,7 @@ function toggleMute() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  if (id === 'screen-lobby') {
-    if (!qrGenerated) generateQR();
-    startDrift();
-  } else {
-    stopDrift();
-  }
+  if (id === 'screen-lobby' && !qrGenerated) generateQR();
 }
 
 function generateQR() {
@@ -268,8 +258,6 @@ function driftLoop(chip) {
     driftLoop(chip);
   });
 }
-function startDrift() {}
-function stopDrift() {}
 
 // ── Player chips ───────────────────────────────────────────────────────────────
 function addPlayerChip(player) {
