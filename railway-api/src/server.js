@@ -295,6 +295,9 @@ async function ensureSchema() {
      )`
   );
   await pool.query(
+    `ALTER TABLE kahoot_questions ADD COLUMN IF NOT EXISTS image_data TEXT NOT NULL DEFAULT ''`
+  );
+  await pool.query(
     `CREATE TABLE IF NOT EXISTS kahoot_sessions (
        id SERIAL PRIMARY KEY,
        started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -2119,6 +2122,7 @@ function buildGameStatePayload(extra = {}) {
       optionD: q.option_d,
       timeLimitSec: q.time_limit_sec,
       startedAt: kahootState.questionStartedAt,
+      hasImage: !!q.image_data,
     } : null,
     remainingSec: remaining,
     ...extra,
@@ -2223,27 +2227,41 @@ app.get('/kahoot/admin/questions', async (_req, res) => {
 });
 
 app.post('/kahoot/admin/question', async (req, res) => {
-  const { id, questionText, optionA, optionB, optionC, optionD, correctOption, timeLimitSec, orderIdx } = req.body || {};
+  const { id, questionText, optionA, optionB, optionC, optionD, correctOption, timeLimitSec, orderIdx, imageData } = req.body || {};
+  const img = imageData || '';
   try {
     if (id) {
       await pool.query(
         `UPDATE kahoot_questions SET question_text=$1, option_a=$2, option_b=$3,
-          option_c=$4, option_d=$5, correct_option=$6, time_limit_sec=$7, order_idx=$8
-         WHERE id=$9`,
+          option_c=$4, option_d=$5, correct_option=$6, time_limit_sec=$7, order_idx=$8, image_data=$9
+         WHERE id=$10`,
         [questionText, optionA, optionB, optionC, optionD,
-         correctOption, timeLimitSec || 20, orderIdx || 0, id]
+         correctOption, timeLimitSec || 20, orderIdx || 0, img, id]
       );
       res.json({ success: true, id });
     } else {
       const result = await pool.query(
         `INSERT INTO kahoot_questions
-           (question_text, option_a, option_b, option_c, option_d, correct_option, time_limit_sec, order_idx)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+           (question_text, option_a, option_b, option_c, option_d, correct_option, time_limit_sec, order_idx, image_data)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
         [questionText, optionA, optionB, optionC, optionD,
-         correctOption, timeLimitSec || 20, orderIdx || 0]
+         correctOption, timeLimitSec || 20, orderIdx || 0, img]
       );
       res.json({ success: true, id: result.rows[0].id });
     }
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/kahoot/question-image/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!id) return res.status(400).end();
+  try {
+    const result = await pool.query('SELECT image_data FROM kahoot_questions WHERE id=$1', [id]);
+    const row = result.rows[0];
+    if (!row || !row.image_data) return res.status(404).json({ success: false });
+    res.json({ success: true, imageData: row.image_data });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

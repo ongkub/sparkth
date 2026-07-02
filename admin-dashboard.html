@@ -1213,10 +1213,24 @@ tr:hover td{background:rgba(254,240,238,.4)}
       <div style="background:#fff;border-radius:16px;padding:28px;width:90%;max-width:560px;max-height:90vh;overflow-y:auto">
         <h3 style="margin-bottom:20px;font-size:1.1rem" id="kq-modal-title">เพิ่มคำถาม</h3>
         <input type="hidden" id="kq-id">
+        <input type="hidden" id="kq-image-data">
         <div style="display:flex;flex-direction:column;gap:14px">
           <div>
             <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">คำถาม</label>
             <textarea id="kq-text" rows="2" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px;font:inherit;resize:vertical" placeholder="พิมพ์คำถาม..."></textarea>
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">รูปประกอบ <span style="font-weight:400;opacity:.7">(ไม่บังคับ)</span></label>
+            <div style="display:flex;align-items:center;gap:12px">
+              <label style="display:inline-flex;align-items:center;gap:6px;background:var(--cream);border:1.5px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text)">
+                📷 เลือกรูป
+                <input type="file" accept="image/*" id="kq-image-file" style="display:none" onchange="onKahootImageSelect(event)">
+              </label>
+              <button type="button" onclick="clearKahootImage()" id="kq-image-clear" style="display:none;background:#fff;color:#dc2626;border:1.5px solid #dc2626;border-radius:8px;padding:8px 12px;font:inherit;font-size:12px;cursor:pointer">✕ ลบรูป</button>
+            </div>
+            <div id="kq-image-preview" style="margin-top:10px;display:none">
+              <img id="kq-image-thumb" src="" alt="" style="max-width:100%;max-height:180px;border-radius:8px;border:1.5px solid var(--border);object-fit:contain">
+            </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div>
@@ -2988,7 +3002,11 @@ async function loadKahootQuestions() {
               ${q.correct_option===o?'<span style="margin-left:auto;font-size:10px;background:'+COLS[o]+';color:#fff;border-radius:4px;padding:1px 5px">✓</span>':''}
             </div>`).join('')}
         </div>
-        <div style="margin-top:8px;font-size:11px;color:var(--muted)">⏱ ${q.time_limit_sec} วิ · ลำดับ: ${q.order_idx}</div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px">
+          <span>⏱ ${q.time_limit_sec} วิ · ลำดับ: ${q.order_idx}</span>
+          ${q.image_data ? '<span style="background:var(--olive);color:#3a6a3a;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:600">📷 มีรูป</span>' : ''}
+        </div>
+        ${q.image_data ? `<img src="${q.image_data}" alt="" style="margin-top:8px;max-height:80px;border-radius:6px;border:1px solid var(--border);object-fit:contain">` : ''}
       </div>
     `).join('');
   } catch(e) {
@@ -3008,6 +3026,10 @@ function openKahootQuestionForm(id) {
   document.getElementById('kq-correct').value = 'A';
   document.getElementById('kq-time').value = '20';
   document.getElementById('kq-order').value = '0';
+  document.getElementById('kq-image-data').value = '';
+  document.getElementById('kq-image-file').value = '';
+  document.getElementById('kq-image-preview').style.display = 'none';
+  document.getElementById('kq-image-clear').style.display = 'none';
   document.getElementById('kq-modal-title').textContent = id ? 'แก้ไขคำถาม' : 'เพิ่มคำถาม';
 
   if (id) {
@@ -3026,6 +3048,12 @@ function openKahootQuestionForm(id) {
         document.getElementById('kq-correct').value = q.correct_option;
         document.getElementById('kq-time').value = String(q.time_limit_sec);
         document.getElementById('kq-order').value = String(q.order_idx);
+        if (q.image_data) {
+          document.getElementById('kq-image-data').value = q.image_data;
+          document.getElementById('kq-image-thumb').src = q.image_data;
+          document.getElementById('kq-image-preview').style.display = 'block';
+          document.getElementById('kq-image-clear').style.display = 'inline-flex';
+        }
       });
   }
 }
@@ -3046,6 +3074,7 @@ async function saveKahootQuestion() {
     correctOption: document.getElementById('kq-correct').value,
     timeLimitSec: Number(document.getElementById('kq-time').value),
     orderIdx: Number(document.getElementById('kq-order').value),
+    imageData: document.getElementById('kq-image-data').value || '',
   };
   if (!body.questionText || !body.optionA || !body.optionB || !body.optionC || !body.optionD) {
     showToast('⚠️ กรอกข้อมูลให้ครบก่อน');
@@ -3078,6 +3107,28 @@ async function deleteKahootQuestion(id) {
     showToast('🗑️ ลบแล้ว');
     loadKahootQuestions();
   } catch(e) { showToast('❌ ' + e.message); }
+}
+
+function onKahootImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file || !file.type.startsWith('image/')) { showToast('กรุณาเลือกไฟล์รูปภาพ'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    document.getElementById('kq-image-data').value = dataUrl;
+    document.getElementById('kq-image-thumb').src = dataUrl;
+    document.getElementById('kq-image-preview').style.display = 'block';
+    document.getElementById('kq-image-clear').style.display = 'inline-flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearKahootImage() {
+  document.getElementById('kq-image-data').value = '';
+  document.getElementById('kq-image-file').value = '';
+  document.getElementById('kq-image-thumb').src = '';
+  document.getElementById('kq-image-preview').style.display = 'none';
+  document.getElementById('kq-image-clear').style.display = 'none';
 }
 
 function escHtml(s) {

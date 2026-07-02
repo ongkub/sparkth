@@ -26,6 +26,7 @@
 
   /* question */
   .question-text{font-size:1.2rem;font-weight:700;line-height:1.4;background:rgba(255,255,255,0.1);border-radius:12px;padding:16px;width:100%}
+  .q-image{width:100%;max-height:160px;border-radius:10px;object-fit:contain;display:none;background:rgba(255,255,255,.06)}
 
   /* answer buttons */
   .options{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
@@ -97,6 +98,7 @@
     </div>
   </div>
   <div id="q-text" class="question-text"></div>
+  <img id="q-image" class="q-image" src="" alt="">
   <div class="options">
     <button class="opt-btn A" onclick="submitAnswer('A')">
       <span class="opt-shape">▲</span>
@@ -250,6 +252,19 @@ function showQuestionScreen(q, idx, total, remainingSec) {
   document.getElementById('opt-c-text').textContent = q.optionC;
   document.getElementById('opt-d-text').textContent = q.optionD;
   document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('disabled'));
+
+  const imgEl = document.getElementById('q-image');
+  imgEl.style.display = 'none';
+  imgEl.src = '';
+  if (q.hasImage) {
+    fetch(`${API}/kahoot/question-image/${q.id}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.imageData) { imgEl.src = d.imageData; imgEl.style.display = 'block'; }
+      })
+      .catch(() => {});
+  }
+
   showScreen('screen-question');
   startTimer(remainingSec, q.timeLimitSec);
 }

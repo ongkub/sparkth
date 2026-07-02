@@ -21,8 +21,9 @@
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
   /* question layout */
-  #screen-question{gap:24px}
+  #screen-question{gap:16px}
   .q-header{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1200px}
+  .q-image{max-height:220px;max-width:600px;border-radius:12px;object-fit:contain;display:none}
   .q-progress{font-size:1.3rem;font-weight:700;opacity:.8}
   .timer-wrap{position:relative;width:100px;height:100px}
   .timer-wrap svg{transform:rotate(-90deg)}
@@ -109,6 +110,7 @@
     </div>
   </div>
   <div class="question-box" id="q-text"></div>
+  <img id="q-image" class="q-image" src="" alt="">
   <div class="options-grid">
     <div class="opt-card A" id="opt-A"><span class="opt-shape">▲</span><span class="opt-label" id="opt-a-text"></span></div>
     <div class="opt-card B" id="opt-B"><span class="opt-shape">◆</span><span class="opt-label" id="opt-b-text"></span></div>
@@ -192,9 +194,21 @@ function showQuestionScreen(q, idx, total, remainingSec) {
   document.getElementById('opt-c-text').textContent = q.optionC;
   document.getElementById('opt-d-text').textContent = q.optionD;
   ['A','B','C','D'].forEach(o => {
-    const el = document.getElementById('opt-' + o);
-    el.classList.remove('correct','wrong');
+    document.getElementById('opt-' + o).classList.remove('correct','wrong');
   });
+
+  const imgEl = document.getElementById('q-image');
+  imgEl.style.display = 'none';
+  imgEl.src = '';
+  if (q.hasImage) {
+    fetch(`${API}/kahoot/question-image/${q.id}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.imageData) { imgEl.src = d.imageData; imgEl.style.display = 'block'; }
+      })
+      .catch(() => {});
+  }
+
   showScreen('screen-question');
   startTimer(remainingSec, q.timeLimitSec);
 }
