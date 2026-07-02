@@ -24,13 +24,13 @@
   .lobby-split{display:flex;align-items:flex-start;justify-content:center;gap:60px;flex-wrap:wrap;width:100%}
   .qr-wrap{background:#fff;padding:14px;border-radius:16px;display:inline-block;flex-shrink:0}
   .player-count{font-size:1.3rem;font-weight:700;opacity:.8;margin-top:12px}
-  .player-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:1100px;margin-top:20px;max-height:240px;overflow:hidden}
+  .player-grid{display:flex;flex-wrap:wrap;justify-content:center;align-content:flex-start;gap:16px;width:100%;max-width:1200px;flex:1;min-height:0;padding-top:16px;overflow:hidden}
 
   @keyframes pop-in{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.15) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
-  @keyframes float-a{0%,100%{transform:translateY(0px)}50%{transform:translateY(-12px)}}
-  @keyframes float-b{0%,100%{transform:translateY(-5px) rotate(-1deg)}50%{transform:translateY(7px) rotate(1deg)}}
-  @keyframes float-c{0%,100%{transform:translateY(0px) rotate(1.5deg)}50%{transform:translateY(-9px) rotate(-1.5deg)}}
-  @keyframes float-d{0%,100%{transform:translateY(4px)}50%{transform:translateY(-8px)}}
+  @keyframes float-a{0%,100%{transform:translateY(0px)}50%{transform:translateY(-24px)}}
+  @keyframes float-b{0%,100%{transform:translateY(-10px) rotate(-2deg)}50%{transform:translateY(16px) rotate(2deg)}}
+  @keyframes float-c{0%,100%{transform:translateY(0px) rotate(2.5deg)}50%{transform:translateY(-20px) rotate(-2.5deg)}}
+  @keyframes float-d{0%,100%{transform:translateY(10px)}50%{transform:translateY(-20px)}}
 
   .player-chip{display:flex;flex-direction:column;align-items:center;gap:4px;width:72px}
   .player-chip img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.4)}
