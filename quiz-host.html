@@ -13,7 +13,6 @@
   .screen{display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center}
   .screen.active{display:flex}
 
-  /* idle */
   .big-logo{font-size:5rem;margin-bottom:16px}
   .big-title{font-size:3.5rem;font-weight:900;letter-spacing:2px;
     background:linear-gradient(135deg,#f1c40f,#e74c3c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -28,15 +27,16 @@
   .player-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:1100px;margin-top:20px;max-height:240px;overflow:hidden}
 
   @keyframes pop-in{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.15) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
-  .player-chip{
-    display:flex;flex-direction:column;align-items:center;gap:4px;
-    animation:pop-in .35s cubic-bezier(.34,1.56,.64,1) forwards;
-    width:72px;
-  }
+  @keyframes float-a{0%,100%{transform:translateY(0px)}50%{transform:translateY(-12px)}}
+  @keyframes float-b{0%,100%{transform:translateY(-5px) rotate(-1deg)}50%{transform:translateY(7px) rotate(1deg)}}
+  @keyframes float-c{0%,100%{transform:translateY(0px) rotate(1.5deg)}50%{transform:translateY(-9px) rotate(-1.5deg)}}
+  @keyframes float-d{0%,100%{transform:translateY(4px)}50%{transform:translateY(-8px)}}
+
+  .player-chip{display:flex;flex-direction:column;align-items:center;gap:4px;width:72px}
   .player-chip img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.4)}
   .player-chip span{font-size:11px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}
 
-  /* question layout */
+  /* question */
   #screen-question{gap:16px}
   .q-header{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1200px}
   .q-image{max-height:220px;max-width:600px;border-radius:12px;object-fit:contain;display:none}
@@ -46,17 +46,10 @@
   .timer-wrap circle{transition:stroke-dashoffset 1s linear;stroke-width:7;fill:none;stroke-dasharray:270;stroke:#2ecc71}
   .timer-num-big{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.6rem;font-weight:900}
 
-  .question-box{
-    background:rgba(255,255,255,.12);border-radius:20px;padding:32px 40px;
-    font-size:2rem;font-weight:700;line-height:1.4;max-width:1200px;width:100%
-  }
+  .question-box{background:rgba(255,255,255,.12);border-radius:20px;padding:32px 40px;font-size:2rem;font-weight:700;line-height:1.4;max-width:1200px;width:100%}
 
   .options-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%;max-width:1200px}
-  .opt-card{
-    padding:32px 24px;border-radius:18px;display:flex;align-items:center;gap:16px;
-    font-size:1.5rem;font-weight:700;cursor:default;
-    transition:transform .2s,box-shadow .2s;
-  }
+  .opt-card{padding:32px 24px;border-radius:18px;display:flex;align-items:center;gap:16px;font-size:1.5rem;font-weight:700;cursor:default;transition:transform .2s,box-shadow .2s}
   .opt-card.A{background:#e74c3c}
   .opt-card.B{background:#3498db}
   .opt-card.C{background:#f39c12}
@@ -65,6 +58,9 @@
   .opt-card.wrong{opacity:.35}
   .opt-shape{font-size:2rem;flex-shrink:0}
   .opt-label{flex:1;text-align:left;line-height:1.3}
+
+  /* answer count badge */
+  #answer-count-badge{background:rgba(255,255,255,.15);border-radius:12px;padding:6px 18px;font-size:1rem;font-weight:700;opacity:.9}
 
   /* bar chart */
   .bar-chart{display:flex;align-items:flex-end;gap:16px;height:180px;width:100%;max-width:700px}
@@ -84,20 +80,18 @@
   .lb-avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.3)}
   .lb-name{flex:1;font-size:1.3rem;font-weight:700;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .lb-pts{font-size:1.3rem;font-weight:900;color:#f1c40f}
-
   .section-title{font-size:2.5rem;font-weight:900;margin-bottom:8px}
 
-  /* confetti canvas */
   #confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:100}
-
-  /* connection badge */
   #conn-badge{position:fixed;top:12px;right:16px;font-size:.8rem;background:rgba(0,0,0,.5);padding:4px 10px;border-radius:20px;z-index:200}
+  #mute-btn{position:fixed;top:12px;right:110px;font-size:.85rem;background:rgba(0,0,0,.5);padding:4px 10px;border-radius:20px;z-index:200;border:none;color:#fff;cursor:pointer}
 </style>
 </head>
 <body>
 
 <canvas id="confetti-canvas"></canvas>
 <div id="conn-badge">⚡ เชื่อมต่อ</div>
+<button id="mute-btn" onclick="toggleMute()">🔊 เสียง</button>
 
 <!-- Idle -->
 <div id="screen-idle" class="screen active">
@@ -125,7 +119,10 @@
 <!-- Question -->
 <div id="screen-question" class="screen">
   <div class="q-header">
-    <div class="q-progress" id="q-progress">ข้อ 1/5</div>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
+      <div class="q-progress" id="q-progress">ข้อ 1/5</div>
+      <div id="answer-count-badge">0 คนตอบ</div>
+    </div>
     <div class="timer-wrap">
       <svg width="100" height="100" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r="43" id="timer-circle"/>
@@ -150,7 +147,7 @@
   <div class="bar-chart" id="bar-chart"></div>
 </div>
 
-<!-- Leaderboard between questions -->
+<!-- Leaderboard -->
 <div id="screen-leaderboard" class="screen" style="gap:24px">
   <div class="section-title">🏆 อันดับระหว่างเกม</div>
   <div class="lb-table" id="lb-list"></div>
@@ -166,13 +163,49 @@
 const API = 'https://sparkth-production.up.railway.app';
 const PLAY_URL = 'https://page.sparkth.io/quiz-play.html';
 const SHAPES = { A:'▲', B:'◆', C:'●', D:'★' };
-const COLORS = { A:'#e74c3c', B:'#3498db', C:'#f39c12', D:'#27ae60' };
+const FLOAT_ANIMS = ['float-a','float-b','float-c','float-d'];
 
 let timerInterval = null;
 let sse = null;
 let confettiActive = false;
 let qrGenerated = false;
+let isMuted = false;
+let audioCtx = null;
+let currentAnswerCount = 0;
+let currentTotalPlayers = 0;
 
+// ── Audio ──────────────────────────────────────────────────────────────────────
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playTone(freq, dur, type = 'sine', vol = 0.3, when = 0) {
+  if (isMuted || !audioCtx) return;
+  const t = audioCtx.currentTime + when;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t);
+  gain.gain.setValueAtTime(vol, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  osc.start(t); osc.stop(t + dur + 0.05);
+}
+
+function soundJoin()    { playTone(880,.08,'sine',.2); playTone(1100,.12,'sine',.15,.09); }
+function soundQuestion(){ [[523,.12],[659,.12],[784,.12],[1047,.3]].forEach(([f,d],i)=>playTone(f,d,'triangle',.35,i*.1)); }
+function soundTick(secs){ const u=secs<=5?1:0; playTone(600+u*300,.07,'square',.08+u*.12); }
+function soundReveal()  { [[523,.1],[659,.1],[784,.1],[1047,.4]].forEach(([f,d],i)=>playTone(f,d,'square',.25,i*.11)); }
+function soundWin()     { [[523,.1],[659,.1],[784,.1],[1047,.15],[784,.1],[1047,.5]].forEach(([f,d],i)=>playTone(f,d,'triangle',.35,i*.13)); }
+
+function toggleMute() {
+  isMuted = !isMuted;
+  document.getElementById('mute-btn').textContent = isMuted ? '🔇 ปิดเสียง' : '🔊 เสียง';
+  ensureAudio();
+}
+
+// ── Screens ────────────────────────────────────────────────────────────────────
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -182,14 +215,13 @@ function showScreen(id) {
 function generateQR() {
   qrGenerated = true;
   new QRCode(document.getElementById('qr-container'), {
-    text: PLAY_URL,
-    width: 200, height: 200,
-    colorDark: '#1a1a2e',
-    colorLight: '#ffffff',
+    text: PLAY_URL, width: 200, height: 200,
+    colorDark: '#1a1a2e', colorLight: '#ffffff',
     correctLevel: QRCode.CorrectLevel.M,
   });
 }
 
+// ── SSE ────────────────────────────────────────────────────────────────────────
 function connectSSE() {
   if (sse) sse.close();
   sse = new EventSource(`${API}/kahoot-stream`);
@@ -197,16 +229,26 @@ function connectSSE() {
   sse.addEventListener('player-joined', e => {
     const { player, totalPlayers } = JSON.parse(e.data);
     addPlayerChip(player);
+    currentTotalPlayers = totalPlayers;
     const el = document.getElementById('player-count');
     if (el) el.textContent = `${totalPlayers} คนเข้าร่วม`;
+    ensureAudio(); soundJoin();
   });
-  sse.onopen = () => { document.getElementById('conn-badge').textContent = '⚡ เชื่อมต่อ'; };
+  sse.addEventListener('answer-count', e => {
+    const { count, totalPlayers } = JSON.parse(e.data);
+    currentAnswerCount = count;
+    if (totalPlayers) currentTotalPlayers = totalPlayers;
+    const badge = document.getElementById('answer-count-badge');
+    if (badge) badge.textContent = `${count}${totalPlayers ? ' / ' + totalPlayers : ''} คนตอบ`;
+  });
+  sse.onopen  = () => { document.getElementById('conn-badge').textContent = '⚡ เชื่อมต่อ'; };
   sse.onerror = () => {
     document.getElementById('conn-badge').textContent = '🔴 ขาดการเชื่อมต่อ';
     setTimeout(connectSSE, 3000);
   };
 }
 
+// ── Player chips ───────────────────────────────────────────────────────────────
 function addPlayerChip(player) {
   const grid = document.getElementById('player-grid');
   if (!grid || document.getElementById('chip-' + player.lineUserId)) return;
@@ -214,34 +256,42 @@ function addPlayerChip(player) {
   chip.className = 'player-chip';
   chip.id = 'chip-' + player.lineUserId;
   chip.innerHTML = `<img src="${escHtml(player.pictureUrl)}" alt="" onerror="this.src=''"><span>${escHtml(player.displayName)}</span>`;
+
+  const floatName = FLOAT_ANIMS[Math.floor(Math.random() * FLOAT_ANIMS.length)];
+  const floatDur  = (2.2 + Math.random() * 1.8).toFixed(2);
+  const floatDely = (0.35 + Math.random() * 1.2).toFixed(2);
+  chip.style.animation = `pop-in .35s cubic-bezier(.34,1.56,.64,1) 0s 1 normal forwards, ${floatName} ${floatDur}s ${floatDely}s ease-in-out infinite normal none`;
   grid.appendChild(chip);
 }
 
+// ── Game state handler ─────────────────────────────────────────────────────────
 function handleState(state) {
-  const { phase, question, currentIdx, totalQuestions, correctOption, answerCounts, leaderboard, remainingSec } = state;
+  const { phase, question, currentIdx, totalQuestions, correctOption, answerCounts, leaderboard, remainingSec, players } = state;
 
   if (phase === 'idle') {
     clearTimerInterval();
     showScreen('screen-idle');
   } else if (phase === 'lobby') {
     clearTimerInterval();
-    // Re-populate player grid from full state (handles reconnect)
     const grid = document.getElementById('player-grid');
     if (grid) grid.innerHTML = '';
-    for (const p of (state.players || [])) addPlayerChip(p);
+    for (const p of (players || [])) addPlayerChip(p);
     const countEl = document.getElementById('player-count');
-    if (countEl) countEl.textContent = `${(state.players || []).length} คนเข้าร่วม`;
+    if (countEl) countEl.textContent = `${(players || []).length} คนเข้าร่วม`;
+    currentTotalPlayers = (players || []).length;
     showScreen('screen-lobby');
   } else if (phase === 'question' && question) {
     showQuestionScreen(question, currentIdx, totalQuestions, remainingSec);
   } else if (phase === 'reveal' && question) {
     clearTimerInterval();
+    ensureAudio(); soundReveal();
     showRevealScreen(question, correctOption, answerCounts || {A:0,B:0,C:0,D:0});
   } else if (phase === 'leaderboard') {
     clearTimerInterval();
     showLeaderboardScreen(leaderboard || []);
   } else if (phase === 'ended') {
     clearTimerInterval();
+    ensureAudio(); soundWin();
     showEndedScreen(leaderboard || []);
   }
 }
@@ -253,145 +303,119 @@ function showQuestionScreen(q, idx, total, remainingSec) {
   document.getElementById('opt-b-text').textContent = q.optionB;
   document.getElementById('opt-c-text').textContent = q.optionC;
   document.getElementById('opt-d-text').textContent = q.optionD;
-  ['A','B','C','D'].forEach(o => {
-    document.getElementById('opt-' + o).classList.remove('correct','wrong');
-  });
+  ['A','B','C','D'].forEach(o => document.getElementById('opt-' + o).classList.remove('correct','wrong'));
+
+  // Reset answer count
+  currentAnswerCount = 0;
+  const badge = document.getElementById('answer-count-badge');
+  if (badge) badge.textContent = `0${currentTotalPlayers ? ' / ' + currentTotalPlayers : ''} คนตอบ`;
 
   const imgEl = document.getElementById('q-image');
-  imgEl.style.display = 'none';
-  imgEl.src = '';
+  imgEl.style.display = 'none'; imgEl.src = '';
   if (q.hasImage) {
-    fetch(`${API}/kahoot/question-image/${q.id}`)
-      .then(r => r.json())
-      .then(d => {
-        if (d.imageData) { imgEl.src = d.imageData; imgEl.style.display = 'block'; }
-      })
-      .catch(() => {});
+    fetch(`${API}/kahoot/question-image/${q.id}`).then(r=>r.json()).then(d=>{
+      if (d.imageData) { imgEl.src = d.imageData; imgEl.style.display = 'block'; }
+    }).catch(()=>{});
   }
 
   showScreen('screen-question');
+  ensureAudio(); soundQuestion();
   startTimer(remainingSec, q.timeLimitSec);
 }
 
 function showRevealScreen(q, correctOption, counts) {
-  const optMap = { A: q.optionA, B: q.optionB, C: q.optionC, D: q.optionD };
-  const revealEl = document.getElementById('reveal-options');
-  revealEl.innerHTML = ['A','B','C','D'].map(o => `
-    <div class="opt-card ${o} ${o === correctOption ? 'correct' : 'wrong'}">
+  const optMap = { A:q.optionA, B:q.optionB, C:q.optionC, D:q.optionD };
+  document.getElementById('reveal-options').innerHTML = ['A','B','C','D'].map(o => `
+    <div class="opt-card ${o} ${o===correctOption?'correct':'wrong'}">
       <span class="opt-shape">${SHAPES[o]}</span>
       <span class="opt-label">${escHtml(optMap[o])}</span>
-      ${o === correctOption ? '<span style="font-size:1.6rem">✓</span>' : ''}
-    </div>
-  `).join('');
+      ${o===correctOption?'<span style="font-size:1.6rem">✓</span>':''}
+    </div>`).join('');
 
-  // Bar chart
   const maxCount = Math.max(1, ...Object.values(counts));
-  const barEl = document.getElementById('bar-chart');
-  barEl.innerHTML = ['A','B','C','D'].map(o => {
+  document.getElementById('bar-chart').innerHTML = ['A','B','C','D'].map(o => {
     const cnt = counts[o] || 0;
-    const pct = Math.round((cnt / maxCount) * 100);
-    return `<div class="bar-col">
-      <span class="bar-cnt">${cnt}</span>
-      <div class="bar-fill ${o}" style="height:${Math.max(4, pct * 1.5)}px"></div>
-      <span class="bar-label">${SHAPES[o]}</span>
-    </div>`;
+    const h = Math.max(4, Math.round((cnt/maxCount)*150));
+    return `<div class="bar-col"><span class="bar-cnt">${cnt}</span><div class="bar-fill ${o}" style="height:${h}px"></div><span class="bar-label">${SHAPES[o]}</span></div>`;
   }).join('');
 
   showScreen('screen-reveal');
 }
 
-function showLeaderboardScreen(leaderboard) {
-  document.getElementById('lb-list').innerHTML = renderLeaderboard(leaderboard);
+function showLeaderboardScreen(lb) {
+  document.getElementById('lb-list').innerHTML = renderLeaderboard(lb);
   showScreen('screen-leaderboard');
 }
 
-function showEndedScreen(leaderboard) {
-  document.getElementById('final-lb-list').innerHTML = renderLeaderboard(leaderboard, true);
+function showEndedScreen(lb) {
+  document.getElementById('final-lb-list').innerHTML = renderLeaderboard(lb, true);
   showScreen('screen-ended');
   startConfetti();
 }
 
-function renderLeaderboard(leaderboard, big = false) {
-  return leaderboard.slice(0, 10).map((r, i) => {
-    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
-    const sz = big && i < 3 ? `font-size:${1.8 - i * 0.2}rem` : '';
+function renderLeaderboard(lb, big=false) {
+  return lb.slice(0,10).map((r,i) => {
+    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}.`;
+    const sz = big && i<3 ? `font-size:${1.8-i*0.2}rem` : '';
     return `<div class="lb-row" style="${sz}">
       <span class="lb-rank">${medal}</span>
-      <img class="lb-avatar" src="${escHtml(r.pictureUrl || '')}" alt="" onerror="this.style.display='none'">
+      <img class="lb-avatar" src="${escHtml(r.pictureUrl||'')}" alt="" onerror="this.style.display='none'">
       <span class="lb-name">${escHtml(r.displayName)}</span>
       <span class="lb-pts">${r.totalPoints} pts</span>
     </div>`;
   }).join('');
 }
 
+// ── Timer ──────────────────────────────────────────────────────────────────────
 function startTimer(remainingSec, totalSec) {
   clearTimerInterval();
   const circle = document.getElementById('timer-circle');
-  const numEl = document.getElementById('timer-num');
-  const circumference = 270;
-
-  function tick(secs) {
-    numEl.textContent = Math.max(0, secs);
-    const pct = Math.max(0, secs / totalSec);
-    circle.style.strokeDashoffset = circumference * (1 - pct);
-    circle.style.stroke = secs <= 5 ? '#e74c3c' : secs <= 10 ? '#f39c12' : '#2ecc71';
-  }
-
+  const numEl  = document.getElementById('timer-num');
+  const C = 270;
   let secs = Math.round(remainingSec);
+
+  function tick(s) {
+    numEl.textContent = Math.max(0, s);
+    circle.style.strokeDashoffset = C * (1 - Math.max(0, s/totalSec));
+    circle.style.stroke = s<=5 ? '#e74c3c' : s<=10 ? '#f39c12' : '#2ecc71';
+    if (s >= 0) { ensureAudio(); soundTick(s); }
+  }
   tick(secs);
-  timerInterval = setInterval(() => {
-    secs--;
-    tick(secs);
-    if (secs <= 0) clearTimerInterval();
-  }, 1000);
+  timerInterval = setInterval(() => { secs--; tick(secs); if (secs <= 0) clearTimerInterval(); }, 1000);
 }
 
-function clearTimerInterval() {
-  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-}
+function clearTimerInterval() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
 
-// Simple confetti
+// ── Confetti ───────────────────────────────────────────────────────────────────
 function startConfetti() {
   if (confettiActive) return;
   confettiActive = true;
   const canvas = document.getElementById('confetti-canvas');
   const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const particles = Array.from({length: 120}, () => ({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height - canvas.height,
-    w: 8 + Math.random() * 8,
-    h: 4 + Math.random() * 4,
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const particles = Array.from({length:120}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height - canvas.height,
+    w: 8+Math.random()*8, h: 4+Math.random()*4,
     color: ['#f1c40f','#e74c3c','#3498db','#2ecc71','#9b59b6','#e67e22'][Math.floor(Math.random()*6)],
-    rot: Math.random() * Math.PI * 2,
-    vx: (Math.random() - 0.5) * 2,
-    vy: 2 + Math.random() * 3,
-    vrot: (Math.random() - 0.5) * 0.1,
+    rot: Math.random()*Math.PI*2, vx:(Math.random()-.5)*2, vy:2+Math.random()*3, vrot:(Math.random()-.5)*.1,
   }));
   let frames = 0;
   function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
     for (const p of particles) {
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-      ctx.restore();
-      p.x += p.vx; p.y += p.vy; p.rot += p.vrot;
-      if (p.y > canvas.height) { p.y = -10; p.x = Math.random() * canvas.width; }
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+      p.x+=p.vx; p.y+=p.vy; p.rot+=p.vrot;
+      if (p.y > canvas.height) { p.y=-10; p.x=Math.random()*canvas.width; }
     }
     frames++;
     if (frames < 300) requestAnimationFrame(draw);
-    else { ctx.clearRect(0,0,canvas.width,canvas.height); confettiActive = false; }
+    else { ctx.clearRect(0,0,canvas.width,canvas.height); confettiActive=false; }
   }
   draw();
 }
 
-function escHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 connectSSE();
 </script>

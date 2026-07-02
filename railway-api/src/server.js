@@ -2209,16 +2209,29 @@ app.post('/kahoot/answer', async (req, res) => {
   const points = isCorrect ? Math.round(500 + 500 * speedRatio) : 0;
 
   try {
-    await pool.query(
+    const insertResult = await pool.query(
       `INSERT INTO kahoot_answers
          (session_id, question_id, line_user_id, display_name, picture_url,
           chosen_option, is_correct, time_taken_ms, points)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-       ON CONFLICT (session_id, question_id, line_user_id) DO NOTHING`,
+       ON CONFLICT (session_id, question_id, line_user_id) DO NOTHING
+       RETURNING id`,
       [kahootState.sessionId, q.id, lineUserId,
        displayName || '', pictureUrl || '',
        chosenOption, isCorrect, timeTakenMs, points]
     );
+    // Broadcast live answer count (only when a new row was actually inserted)
+    if (insertResult.rowCount > 0) {
+      const cntResult = await pool.query(
+        `SELECT COUNT(*)::int AS cnt FROM kahoot_answers WHERE session_id=$1 AND question_id=$2`,
+        [kahootState.sessionId, q.id]
+      );
+      broadcastKahootEvent('answer-count', {
+        questionId: q.id,
+        count: cntResult.rows[0].cnt,
+        totalPlayers: quizPlayers.size,
+      });
+    }
     res.json({ success: true, isCorrect, points });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

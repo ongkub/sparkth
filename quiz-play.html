@@ -41,7 +41,7 @@
   .opt-btn.B{background:#3498db}
   .opt-btn.C{background:#f39c12}
   .opt-btn.D{background:#27ae60}
-  .opt-btn.disabled{opacity:.45;pointer-events:none}
+  .opt-btn.disabled{opacity:1;pointer-events:none;background:#3a3a4a !important;color:rgba(255,255,255,.35)}
   .opt-shape{font-size:1.4rem}
   .opt-text{font-size:.95rem;font-weight:600;line-height:1.3}
 
@@ -78,9 +78,11 @@
 
   #screen-correct .question-text.correct-highlight{border:3px solid #2ecc71;background:rgba(46,204,113,.15)}
   #screen-correct .question-text.wrong-highlight{border:3px solid #e74c3c;background:rgba(231,76,60,.15)}
+  #mute-btn-play{position:fixed;top:10px;right:12px;background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:20px;padding:5px 12px;font-size:.8rem;cursor:pointer;z-index:200}
 </style>
 </head>
 <body>
+<button id="mute-btn-play" onclick="toggleMutePlay()">🔊</button>
 
 <!-- Loading -->
 <div id="screen-loading" class="screen active">
@@ -168,6 +170,34 @@ const LIFF_ID = '2006674119-OeyNgb5J';
 const SHAPES = { A: '▲', B: '◆', C: '●', D: '★' };
 const COLORS = { A: '#e74c3c', B: '#3498db', C: '#f39c12', D: '#27ae60' };
 
+// ── Audio ──────────────────────────────────────────────────────────────────────
+let audioCtxPlay = null;
+let isMutedPlay = false;
+
+function ensureAudioPlay() {
+  if (!audioCtxPlay) audioCtxPlay = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtxPlay.state === 'suspended') audioCtxPlay.resume();
+}
+function playTonePlay(freq, dur, type='sine', vol=0.35, when=0) {
+  if (isMutedPlay || !audioCtxPlay) return;
+  const t = audioCtxPlay.currentTime + when;
+  const o = audioCtxPlay.createOscillator(), g = audioCtxPlay.createGain();
+  o.connect(g); g.connect(audioCtxPlay.destination);
+  o.type = type; o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.start(t); o.stop(t + dur + 0.05);
+}
+function soundPlayJoin()    { playTonePlay(880,.1,'sine',.3); playTonePlay(1100,.15,'sine',.25,.1); }
+function soundPlayQuestion(){ [[523,.1],[784,.1],[1047,.25]].forEach(([f,d],i)=>playTonePlay(f,d,'triangle',.4,i*.1)); }
+function soundPlayTap()     { playTonePlay(1200,.06,'square',.2); }
+function soundPlayCorrect() { [[659,.1],[784,.1],[1047,.3]].forEach(([f,d],i)=>playTonePlay(f,d,'triangle',.45,i*.1)); }
+function soundPlayWrong()   { playTonePlay(220,.3,'sawtooth',.3); playTonePlay(180,.2,'sawtooth',.2,.2); }
+function toggleMutePlay() {
+  isMutedPlay = !isMutedPlay;
+  document.getElementById('mute-btn-play').textContent = isMutedPlay ? '🔇' : '🔊';
+}
+
 let profile = null;
 let currentSession = null;
 let currentQuestionId = null;
@@ -242,6 +272,7 @@ function handleState(state) {
     if (hasAnswered) {
       showAnsweredScreen();
     } else {
+      ensureAudioPlay(); soundPlayQuestion();
       showQuestionScreen(question, currentIdx, totalQuestions, remainingSec);
     }
   } else if (phase === 'reveal' && question) {
@@ -309,14 +340,17 @@ function showRevealScreen(wasCorrect, correctOption, q, leaderboard, noAnswer = 
     icon.textContent = '😴';
     title.textContent = 'ไม่ได้ตอบ';
     pts.textContent = '+0 คะแนน';
+    ensureAudioPlay(); soundPlayWrong();
   } else if (wasCorrect) {
     icon.textContent = '✅';
     title.textContent = 'ถูกต้อง!';
     pts.textContent = `+${myPts} คะแนน`;
+    ensureAudioPlay(); soundPlayCorrect();
   } else {
     icon.textContent = '❌';
     title.textContent = 'ผิด';
     pts.textContent = '+0 คะแนน';
+    ensureAudioPlay(); soundPlayWrong();
   }
 
   const optMap = { A: q.optionA, B: q.optionB, C: q.optionC, D: q.optionD };
@@ -409,6 +443,7 @@ async function joinGame() {
     });
     const d = await r.json();
     if (!d.success) throw new Error(d.error || 'join failed');
+    ensureAudioPlay(); soundPlayJoin();
     hasJoined = true;
     if (btn) btn.style.display = 'none';
     const badge = document.getElementById('joined-badge');
@@ -424,6 +459,7 @@ async function submitAnswer(option) {
   if (hasAnswered || !profile) return;
   hasAnswered = true;
   myAnswer = option;
+  ensureAudioPlay(); soundPlayTap();
   document.querySelectorAll('.opt-btn').forEach(b => b.classList.add('disabled'));
 
   try {
