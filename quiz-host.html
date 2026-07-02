@@ -256,22 +256,20 @@ function connectSSE() {
 }
 
 // ── Lobby drift ────────────────────────────────────────────────────────────────
-let driftTimer = null;
 function randomPos() { return { l: 2 + Math.random() * 88, t: 2 + Math.random() * 82 }; }
-function driftChip(chip) {
+function driftLoop(chip) {
+  if (!chip.isConnected) return;
   const p = randomPos();
   chip.style.left = p.l + '%';
   chip.style.top  = p.t + '%';
+  chip.addEventListener('transitionend', function onEnd(e) {
+    if (e.propertyName !== 'top') return;
+    chip.removeEventListener('transitionend', onEnd);
+    driftLoop(chip);
+  });
 }
-function startDrift() {
-  if (driftTimer) return;
-  driftTimer = setInterval(() => {
-    document.querySelectorAll('#player-grid .player-chip').forEach(c => {
-      if (Math.random() < 0.45) driftChip(c);
-    });
-  }, 2800);
-}
-function stopDrift() { clearInterval(driftTimer); driftTimer = null; }
+function startDrift() {}
+function stopDrift() {}
 
 // ── Player chips ───────────────────────────────────────────────────────────────
 function addPlayerChip(player) {
@@ -286,8 +284,8 @@ function addPlayerChip(player) {
   chip.style.left = p.l + '%';
   chip.style.top  = p.t + '%';
   chip.style.animation = `pop-in .35s cubic-bezier(.34,1.56,.64,1) forwards`;
-  setTimeout(() => chip.classList.add('drifting'), 400);
   grid.appendChild(chip);
+  setTimeout(() => { chip.classList.add('drifting'); driftLoop(chip); }, 400);
 }
 
 // ── Game state handler ─────────────────────────────────────────────────────────
