@@ -24,7 +24,8 @@
   .lobby-split{display:flex;align-items:flex-start;justify-content:center;gap:60px;flex-wrap:wrap;width:100%}
   .qr-wrap{background:#fff;padding:14px;border-radius:16px;display:inline-block;flex-shrink:0}
   .player-count{font-size:1.3rem;font-weight:700;opacity:.8;margin-top:12px}
-  .player-grid{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:2}
+  .player-grid{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+  .lobby-split{position:relative;z-index:3}
 
   @keyframes pop-in{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.15) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
   @keyframes float-a{0%,100%{transform:translateY(0px)}50%{transform:translateY(-24px)}}
@@ -33,6 +34,7 @@
   @keyframes float-d{0%,100%{transform:translateY(10px)}50%{transform:translateY(-20px)}}
 
   .player-chip{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;width:72px}
+  .player-chip.drifting{transition:left 4s ease-in-out,top 4s ease-in-out}
   .player-chip img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.4)}
   .player-chip span{font-size:11px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}
 
@@ -209,7 +211,12 @@ function toggleMute() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  if (id === 'screen-lobby' && !qrGenerated) generateQR();
+  if (id === 'screen-lobby') {
+    if (!qrGenerated) generateQR();
+    startDrift();
+  } else {
+    stopDrift();
+  }
 }
 
 function generateQR() {
@@ -248,6 +255,24 @@ function connectSSE() {
   };
 }
 
+// ── Lobby drift ────────────────────────────────────────────────────────────────
+let driftTimer = null;
+function randomPos() { return { l: 2 + Math.random() * 88, t: 2 + Math.random() * 82 }; }
+function driftChip(chip) {
+  const p = randomPos();
+  chip.style.left = p.l + '%';
+  chip.style.top  = p.t + '%';
+}
+function startDrift() {
+  if (driftTimer) return;
+  driftTimer = setInterval(() => {
+    document.querySelectorAll('#player-grid .player-chip').forEach(c => {
+      if (Math.random() < 0.45) driftChip(c);
+    });
+  }, 2800);
+}
+function stopDrift() { clearInterval(driftTimer); driftTimer = null; }
+
 // ── Player chips ───────────────────────────────────────────────────────────────
 function addPlayerChip(player) {
   const grid = document.getElementById('player-grid');
@@ -257,36 +282,11 @@ function addPlayerChip(player) {
   chip.id = 'chip-' + player.lineUserId;
   chip.innerHTML = `<img src="${escHtml(player.pictureUrl)}" alt="" onerror="this.src=''"><span>${escHtml(player.displayName)}</span>`;
 
-  // Avoid QR code area
-  const qrEl = document.getElementById('qr-container');
-  const screenEl = document.getElementById('screen-lobby');
-  let avoid = null;
-  if (qrEl && screenEl) {
-    const qb = qrEl.getBoundingClientRect(), sb = screenEl.getBoundingClientRect();
-    const pad = 12;
-    avoid = {
-      l: (qb.left   - sb.left - pad) / sb.width  * 100,
-      t: (qb.top    - sb.top  - pad) / sb.height * 100,
-      r: (qb.right  - sb.left + pad) / sb.width  * 100,
-      b: (qb.bottom - sb.top  + pad) / sb.height * 100,
-    };
-  }
-  let left, top, tries = 0;
-  do {
-    left = 2 + Math.random() * 88;
-    top  = 2 + Math.random() * 82;
-    tries++;
-  } while (avoid && tries < 20 &&
-    left < avoid.r && (left + 9) > avoid.l &&
-    top  < avoid.b && (top  + 10) > avoid.t);
-
-  chip.style.left = left + '%';
-  chip.style.top  = top  + '%';
-
-  const floatName = FLOAT_ANIMS[Math.floor(Math.random() * FLOAT_ANIMS.length)];
-  const floatDur  = (2.5 + Math.random() * 2).toFixed(2);
-  const floatDely = (Math.random() * 1.5).toFixed(2);
-  chip.style.animation = `pop-in .35s cubic-bezier(.34,1.56,.64,1) 0s 1 normal forwards, ${floatName} ${floatDur}s ${floatDely}s ease-in-out infinite normal none`;
+  const p = randomPos();
+  chip.style.left = p.l + '%';
+  chip.style.top  = p.t + '%';
+  chip.style.animation = `pop-in .35s cubic-bezier(.34,1.56,.64,1) forwards`;
+  setTimeout(() => chip.classList.add('drifting'), 400);
   grid.appendChild(chip);
 }
 
