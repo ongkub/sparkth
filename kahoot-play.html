@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Wedding Quiz</title>
+<script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Segoe UI',sans-serif;background:#1a1a2e;color:#fff}
+  body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:16px}
+
+  /* screens */
+  .screen{display:none;width:100%;max-width:420px;text-align:center}
+  .screen.active{display:flex;flex-direction:column;align-items:center;gap:16px}
+
+  .avatar{width:80px;height:80px;border-radius:50%;border:3px solid #fff;object-fit:cover}
+  .display-name{font-size:1.2rem;font-weight:600}
+  .status-text{font-size:1rem;opacity:0.8}
+
+  /* timer */
+  .timer-ring{position:relative;width:70px;height:70px;margin:0 auto}
+  .timer-ring svg{transform:rotate(-90deg)}
+  .timer-ring circle{transition:stroke-dashoffset 1s linear;stroke:#e74c3c;stroke-width:5;fill:none;stroke-dasharray:188;stroke-dashoffset:0}
+  .timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700}
+
+  /* question */
+  .question-text{font-size:1.2rem;font-weight:700;line-height:1.4;background:rgba(255,255,255,0.1);border-radius:12px;padding:16px;width:100%}
+
+  /* answer buttons */
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+  .opt-btn{
+    padding:28px 12px;border-radius:12px;border:none;cursor:pointer;
+    font-size:1rem;font-weight:700;color:#fff;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    min-height:90px;transition:transform .1s,opacity .1s;
+  }
+  .opt-btn:active{transform:scale(.95)}
+  .opt-btn.A{background:#e74c3c}
+  .opt-btn.B{background:#3498db}
+  .opt-btn.C{background:#f39c12}
+  .opt-btn.D{background:#27ae60}
+  .opt-btn.disabled{opacity:.45;pointer-events:none}
+  .opt-shape{font-size:1.4rem}
+  .opt-text{font-size:.95rem;font-weight:600;line-height:1.3}
+
+  /* feedback */
+  .feedback-icon{font-size:4rem}
+  .feedback-pts{font-size:2rem;font-weight:700;color:#f1c40f}
+  .feedback-label{font-size:1rem;opacity:.8}
+
+  .leaderboard{width:100%;display:flex;flex-direction:column;gap:8px}
+  .lb-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border-radius:10px;padding:10px 12px}
+  .lb-rank{font-size:1.1rem;font-weight:700;width:28px;text-align:center}
+  .lb-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover}
+  .lb-name{flex:1;font-size:.95rem;font-weight:600;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lb-pts{font-size:.95rem;font-weight:700;color:#f1c40f}
+
+  .big-emoji{font-size:5rem;line-height:1}
+  .title{font-size:1.6rem;font-weight:800}
+  .subtitle{font-size:1rem;opacity:.75}
+
+  .pulse{animation:pulse 1.5s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+  #screen-correct .question-text.correct-highlight{border:3px solid #2ecc71;background:rgba(46,204,113,.15)}
+  #screen-correct .question-text.wrong-highlight{border:3px solid #e74c3c;background:rgba(231,76,60,.15)}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="screen-loading" class="screen active">
+  <div class="big-emoji pulse">🎉</div>
+  <div class="title">Wedding Quiz</div>
+  <div class="status-text">กำลังโหลด...</div>
+</div>
+
+<!-- Lobby / Waiting -->
+<div id="screen-lobby" class="screen">
+  <img id="user-avatar" class="avatar" src="" alt="">
+  <div id="user-name" class="display-name"></div>
+  <div class="big-emoji pulse">⏳</div>
+  <div class="title">รอเริ่มเกม</div>
+  <div class="status-text">กรุณารอพิธีกรเริ่มเกม</div>
+</div>
+
+<!-- Question -->
+<div id="screen-question" class="screen">
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+    <div id="q-progress" class="status-text">ข้อ 1/5</div>
+    <div class="timer-ring">
+      <svg width="70" height="70" viewBox="0 0 70 70">
+        <circle cx="35" cy="35" r="30" id="timer-circle"/>
+      </svg>
+      <div class="timer-num" id="timer-num">20</div>
+    </div>
+  </div>
+  <div id="q-text" class="question-text"></div>
+  <div class="options">
+    <button class="opt-btn A" onclick="submitAnswer('A')">
+      <span class="opt-shape">▲</span>
+      <span class="opt-text" id="opt-a-text"></span>
+    </button>
+    <button class="opt-btn B" onclick="submitAnswer('B')">
+      <span class="opt-shape">◆</span>
+      <span class="opt-text" id="opt-b-text"></span>
+    </button>
+    <button class="opt-btn C" onclick="submitAnswer('C')">
+      <span class="opt-shape">●</span>
+      <span class="opt-text" id="opt-c-text"></span>
+    </button>
+    <button class="opt-btn D" onclick="submitAnswer('D')">
+      <span class="opt-shape">★</span>
+      <span class="opt-text" id="opt-d-text"></span>
+    </button>
+  </div>
+</div>
+
+<!-- Waiting for result (answered) -->
+<div id="screen-answered" class="screen">
+  <div id="chosen-btn-preview" style="width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:3rem"></div>
+  <div class="title">ตอบแล้ว!</div>
+  <div class="status-text pulse">รอดูผลลัพธ์...</div>
+</div>
+
+<!-- Reveal / Correct or Wrong -->
+<div id="screen-correct" class="screen">
+  <div id="feedback-icon" class="feedback-icon"></div>
+  <div id="feedback-title" class="title"></div>
+  <div id="correct-answer-label" class="question-text"></div>
+  <div id="feedback-pts" class="feedback-pts"></div>
+  <div id="feedback-total" class="feedback-label"></div>
+</div>
+
+<!-- Leaderboard -->
+<div id="screen-leaderboard" class="screen">
+  <div class="title">🏆 อันดับ</div>
+  <div id="lb-list" class="leaderboard"></div>
+  <div id="lb-my-rank" class="feedback-label" style="margin-top:4px"></div>
+</div>
+
+<!-- Game Ended -->
+<div id="screen-ended" class="screen">
+  <div class="big-emoji">🎊</div>
+  <div class="title">จบเกมแล้ว!</div>
+  <div class="leaderboard" id="final-lb-list"></div>
+  <div id="final-my-rank" class="feedback-label"></div>
+</div>
+
+<script>
+const API = 'https://sparkth-production.up.railway.app';
+const LIFF_ID = '2006674119-Y1d35qvg';
+const SHAPES = { A: '▲', B: '◆', C: '●', D: '★' };
+const COLORS = { A: '#e74c3c', B: '#3498db', C: '#f39c12', D: '#27ae60' };
+
+let profile = null;
+let currentSession = null;
+let currentQuestionId = null;
+let hasAnswered = false;
+let myAnswer = null;
+let myPts = 0;
+let myTotalPts = 0;
+let timerInterval = null;
+let sse = null;
+let currentTimeLimitSec = 20;
+let questionStartedAt = null;
+
+async function init() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    profile = await liff.getProfile();
+    document.getElementById('user-avatar').src = profile.pictureUrl || '';
+    document.getElementById('user-name').textContent = profile.displayName || '';
+    connectSSE();
+  } catch (e) {
+    showScreen('screen-loading');
+    document.querySelector('#screen-loading .status-text').textContent = 'เกิดข้อผิดพลาด: ' + e.message;
+  }
+}
+
+function connectSSE() {
+  if (sse) sse.close();
+  sse = new EventSource(`${API}/kahoot-stream`);
+  sse.addEventListener('game-state', e => handleState(JSON.parse(e.data)));
+  sse.onerror = () => setTimeout(connectSSE, 3000);
+}
+
+function handleState(state) {
+  const { phase, sessionId, question, currentIdx, totalQuestions, correctOption, answerCounts, leaderboard, remainingSec } = state;
+
+  // Reset session tracking when session changes or game resets
+  if (sessionId !== currentSession) {
+    currentSession = sessionId;
+    hasAnswered = false;
+    myAnswer = null;
+    myPts = 0;
+    myTotalPts = 0;
+    currentQuestionId = null;
+  }
+
+  if (phase === 'idle') {
+    showScreen('screen-loading');
+    document.querySelector('#screen-loading .status-text').textContent = 'ยังไม่มีเกม';
+    document.querySelector('#screen-loading .big-emoji').textContent = '🎲';
+    document.querySelector('#screen-loading .big-emoji').classList.remove('pulse');
+  } else if (phase === 'lobby') {
+    showScreen('screen-lobby');
+  } else if (phase === 'question' && question) {
+    if (currentQuestionId !== question.id) {
+      currentQuestionId = question.id;
+      hasAnswered = false;
+      myAnswer = null;
+    }
+    currentTimeLimitSec = question.timeLimitSec;
+    questionStartedAt = question.startedAt;
+
+    if (hasAnswered) {
+      showAnsweredScreen();
+    } else {
+      showQuestionScreen(question, currentIdx, totalQuestions, remainingSec);
+    }
+  } else if (phase === 'reveal' && question) {
+    clearTimerInterval();
+    if (myAnswer !== null) {
+      const wasCorrect = myAnswer === correctOption;
+      showRevealScreen(wasCorrect, correctOption, question, leaderboard || []);
+    } else {
+      // Didn't answer
+      showRevealScreen(false, correctOption, question, leaderboard || [], true);
+    }
+  } else if (phase === 'leaderboard') {
+    showLeaderboard(leaderboard || []);
+  } else if (phase === 'ended') {
+    showEndedScreen(leaderboard || []);
+  }
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showQuestionScreen(q, idx, total, remainingSec) {
+  document.getElementById('q-progress').textContent = `ข้อ ${idx + 1}/${total}`;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('opt-a-text').textContent = q.optionA;
+  document.getElementById('opt-b-text').textContent = q.optionB;
+  document.getElementById('opt-c-text').textContent = q.optionC;
+  document.getElementById('opt-d-text').textContent = q.optionD;
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('disabled'));
+  showScreen('screen-question');
+  startTimer(remainingSec, q.timeLimitSec);
+}
+
+function showAnsweredScreen() {
+  clearTimerInterval();
+  const preview = document.getElementById('chosen-btn-preview');
+  preview.style.background = COLORS[myAnswer] || '#888';
+  preview.textContent = SHAPES[myAnswer] || '?';
+  showScreen('screen-answered');
+}
+
+function showRevealScreen(wasCorrect, correctOption, q, leaderboard, noAnswer = false) {
+  const icon = document.getElementById('feedback-icon');
+  const title = document.getElementById('feedback-title');
+  const answerLabel = document.getElementById('correct-answer-label');
+  const pts = document.getElementById('feedback-pts');
+  const total = document.getElementById('feedback-total');
+
+  if (noAnswer) {
+    icon.textContent = '😴';
+    title.textContent = 'ไม่ได้ตอบ';
+    pts.textContent = '+0 คะแนน';
+  } else if (wasCorrect) {
+    icon.textContent = '✅';
+    title.textContent = 'ถูกต้อง!';
+    pts.textContent = `+${myPts} คะแนน`;
+  } else {
+    icon.textContent = '❌';
+    title.textContent = 'ผิด';
+    pts.textContent = '+0 คะแนน';
+  }
+
+  const optMap = { A: q.optionA, B: q.optionB, C: q.optionC, D: q.optionD };
+  answerLabel.textContent = `คำตอบ: ${SHAPES[correctOption]} ${optMap[correctOption]}`;
+  answerLabel.className = 'question-text ' + (wasCorrect && !noAnswer ? 'correct-highlight' : 'wrong-highlight');
+
+  // Compute my rank
+  myTotalPts = 0;
+  if (profile && leaderboard.length) {
+    const me = leaderboard.find(r => r.lineUserId === profile.userId);
+    if (me) myTotalPts = me.totalPoints;
+  }
+  total.textContent = `คะแนนรวม: ${myTotalPts} คะแนน`;
+
+  showScreen('screen-correct');
+}
+
+function showLeaderboard(leaderboard) {
+  renderLeaderboard('lb-list', leaderboard);
+  const myRankEl = document.getElementById('lb-my-rank');
+  if (profile) {
+    const idx = leaderboard.findIndex(r => r.lineUserId === profile.userId);
+    myRankEl.textContent = idx >= 0 ? `อันดับของคุณ: #${idx + 1}` : 'คุณยังไม่ได้ตอบข้อใด';
+  }
+  showScreen('screen-leaderboard');
+}
+
+function showEndedScreen(leaderboard) {
+  renderLeaderboard('final-lb-list', leaderboard);
+  const myRankEl = document.getElementById('final-my-rank');
+  if (profile) {
+    const idx = leaderboard.findIndex(r => r.lineUserId === profile.userId);
+    myRankEl.textContent = idx >= 0 ? `อันดับของคุณ: #${idx + 1} (${leaderboard[idx].totalPoints} คะแนน)` : '';
+  }
+  showScreen('screen-ended');
+}
+
+function renderLeaderboard(containerId, leaderboard) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = leaderboard.slice(0, 10).map((r, i) => {
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+    return `<div class="lb-row">
+      <span class="lb-rank">${medal}</span>
+      <img class="lb-avatar" src="${r.pictureUrl || ''}" alt="" onerror="this.src=''">
+      <span class="lb-name">${escHtml(r.displayName)}</span>
+      <span class="lb-pts">${r.totalPoints}</span>
+    </div>`;
+  }).join('');
+}
+
+function startTimer(remainingSec, totalSec) {
+  clearTimerInterval();
+  const circle = document.getElementById('timer-circle');
+  const numEl = document.getElementById('timer-num');
+  const circumference = 188;
+
+  function tick(secs) {
+    numEl.textContent = Math.max(0, secs);
+    const pct = Math.max(0, secs / totalSec);
+    circle.style.strokeDashoffset = circumference * (1 - pct);
+    circle.style.stroke = secs <= 5 ? '#e74c3c' : secs <= 10 ? '#f39c12' : '#2ecc71';
+  }
+
+  let secs = Math.round(remainingSec);
+  tick(secs);
+  timerInterval = setInterval(() => {
+    secs--;
+    tick(secs);
+    if (secs <= 0) clearTimerInterval();
+  }, 1000);
+}
+
+function clearTimerInterval() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+async function submitAnswer(option) {
+  if (hasAnswered || !profile) return;
+  hasAnswered = true;
+  myAnswer = option;
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.add('disabled'));
+
+  try {
+    const r = await fetch(`${API}/kahoot/answer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lineUserId: profile.userId,
+        displayName: profile.displayName,
+        pictureUrl: profile.pictureUrl || '',
+        chosenOption: option,
+      })
+    });
+    const data = await r.json();
+    myPts = data.points || 0;
+  } catch (_) { myPts = 0; }
+
+  showAnsweredScreen();
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+init();
+</script>
+</body>
+</html>

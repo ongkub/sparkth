@@ -27,6 +27,29 @@ const welcomeClients = new Set();
 const matchClients = new Map();
 // broadcast SSE clients waiting for scratch game activation
 const scratchClients = new Set();
+const kahootClients = new Set();
+
+// In-memory Kahoot game state (single active game)
+let kahootState = {
+  phase: 'idle', // idle | lobby | question | reveal | leaderboard | ended
+  sessionId: null,
+  questions: [],           // ordered array from DB
+  currentIdx: -1,
+  questionStartedAt: null, // Date.now() ms when question was shown
+  revealTimer: null,       // clearTimeout handle
+};
+
+function kahootCurrentQuestion() {
+  return kahootState.questions[kahootState.currentIdx] || null;
+}
+
+function broadcastKahoot(data) {
+  const payload = JSON.stringify(data);
+  for (const client of kahootClients) {
+    client.write('event: game-state\n');
+    client.write(`data: ${payload}\n\n`);
+  }
+}
 const checkinCooldownMs = Number(process.env.CHECKIN_COOLDOWN_MS || 5 * 60 * 1000);
 const WALL_FRAME_PRESETS = [
   { key: 'classic', label: 'Classic' },
@@ -255,6 +278,48 @@ async function ensureSchema() {
   );
   await pool.query(`ALTER TABLE scratch_lottery ADD COLUMN IF NOT EXISTS card_image_url TEXT`);
   await pool.query(`INSERT INTO scratch_lottery (id) VALUES (1) ON CONFLICT DO NOTHING`);
+
+  // Kahoot-style quiz game
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS kahoot_questions (
+       id SERIAL PRIMARY KEY,
+       question_text TEXT NOT NULL DEFAULT '',
+       option_a TEXT NOT NULL DEFAULT '',
+       option_b TEXT NOT NULL DEFAULT '',
+       option_c TEXT NOT NULL DEFAULT '',
+       option_d TEXT NOT NULL DEFAULT '',
+       correct_option CHAR(1) NOT NULL DEFAULT 'A',
+       time_limit_sec INTEGER NOT NULL DEFAULT 20,
+       order_idx INTEGER NOT NULL DEFAULT 0,
+       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     )`
+  );
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS kahoot_sessions (
+       id SERIAL PRIMARY KEY,
+       started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+       ended_at TIMESTAMPTZ
+     )`
+  );
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS kahoot_answers (
+       id BIGSERIAL PRIMARY KEY,
+       session_id INTEGER NOT NULL,
+       question_id INTEGER NOT NULL,
+       line_user_id TEXT NOT NULL,
+       display_name TEXT NOT NULL DEFAULT '',
+       picture_url TEXT NOT NULL DEFAULT '',
+       chosen_option CHAR(1) NOT NULL,
+       is_correct BOOLEAN NOT NULL DEFAULT false,
+       time_taken_ms INTEGER NOT NULL DEFAULT 0,
+       points INTEGER NOT NULL DEFAULT 0,
+       answered_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     )`
+  );
+  await pool.query(
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_kahoot_answers_unique
+     ON kahoot_answers (session_id, question_id, line_user_id)`
+  );
 }
 
 app.use(express.json({ limit: '10mb' }));
@@ -363,6 +428,26 @@ app.get('/scratch-stream', (req, res) => {
   req.on('close', () => {
     clearInterval(heartbeat);
     scratchClients.delete(res);
+  });
+});
+
+app.get('/kahoot-stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  // Send current game state immediately on connect
+  const q = kahootCurrentQuestion();
+  const initialData = buildGameStatePayload();
+  res.write('event: game-state\n');
+  res.write(`data: ${JSON.stringify(initialData)}\n\n`);
+
+  kahootClients.add(res);
+  const heartbeat = setInterval(() => res.write(':ping\n\n'), 25000);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    kahootClients.delete(res);
   });
 });
 
@@ -2010,6 +2095,280 @@ app.post('/admin/reset-leaderboard', async (_req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
+});
+
+// ─── Kahoot helpers ───────────────────────────────────────────────────────────
+
+function buildGameStatePayload(extra = {}) {
+  const q = kahootCurrentQuestion();
+  const now = Date.now();
+  const elapsed = kahootState.questionStartedAt ? now - kahootState.questionStartedAt : 0;
+  const remaining = q ? Math.max(0, q.time_limit_sec - Math.floor(elapsed / 1000)) : 0;
+
+  return {
+    phase: kahootState.phase,
+    sessionId: kahootState.sessionId,
+    totalQuestions: kahootState.questions.length,
+    currentIdx: kahootState.currentIdx,
+    question: q ? {
+      id: q.id,
+      text: q.question_text,
+      optionA: q.option_a,
+      optionB: q.option_b,
+      optionC: q.option_c,
+      optionD: q.option_d,
+      timeLimitSec: q.time_limit_sec,
+      startedAt: kahootState.questionStartedAt,
+    } : null,
+    remainingSec: remaining,
+    ...extra,
+  };
+}
+
+async function getKahootLeaderboard(sessionId) {
+  const result = await pool.query(
+    `SELECT line_user_id, MAX(display_name) AS display_name, MAX(picture_url) AS picture_url,
+            SUM(points) AS total_points, COUNT(*) AS answered
+     FROM kahoot_answers
+     WHERE session_id = $1
+     GROUP BY line_user_id
+     ORDER BY total_points DESC
+     LIMIT 20`,
+    [sessionId]
+  );
+  return result.rows.map((r, i) => ({
+    rank: i + 1,
+    lineUserId: r.line_user_id,
+    displayName: r.display_name,
+    pictureUrl: r.picture_url,
+    totalPoints: Number(r.total_points),
+    answered: Number(r.answered),
+  }));
+}
+
+async function getAnswerCounts(sessionId, questionId) {
+  const result = await pool.query(
+    `SELECT chosen_option, COUNT(*)::int AS cnt
+     FROM kahoot_answers
+     WHERE session_id = $1 AND question_id = $2
+     GROUP BY chosen_option`,
+    [sessionId, questionId]
+  );
+  const counts = { A: 0, B: 0, C: 0, D: 0 };
+  for (const row of result.rows) counts[row.chosen_option] = row.cnt;
+  return counts;
+}
+
+// ─── Kahoot public endpoints ───────────────────────────────────────────────────
+
+app.get('/kahoot/status', (_req, res) => {
+  res.json({ success: true, ...buildGameStatePayload() });
+});
+
+app.post('/kahoot/answer', async (req, res) => {
+  const { lineUserId, displayName, pictureUrl, chosenOption } = req.body || {};
+  if (!lineUserId || !['A','B','C','D'].includes(chosenOption)) {
+    return res.status(400).json({ success: false, error: 'invalid params' });
+  }
+  if (kahootState.phase !== 'question') {
+    return res.status(409).json({ success: false, error: 'not accepting answers' });
+  }
+  const q = kahootCurrentQuestion();
+  if (!q) return res.status(409).json({ success: false, error: 'no active question' });
+
+  const timeTakenMs = Date.now() - (kahootState.questionStartedAt || Date.now());
+  const isCorrect = chosenOption === q.correct_option;
+  // Speed bonus: max 1000 points, decreasing linearly over the time limit
+  const speedRatio = Math.max(0, 1 - timeTakenMs / (q.time_limit_sec * 1000));
+  const points = isCorrect ? Math.round(500 + 500 * speedRatio) : 0;
+
+  try {
+    await pool.query(
+      `INSERT INTO kahoot_answers
+         (session_id, question_id, line_user_id, display_name, picture_url,
+          chosen_option, is_correct, time_taken_ms, points)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       ON CONFLICT (session_id, question_id, line_user_id) DO NOTHING`,
+      [kahootState.sessionId, q.id, lineUserId,
+       displayName || '', pictureUrl || '',
+       chosenOption, isCorrect, timeTakenMs, points]
+    );
+    res.json({ success: true, isCorrect, points });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/kahoot/leaderboard', async (_req, res) => {
+  if (!kahootState.sessionId) return res.json({ success: true, leaderboard: [] });
+  try {
+    const leaderboard = await getKahootLeaderboard(kahootState.sessionId);
+    res.json({ success: true, leaderboard });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ─── Kahoot admin endpoints ────────────────────────────────────────────────────
+
+app.get('/kahoot/admin/questions', async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM kahoot_questions ORDER BY order_idx, id`
+    );
+    res.json({ success: true, questions: result.rows });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/kahoot/admin/question', async (req, res) => {
+  const { id, questionText, optionA, optionB, optionC, optionD, correctOption, timeLimitSec, orderIdx } = req.body || {};
+  try {
+    if (id) {
+      await pool.query(
+        `UPDATE kahoot_questions SET question_text=$1, option_a=$2, option_b=$3,
+          option_c=$4, option_d=$5, correct_option=$6, time_limit_sec=$7, order_idx=$8
+         WHERE id=$9`,
+        [questionText, optionA, optionB, optionC, optionD,
+         correctOption, timeLimitSec || 20, orderIdx || 0, id]
+      );
+      res.json({ success: true, id });
+    } else {
+      const result = await pool.query(
+        `INSERT INTO kahoot_questions
+           (question_text, option_a, option_b, option_c, option_d, correct_option, time_limit_sec, order_idx)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+        [questionText, optionA, optionB, optionC, optionD,
+         correctOption, timeLimitSec || 20, orderIdx || 0]
+      );
+      res.json({ success: true, id: result.rows[0].id });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/kahoot/admin/question-delete', async (req, res) => {
+  const { id } = req.body || {};
+  if (!id) return res.status(400).json({ success: false, error: 'id required' });
+  try {
+    await pool.query('DELETE FROM kahoot_questions WHERE id=$1', [id]);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/kahoot/admin/start', async (_req, res) => {
+  try {
+    const qResult = await pool.query(
+      'SELECT * FROM kahoot_questions ORDER BY order_idx, id'
+    );
+    if (qResult.rows.length === 0) {
+      return res.status(400).json({ success: false, error: 'no questions' });
+    }
+    const sessionResult = await pool.query(
+      'INSERT INTO kahoot_sessions DEFAULT VALUES RETURNING id'
+    );
+    kahootState.sessionId = sessionResult.rows[0].id;
+    kahootState.phase = 'lobby';
+    kahootState.questions = qResult.rows;
+    kahootState.currentIdx = -1;
+    kahootState.questionStartedAt = null;
+    if (kahootState.revealTimer) clearTimeout(kahootState.revealTimer);
+    kahootState.revealTimer = null;
+
+    broadcastKahoot(buildGameStatePayload());
+    res.json({ success: true, sessionId: kahootState.sessionId });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/kahoot/admin/show-question', async (_req, res) => {
+  if (!['lobby', 'leaderboard'].includes(kahootState.phase)) {
+    return res.status(409).json({ success: false, error: 'wrong phase' });
+  }
+  const nextIdx = kahootState.currentIdx + 1;
+  if (nextIdx >= kahootState.questions.length) {
+    return res.status(400).json({ success: false, error: 'no more questions' });
+  }
+
+  kahootState.currentIdx = nextIdx;
+  kahootState.phase = 'question';
+  kahootState.questionStartedAt = Date.now();
+
+  const q = kahootCurrentQuestion();
+  if (kahootState.revealTimer) clearTimeout(kahootState.revealTimer);
+
+  // Auto-reveal when timer expires
+  kahootState.revealTimer = setTimeout(async () => {
+    if (kahootState.phase !== 'question') return;
+    kahootState.phase = 'reveal';
+    try {
+      const counts = await getAnswerCounts(kahootState.sessionId, q.id);
+      const leaderboard = await getKahootLeaderboard(kahootState.sessionId);
+      broadcastKahoot(buildGameStatePayload({ correctOption: q.correct_option, answerCounts: counts, leaderboard }));
+    } catch (_) {}
+  }, q.time_limit_sec * 1000);
+
+  broadcastKahoot(buildGameStatePayload());
+  res.json({ success: true });
+});
+
+app.post('/kahoot/admin/reveal', async (_req, res) => {
+  if (kahootState.phase !== 'question' && kahootState.phase !== 'reveal') {
+    return res.status(409).json({ success: false, error: 'wrong phase' });
+  }
+  kahootState.phase = 'reveal';
+  if (kahootState.revealTimer) { clearTimeout(kahootState.revealTimer); kahootState.revealTimer = null; }
+  const q = kahootCurrentQuestion();
+  try {
+    const counts = await getAnswerCounts(kahootState.sessionId, q.id);
+    const leaderboard = await getKahootLeaderboard(kahootState.sessionId);
+    broadcastKahoot(buildGameStatePayload({ correctOption: q.correct_option, answerCounts: counts, leaderboard }));
+    res.json({ success: true, correctOption: q.correct_option, answerCounts: counts, leaderboard });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/kahoot/admin/leaderboard', async (_req, res) => {
+  if (!kahootState.sessionId) return res.status(409).json({ success: false, error: 'no session' });
+  kahootState.phase = 'leaderboard';
+  try {
+    const leaderboard = await getKahootLeaderboard(kahootState.sessionId);
+    broadcastKahoot(buildGameStatePayload({ leaderboard }));
+    res.json({ success: true, leaderboard });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/kahoot/admin/end', async (_req, res) => {
+  if (kahootState.revealTimer) { clearTimeout(kahootState.revealTimer); kahootState.revealTimer = null; }
+  try {
+    if (kahootState.sessionId) {
+      await pool.query('UPDATE kahoot_sessions SET ended_at=NOW() WHERE id=$1', [kahootState.sessionId]);
+      const leaderboard = await getKahootLeaderboard(kahootState.sessionId);
+      kahootState.phase = 'ended';
+      broadcastKahoot(buildGameStatePayload({ leaderboard }));
+    } else {
+      kahootState.phase = 'idle';
+      broadcastKahoot(buildGameStatePayload());
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/kahoot/admin/reset', async (_req, res) => {
+  if (kahootState.revealTimer) { clearTimeout(kahootState.revealTimer); kahootState.revealTimer = null; }
+  kahootState = { phase: 'idle', sessionId: null, questions: [], currentIdx: -1, questionStartedAt: null, revealTimer: null };
+  broadcastKahoot(buildGameStatePayload());
+  res.json({ success: true });
 });
 
 app.post('/admin/reset-all', async (_req, res) => {

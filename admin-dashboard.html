@@ -480,6 +480,9 @@ tr:hover td{background:rgba(254,240,238,.4)}
     <div class="nav-item" onclick="nav('scratch', this)">
       <span class="nav-icon">🎁</span>ชิงโชค
     </div>
+    <div class="nav-item" onclick="nav('kahoot', this)">
+      <span class="nav-icon">🎯</span>Kahoot Quiz
+    </div>
     <div class="nav-section" style="margin-top:8px;color:#dc2626">⚠️ Danger Zone</div>
     <div class="nav-item" onclick="nav('danger', this)">
       <span class="nav-icon">🗑️</span>Reset ข้อมูล
@@ -1173,6 +1176,100 @@ tr:hover td{background:rgba(254,240,238,.4)}
       </div>
     </div>
 
+    <!-- ═══ SECTION: KAHOOT QUIZ ═══ -->
+    <div class="section" id="sec-kahoot">
+      <div class="sec-title">🎯 Kahoot Quiz</div>
+      <div class="sec-sub">จัดการคลังคำถามและควบคุมเกม · เปิด <a href="kahoot-host.html" target="_blank" style="color:var(--rose)">หน้าฉาย</a> · ผู้เล่นเปิด <a href="kahoot-play.html" target="_blank" style="color:var(--rose)">หน้าตอบ</a></div>
+
+      <!-- Game Controls -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-h">🕹️ ควบคุมเกม</div>
+        <div id="kahoot-phase-badge" style="display:inline-block;margin-bottom:14px;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;background:var(--cream);color:var(--muted)">● idle</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          <button onclick="kahootStart()" id="btn-kahoot-start" style="background:var(--rose);color:#fff;border:none;border-radius:8px;padding:10px 18px;font:inherit;font-size:13px;cursor:pointer;font-weight:600">▶ เริ่มเกม</button>
+          <button onclick="kahootShowQ()" id="btn-kahoot-showq" disabled style="background:var(--olive);color:#fff;border:none;border-radius:8px;padding:10px 18px;font:inherit;font-size:13px;cursor:pointer;font-weight:600;opacity:.5">➡ แสดงข้อถัดไป</button>
+          <button onclick="kahootReveal()" id="btn-kahoot-reveal" disabled style="background:#f39c12;color:#fff;border:none;border-radius:8px;padding:10px 18px;font:inherit;font-size:13px;cursor:pointer;font-weight:600;opacity:.5">🎯 เฉลยคำตอบ</button>
+          <button onclick="kahootLeaderboard()" id="btn-kahoot-lb" disabled style="background:#3498db;color:#fff;border:none;border-radius:8px;padding:10px 18px;font:inherit;font-size:13px;cursor:pointer;font-weight:600;opacity:.5">🏆 แสดงอันดับ</button>
+          <button onclick="kahootEnd()" id="btn-kahoot-end" disabled style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:10px 18px;font:inherit;font-size:13px;cursor:pointer;font-weight:600;opacity:.5">⏹ จบเกม</button>
+          <button onclick="kahootReset()" style="background:#fff;color:#dc2626;border:2px solid #dc2626;border-radius:8px;padding:10px 18px;font:inherit;font-size:13px;cursor:pointer;font-weight:600">↺ Reset</button>
+        </div>
+        <div id="kahoot-status-msg" style="margin-top:10px;font-size:12px;color:var(--muted)"></div>
+      </div>
+
+      <!-- Question Bank -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div class="card-h" style="margin:0">📋 คลังคำถาม</div>
+          <button onclick="openKahootQuestionForm(null)" style="background:var(--rose);color:#fff;border:none;border-radius:8px;padding:8px 14px;font:inherit;font-size:13px;cursor:pointer;font-weight:600">+ เพิ่มคำถาม</button>
+        </div>
+        <div id="kahoot-questions-list">
+          <div style="text-align:center;padding:24px;color:var(--muted)">กำลังโหลด...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kahoot Question Modal -->
+    <div id="kahootQuestionModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.5);align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:16px;padding:28px;width:90%;max-width:560px;max-height:90vh;overflow-y:auto">
+        <h3 style="margin-bottom:20px;font-size:1.1rem" id="kq-modal-title">เพิ่มคำถาม</h3>
+        <input type="hidden" id="kq-id">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div>
+            <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">คำถาม</label>
+            <textarea id="kq-text" rows="2" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px;font:inherit;resize:vertical" placeholder="พิมพ์คำถาม..."></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label style="font-size:12px;font-weight:600;color:#e74c3c;display:block;margin-bottom:4px">▲ ตัวเลือก A</label>
+              <input id="kq-a" type="text" style="width:100%;border:1.5px solid #fca5a5;border-radius:8px;padding:9px 12px;font:inherit" placeholder="ตัวเลือก A">
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:600;color:#3498db;display:block;margin-bottom:4px">◆ ตัวเลือก B</label>
+              <input id="kq-b" type="text" style="width:100%;border:1.5px solid #93c5fd;border-radius:8px;padding:9px 12px;font:inherit" placeholder="ตัวเลือก B">
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:600;color:#f39c12;display:block;margin-bottom:4px">● ตัวเลือก C</label>
+              <input id="kq-c" type="text" style="width:100%;border:1.5px solid #fcd34d;border-radius:8px;padding:9px 12px;font:inherit" placeholder="ตัวเลือก C">
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:600;color:#27ae60;display:block;margin-bottom:4px">★ ตัวเลือก D</label>
+              <input id="kq-d" type="text" style="width:100%;border:1.5px solid #86efac;border-radius:8px;padding:9px 12px;font:inherit" placeholder="ตัวเลือก D">
+            </div>
+          </div>
+          <div style="display:flex;gap:16px;align-items:center">
+            <div style="flex:1">
+              <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">คำตอบที่ถูก</label>
+              <select id="kq-correct" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font:inherit;background:#fff">
+                <option value="A">▲ A</option>
+                <option value="B">◆ B</option>
+                <option value="C">● C</option>
+                <option value="D">★ D</option>
+              </select>
+            </div>
+            <div style="flex:1">
+              <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">เวลา (วินาที)</label>
+              <select id="kq-time" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font:inherit;background:#fff">
+                <option value="10">10 วิ</option>
+                <option value="15">15 วิ</option>
+                <option value="20" selected>20 วิ</option>
+                <option value="30">30 วิ</option>
+                <option value="45">45 วิ</option>
+                <option value="60">60 วิ</option>
+              </select>
+            </div>
+            <div style="flex:1">
+              <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">ลำดับ</label>
+              <input id="kq-order" type="number" min="0" value="0" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font:inherit">
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+          <button onclick="closeKahootQuestionForm()" style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px 20px;font:inherit;cursor:pointer">ยกเลิก</button>
+          <button onclick="saveKahootQuestion()" style="background:var(--rose);color:#fff;border:none;border-radius:8px;padding:10px 20px;font:inherit;font-weight:600;cursor:pointer">บันทึก</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══ SECTION: DANGER ZONE ═══ -->
     <div class="section" id="sec-danger">
       <div class="sec-title">Danger Zone ⚠️</div>
@@ -1291,6 +1388,7 @@ function nav(id, navItem){
   if(id==='beacon') loadBeaconConfig();
   if(id==='gameboard') loadGameLeaderboard();
   if(id==='scratch') loadScratchAdmin();
+  if(id==='kahoot') loadKahootAdmin();
   if(window.innerWidth <= 768) closeSidebar();
 }
 
@@ -2748,6 +2846,242 @@ async function executeResetAll(){
     btn.textContent = '✓ ยืนยัน Reset';
     btn.style.opacity = '1';
   }
+}
+
+// ══════════════════════════════════════
+//  KAHOOT QUIZ
+// ══════════════════════════════════════
+let kahootSSE = null;
+let kahootPhase = 'idle';
+
+async function loadKahootAdmin() {
+  await loadKahootQuestions();
+  connectKahootSSE();
+}
+
+function connectKahootSSE() {
+  if (kahootSSE) kahootSSE.close();
+  kahootSSE = new EventSource(`${API_BASE}/kahoot-stream`);
+  kahootSSE.addEventListener('game-state', e => {
+    const state = JSON.parse(e.data);
+    kahootPhase = state.phase;
+    updateKahootControls(state);
+  });
+  kahootSSE.onerror = () => setTimeout(connectKahootSSE, 3000);
+}
+
+function updateKahootControls(state) {
+  const { phase, currentIdx, totalQuestions, sessionId } = state;
+  const badge = document.getElementById('kahoot-phase-badge');
+  const msg = document.getElementById('kahoot-status-msg');
+  if (!badge) return;
+
+  const phaseLabels = { idle:'⚪ ไม่มีเกม', lobby:'🟡 รอเริ่ม (Lobby)', question:'🔴 กำลังตอบ', reveal:'🟠 เฉลยแล้ว', leaderboard:'🔵 อันดับ', ended:'🟢 จบแล้ว' };
+  badge.textContent = phaseLabels[phase] || phase;
+
+  if (phase === 'question') {
+    msg.textContent = `ข้อ ${(currentIdx||0)+1} / ${totalQuestions||'?'} · Session #${sessionId}`;
+  } else if (phase === 'lobby') {
+    msg.textContent = `Session #${sessionId} · มี ${totalQuestions} คำถาม · รอแสดงข้อแรก`;
+  } else {
+    msg.textContent = sessionId ? `Session #${sessionId}` : '';
+  }
+
+  // Enable/disable buttons based on phase
+  const setBtn = (id, enabled) => {
+    const b = document.getElementById(id);
+    if (!b) return;
+    b.disabled = !enabled;
+    b.style.opacity = enabled ? '1' : '0.4';
+  };
+  setBtn('btn-kahoot-start',  phase === 'idle' || phase === 'ended');
+  setBtn('btn-kahoot-showq',  phase === 'lobby' || phase === 'leaderboard');
+  setBtn('btn-kahoot-reveal', phase === 'question');
+  setBtn('btn-kahoot-lb',     phase === 'reveal');
+  setBtn('btn-kahoot-end',    phase !== 'idle' && phase !== 'ended');
+}
+
+async function kahootStart() {
+  try {
+    const r = await fetch(`${API_BASE}/kahoot/admin/start`, { method:'POST' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'ไม่สำเร็จ');
+    showToast('▶ เริ่มเกมแล้ว — เปิด kahoot-host.html บนจอฉาย');
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
+async function kahootShowQ() {
+  try {
+    const r = await fetch(`${API_BASE}/kahoot/admin/show-question`, { method:'POST' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'ไม่สำเร็จ');
+    showToast('➡ แสดงคำถามแล้ว');
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
+async function kahootReveal() {
+  try {
+    const r = await fetch(`${API_BASE}/kahoot/admin/reveal`, { method:'POST' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'ไม่สำเร็จ');
+    showToast('🎯 เฉลยคำตอบแล้ว');
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
+async function kahootLeaderboard() {
+  try {
+    const r = await fetch(`${API_BASE}/kahoot/admin/leaderboard`, { method:'POST' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'ไม่สำเร็จ');
+    showToast('🏆 แสดงอันดับแล้ว');
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
+async function kahootEnd() {
+  if (!confirm('จบเกมใช่ไหม?')) return;
+  try {
+    const r = await fetch(`${API_BASE}/kahoot/admin/end`, { method:'POST' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'ไม่สำเร็จ');
+    showToast('⏹ จบเกมแล้ว');
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
+async function kahootReset() {
+  if (!confirm('Reset สถานะเกม? (คำถามยังอยู่)')) return;
+  try {
+    const r = await fetch(`${API_BASE}/kahoot/admin/reset`, { method:'POST' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'ไม่สำเร็จ');
+    showToast('↺ Reset แล้ว');
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
+async function loadKahootQuestions() {
+  const el = document.getElementById('kahoot-questions-list');
+  if (!el) return;
+  try {
+    const r = await fetch(`${API_BASE}/kahoot/admin/questions`);
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error);
+    const qs = d.questions;
+    if (qs.length === 0) {
+      el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted)">ยังไม่มีคำถาม — กด "+ เพิ่มคำถาม"</div>';
+      return;
+    }
+    const SHAPES = { A:'▲', B:'◆', C:'●', D:'★' };
+    const COLS = { A:'#e74c3c', B:'#3498db', C:'#f39c12', D:'#27ae60' };
+    el.innerHTML = qs.map((q,i) => `
+      <div style="border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">
+          <div style="font-weight:600;font-size:14px">${i+1}. ${escHtml(q.question_text)}</div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button onclick="openKahootQuestionForm(${q.id})" style="background:var(--cream);border:none;border-radius:6px;padding:4px 10px;font:inherit;font-size:12px;cursor:pointer">✏️ แก้ไข</button>
+            <button onclick="deleteKahootQuestion(${q.id})" style="background:#fff;color:#dc2626;border:1.5px solid #dc2626;border-radius:6px;padding:4px 10px;font:inherit;font-size:12px;cursor:pointer">🗑️</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px">
+          ${['A','B','C','D'].map(o => `
+            <div style="background:${COLS[o]}22;border:1.5px solid ${q.correct_option===o?COLS[o]:'transparent'};border-radius:6px;padding:5px 8px;display:flex;gap:6px;align-items:center">
+              <span style="color:${COLS[o]};font-weight:700">${SHAPES[o]}</span>
+              <span>${escHtml(q['option_'+o.toLowerCase()])}</span>
+              ${q.correct_option===o?'<span style="margin-left:auto;font-size:10px;background:'+COLS[o]+';color:#fff;border-radius:4px;padding:1px 5px">✓</span>':''}
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted)">⏱ ${q.time_limit_sec} วิ · ลำดับ: ${q.order_idx}</div>
+      </div>
+    `).join('');
+  } catch(e) {
+    el.innerHTML = `<div style="color:#dc2626;padding:16px">⚠️ โหลดไม่ได้: ${e.message}</div>`;
+  }
+}
+
+function openKahootQuestionForm(id) {
+  const modal = document.getElementById('kahootQuestionModal');
+  modal.style.display = 'flex';
+  document.getElementById('kq-id').value = '';
+  document.getElementById('kq-text').value = '';
+  document.getElementById('kq-a').value = '';
+  document.getElementById('kq-b').value = '';
+  document.getElementById('kq-c').value = '';
+  document.getElementById('kq-d').value = '';
+  document.getElementById('kq-correct').value = 'A';
+  document.getElementById('kq-time').value = '20';
+  document.getElementById('kq-order').value = '0';
+  document.getElementById('kq-modal-title').textContent = id ? 'แก้ไขคำถาม' : 'เพิ่มคำถาม';
+
+  if (id) {
+    // Load existing question data
+    fetch(`${API_BASE}/kahoot/admin/questions`)
+      .then(r => r.json())
+      .then(d => {
+        const q = d.questions?.find(x => x.id === id);
+        if (!q) return;
+        document.getElementById('kq-id').value = q.id;
+        document.getElementById('kq-text').value = q.question_text;
+        document.getElementById('kq-a').value = q.option_a;
+        document.getElementById('kq-b').value = q.option_b;
+        document.getElementById('kq-c').value = q.option_c;
+        document.getElementById('kq-d').value = q.option_d;
+        document.getElementById('kq-correct').value = q.correct_option;
+        document.getElementById('kq-time').value = String(q.time_limit_sec);
+        document.getElementById('kq-order').value = String(q.order_idx);
+      });
+  }
+}
+
+function closeKahootQuestionForm() {
+  document.getElementById('kahootQuestionModal').style.display = 'none';
+}
+
+async function saveKahootQuestion() {
+  const id = document.getElementById('kq-id').value;
+  const body = {
+    id: id ? Number(id) : undefined,
+    questionText: document.getElementById('kq-text').value.trim(),
+    optionA: document.getElementById('kq-a').value.trim(),
+    optionB: document.getElementById('kq-b').value.trim(),
+    optionC: document.getElementById('kq-c').value.trim(),
+    optionD: document.getElementById('kq-d').value.trim(),
+    correctOption: document.getElementById('kq-correct').value,
+    timeLimitSec: Number(document.getElementById('kq-time').value),
+    orderIdx: Number(document.getElementById('kq-order').value),
+  };
+  if (!body.questionText || !body.optionA || !body.optionB || !body.optionC || !body.optionD) {
+    showToast('⚠️ กรอกข้อมูลให้ครบก่อน');
+    return;
+  }
+  try {
+    const r = await fetch(`${API_BASE}/kahoot/admin/question`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'ไม่สำเร็จ');
+    closeKahootQuestionForm();
+    showToast('✅ บันทึกคำถามแล้ว');
+    loadKahootQuestions();
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
+async function deleteKahootQuestion(id) {
+  if (!confirm('ลบคำถามนี้?')) return;
+  try {
+    const r = await fetch(`${API_BASE}/kahoot/admin/question-delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'ไม่สำเร็จ');
+    showToast('🗑️ ลบแล้ว');
+    loadKahootQuestions();
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 </script>
